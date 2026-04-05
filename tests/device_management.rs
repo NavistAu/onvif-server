@@ -5,7 +5,7 @@
 use std::sync::Arc;
 use bytes::Bytes;
 use soap_server::SoapHandler;
-use onvif_server::{DeviceService, DeviceServiceHandler, DeviceInfo, MediaService, NetworkInterface};
+use onvif_server::{DeviceService, DeviceServiceHandler, DeviceInfo, MediaService, PTZService, NetworkInterface};
 
 /// A minimal DeviceService implementation for tests
 struct TestDevice {
@@ -34,6 +34,12 @@ struct TestMedia;
 
 #[async_trait::async_trait]
 impl MediaService for TestMedia {}
+
+/// Minimal PTZService stub — all methods use default not_implemented() responses
+struct TestPTZ;
+
+#[async_trait::async_trait]
+impl PTZService for TestPTZ {}
 
 fn make_handler() -> DeviceServiceHandler {
     let svc = Arc::new(TestDevice {
@@ -222,6 +228,7 @@ async fn device_server_binds_and_serves_auth_exempt_op() {
             },
         })
         .media_service(TestMedia)
+        .ptz_service(TestPTZ)
         .build()
         .expect("build must succeed");
 
