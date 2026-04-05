@@ -1,7 +1,8 @@
 // examples/virtual_ptz.rs
 //
 // Virtual PTZ ONVIF camera — a minimal in-memory PTZ camera that implements
-// all three required service traits (DeviceService, MediaService, PTZService).
+// all five required service traits (DeviceService, MediaService, PTZService,
+// ImagingService, EventService).
 //
 // Usage:
 //   cargo run --example virtual_ptz
@@ -13,6 +14,8 @@
 //   - /onvif/device_service  — Device management
 //   - /onvif/media_service   — Media profiles and stream URIs
 //   - /onvif/ptz_service     — Full PTZ control with in-memory preset storage
+//   - /onvif/imaging_service — Imaging settings
+//   - /onvif/events_service  — Event subscriptions
 //
 // PTZ presets are stored in memory and lost on restart.
 
@@ -21,8 +24,8 @@ use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 use onvif_server::{
-    DeviceService, MediaService, PTZService,
-    OnvifError, PTZStatusResult, PTZPreset,
+    DeviceService, MediaService, PTZService, ImagingService, EventService,
+    OnvifError, PTZStatusResult, PTZPreset, ImagingSettings,
 };
 use onvif_server::generated::DeviceInfo;
 
@@ -208,6 +211,29 @@ impl PTZService for VirtualPTZ {
 }
 
 // ---------------------------------------------------------------------------
+// ImagingService
+// ---------------------------------------------------------------------------
+
+#[async_trait]
+impl ImagingService for VirtualPTZ {
+    async fn get_imaging_settings(&self, _video_source_token: String) -> Result<ImagingSettings, OnvifError> {
+        Ok(ImagingSettings {
+            brightness: Some(50.0),
+            contrast: Some(50.0),
+            sharpness: Some(50.0),
+            ..Default::default()
+        })
+    }
+}
+
+// ---------------------------------------------------------------------------
+// EventService
+// ---------------------------------------------------------------------------
+
+#[async_trait]
+impl EventService for VirtualPTZ {}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -220,13 +246,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .auth("admin", "admin")
         .device_service(cam.clone())
         .media_service(cam.clone())
-        .ptz_service(cam)
+        .ptz_service(cam.clone())
+        .imaging_service(cam.clone())
+        .event_service(cam)
         .build()?;
 
     println!("Virtual PTZ ONVIF server running on :8080");
     println!("  Device service:  http://0.0.0.0:8080/onvif/device_service");
     println!("  Media service:   http://0.0.0.0:8080/onvif/media_service");
     println!("  PTZ service:     http://0.0.0.0:8080/onvif/ptz_service");
+    println!("  Imaging service: http://0.0.0.0:8080/onvif/imaging_service");
+    println!("  Events service:  http://0.0.0.0:8080/onvif/events_service");
     println!("  Credentials:     admin / admin");
 
     server.run().await
