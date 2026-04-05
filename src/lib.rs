@@ -10,6 +10,6 @@ pub use server::{OnvifServer, OnvifServerBuilder, BuildError};
 pub use constants::*;
 pub use soap_server::WsdlLoader;
 pub use soap_server::WsdlError;
-pub use generated::DeviceInfo;
+pub use generated::{DeviceInfo, Scope, ScopeDefinition, HostnameInformation, NetworkInterface};
 pub use wsdl_loader::EmbeddedWsdlLoader;
 pub use traits::{DeviceService, MediaService, PTZService, ImagingService, EventService};

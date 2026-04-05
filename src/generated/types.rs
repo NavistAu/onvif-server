@@ -10,3 +10,30 @@ pub struct DeviceInfo {
     pub serial_number: String,
     pub hardware_id: String,
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ScopeDefinition {
+    Fixed,
+    Configurable,
+}
+
+#[derive(Debug, Clone)]
+pub struct Scope {
+    pub scope_def: ScopeDefinition,
+    pub scope_item: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct HostnameInformation {
+    pub from_dhcp: bool,
+    pub name: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NetworkInterface {
+    pub token: String,
+    pub enabled: bool,
+    pub name: String,
+    pub hw_address: String,
+    pub mtu: u32,
+}

@@ -53,8 +53,12 @@ async fn test_not_implemented_returns_error() {
     #[async_trait::async_trait]
     impl DeviceService for StubDevice {}
     let svc = StubDevice;
-    let result = svc.get_system_date_and_time().await;
+    // get_device_information has no sensible default — must return NotImplemented
+    let result = svc.get_device_information().await;
     assert!(matches!(result, Err(OnvifError::NotImplemented)));
+    // get_system_date_and_time defaults to Ok(Utc::now()) — not an error
+    let dt_result = svc.get_system_date_and_time().await;
+    assert!(dt_result.is_ok(), "get_system_date_and_time default must return Ok");
 }
 
 #[test]

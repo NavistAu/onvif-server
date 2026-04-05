@@ -46,6 +46,6 @@ impl OnvifError {
 ///
 /// Service trait implementations use this as a one-liner stub until the
 /// real implementation is added.
-pub fn not_implemented() -> Result<(), OnvifError> {
+pub fn not_implemented<T>() -> Result<T, OnvifError> {
     Err(OnvifError::NotImplemented)
 }

@@ -1,54 +1,51 @@
 use async_trait::async_trait;
 use crate::error::{OnvifError, not_implemented};
+use crate::generated::types::{DeviceInfo, Scope, ScopeDefinition, HostnameInformation, NetworkInterface};
 
 /// ONVIF Device Management Service (Profile S core).
 ///
-/// All methods default to `not_implemented()` — implementors override only the
-/// operations their device supports. Trait is object-safe: store as `Arc<dyn DeviceService>`.
+/// All methods default to sensible values or `not_implemented()` — implementors
+/// override only the operations their device supports. Trait is object-safe:
+/// store as `Arc<dyn DeviceService>`.
+///
+/// NOTE: GetCapabilities and GetServices are framework-level — the handler
+/// constructs those internally from the bound xaddr. Do NOT add them to this trait.
 #[async_trait]
 pub trait DeviceService: Send + Sync + 'static {
-    /// Returns the device clock and timezone. Required by all ONVIF profiles.
-    async fn get_system_date_and_time(&self) -> Result<(), OnvifError> {
-        not_implemented()
-    }
-
-    /// Returns the service capabilities for this device.
-    async fn get_capabilities(&self) -> Result<(), OnvifError> {
-        not_implemented()
+    /// Returns the current UTC time. Defaults to `chrono::Utc::now()`.
+    async fn get_system_date_and_time(&self) -> Result<chrono::DateTime<chrono::Utc>, OnvifError> {
+        Ok(chrono::Utc::now())
     }
 
     /// Returns manufacturer, model, firmware version, serial number, hardware ID.
-    async fn get_device_information(&self) -> Result<(), OnvifError> {
-        not_implemented()
-    }
-
-    /// Returns a list of all supported services and their version numbers.
-    async fn get_services(&self) -> Result<(), OnvifError> {
+    async fn get_device_information(&self) -> Result<DeviceInfo, OnvifError> {
         not_implemented()
     }
 
     /// Returns the scopes used for WS-Discovery advertisement.
-    async fn get_scopes(&self) -> Result<(), OnvifError> {
-        not_implemented()
-    }
-
-    /// Returns the list of NTP servers configured on the device.
-    async fn get_ntp(&self) -> Result<(), OnvifError> {
-        not_implemented()
+    async fn get_scopes(&self) -> Result<Vec<Scope>, OnvifError> {
+        Ok(vec![
+            Scope {
+                scope_def: ScopeDefinition::Fixed,
+                scope_item: "onvif://www.onvif.org/type/video_encoder".into(),
+            },
+            Scope {
+                scope_def: ScopeDefinition::Fixed,
+                scope_item: "onvif://www.onvif.org/Profile/Streaming".into(),
+            },
+        ])
     }
 
     /// Returns the hostname of the device.
-    async fn get_hostname(&self) -> Result<(), OnvifError> {
-        not_implemented()
+    async fn get_hostname(&self) -> Result<HostnameInformation, OnvifError> {
+        Ok(HostnameInformation {
+            from_dhcp: false,
+            name: Some("onvif-device".into()),
+        })
     }
 
-    /// Returns user credentials stored on the device.
-    async fn get_users(&self) -> Result<(), OnvifError> {
-        not_implemented()
-    }
-
-    /// Returns the system URI for firmware upgrade or log access.
-    async fn get_system_uris(&self) -> Result<(), OnvifError> {
+    /// Returns network interface configurations.
+    async fn get_network_interfaces(&self) -> Result<Vec<NetworkInterface>, OnvifError> {
         not_implemented()
     }
 }
