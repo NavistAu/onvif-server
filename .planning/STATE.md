@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-04-05T12:41:18.763Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-04-05T12:50:02.221Z"
 last_activity: 2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
   percent: 45
 ---
 
@@ -61,6 +61,7 @@ Progress: [#####░░░░░] 45%
 | Phase 04-ptz-service P01 | 5 | 3 tasks | 7 files |
 | Phase 04-ptz-service P02 | 4 | 2 tasks | 4 files |
 | Phase 05-imaging-events-discovery-and-polish P01 | 18 | 2 tasks | 9 files |
+| Phase 05-imaging-events-discovery-and-polish P02 | 7 | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,9 @@ Recent decisions affecting current work:
 - [Phase 04-ptz-service]: VirtualPTZ derives Clone and uses Arc<Mutex<_>> internally for multi-slot service registration with shared state
 - [Phase 05-imaging-events-discovery-and-polish]: ImagingSettings serializes only Some fields — None fields produce no XML element
 - [Phase 05-imaging-events-discovery-and-polish]: EventService trait has only get_event_properties; CreatePullPointSubscription/PullMessages/Unsubscribe are handler-internal state operations
+- [Phase 05-imaging-events-discovery-and-polish]: DeviceServiceHandler::new() takes 5 xaddrs — struct has media_xaddr, ptz_xaddr, imaging_xaddr, events_xaddr fields
+- [Phase 05-imaging-events-discovery-and-polish]: imaging_service and event_service are required at run() time via ok_or() — consistent with device/media/ptz pattern
+- [Phase 05-imaging-events-discovery-and-polish]: EmbeddedWsdlLoader needed 4 new stubs (bw-2.wsdl, rw-2.wsdl, ws-addr.xsd, t-1.xsd) for events.wsdl imports
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T12:41:18.761Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-04-05T12:50:02.219Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

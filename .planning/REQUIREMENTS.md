@@ -69,14 +69,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Discovery
 
-- [ ] **DISC-01**: When the `discovery` feature flag is enabled, the server responds to WS-Discovery Probe messages on UDP multicast 239.255.255.250:3702
-- [ ] **DISC-02**: WS-Discovery ProbeMatch responses include the device's XAddrs and scopes
+- [x] **DISC-01**: When the `discovery` feature flag is enabled, the server responds to WS-Discovery Probe messages on UDP multicast 239.255.255.250:3702
+- [x] **DISC-02**: WS-Discovery ProbeMatch responses include the device's XAddrs and scopes
 
 ### Testing & Examples
 
 - [x] **TEST-01**: Integration test suite replaying Frigate's autotracker call sequence (GetProfiles → GetConfigurationOptions → GetServiceCapabilities → GetStatus → RelativeMove → GotoPreset)
 - [x] **TEST-02**: virtual_ptz example demonstrating a minimal consumer implementation with all required trait methods
-- [ ] **TEST-03**: ONVIF Device Manager smoke test validating basic device discovery and info retrieval
+- [x] **TEST-03**: ONVIF Device Manager smoke test validating basic device discovery and info retrieval
 
 ## v2 Requirements
 
@@ -150,11 +150,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | EVT-02 | Phase 5 | Complete |
 | EVT-03 | Phase 5 | Complete |
 | EVT-04 | Phase 5 | Complete |
-| DISC-01 | Phase 5 | Pending |
-| DISC-02 | Phase 5 | Pending |
+| DISC-01 | Phase 5 | Complete |
+| DISC-02 | Phase 5 | Complete |
 | TEST-01 | Phase 4 | Complete |
 | TEST-02 | Phase 4 | Complete |
-| TEST-03 | Phase 5 | Pending |
+| TEST-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 42 total
