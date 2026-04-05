@@ -11,9 +11,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INFRA-01**: Crate scaffolding with Cargo.toml, soap-server path dependency, and module structure
 - [x] **INFRA-02**: OnvifError type with variants for NotImplemented, InvalidArgument, ActionNotSupported, and mapping to SOAP faults with ONVIF error namespace (`ter:`)
-- [ ] **INFRA-03**: Embedded WSDL/XSD loader that serves bundled official ONVIF WSDLs and schemas via soap-server's WsdlLoader trait
-- [ ] **INFRA-04**: ONVIF type definitions for all request/response structures (via onvif-rs schema crates or generated from bundled XSDs)
-- [ ] **INFRA-05**: Trait-based service API where each ONVIF service is a Rust trait with async methods; unimplemented methods return spec-compliant SOAP faults by default
+- [x] **INFRA-03**: Embedded WSDL/XSD loader that serves bundled official ONVIF WSDLs and schemas via soap-server's WsdlLoader trait
+- [x] **INFRA-04**: ONVIF type definitions for all request/response structures (via onvif-rs schema crates or generated from bundled XSDs)
+- [x] **INFRA-05**: Trait-based service API where each ONVIF service is a Rust trait with async methods; unimplemented methods return spec-compliant SOAP faults by default
 - [ ] **INFRA-06**: Builder pattern (`OnvifServer::builder()`) for server construction with service registration, auth config, and port binding
 - [ ] **INFRA-07**: WS-Security UsernameToken digest authentication delegated to soap-server, with configurable credentials via builder
 - [ ] **INFRA-08**: Auth exemption for GetSystemDateAndTime automatically registered (per ONVIF spec, accessible without authentication)
@@ -110,9 +110,9 @@ Deferred to future release. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
-| INFRA-05 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Complete |
+| INFRA-04 | Phase 1 | Complete |
+| INFRA-05 | Phase 1 | Complete |
 | INFRA-06 | Phase 1 | Pending |
 | INFRA-07 | Phase 1 | Pending |
 | INFRA-08 | Phase 1 | Pending |

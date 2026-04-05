@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-foundation-01-PLAN.md
-last_updated: "2026-04-05T07:20:54.853Z"
+stopped_at: Completed 01-foundation-02-PLAN.md
+last_updated: "2026-04-05T07:30:06.735Z"
 last_activity: 2026-04-05 — Roadmap created, ready for Phase 1 planning
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-foundation P01 | 15 | 2 tasks | 9 files |
+| Phase 01-foundation P02 | 6 | 3 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,7 @@ Recent decisions affecting current work:
 - Phase 1: `soap-server` WsdlLoader trait exact interface — must be confirmed from source before writing EmbeddedWsdlLoader.
 - [Phase 01-foundation]: Pinned rust-toolchain.toml to 1.85.1 — cpufeatures 0.3.0 requires edition2024, unsupported by system Rust 1.79.0
 - [Phase 01-foundation]: xmlns:ter namespace declared inline in SoapFault detail — soap-server envelope does not inject ONVIF namespaces
+- [Phase 01-foundation]: Type strategy Option B (hand-written stubs): both onvif-schema and xsd-parser require Rust 1.86 via icu_* chain; crate pinned to 1.85.1 — DeviceInfo is a Phase 1 hand-written stub, XSD codegen deferred to Phase 2+
 
 ### Pending Todos
 
@@ -74,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T07:20:54.851Z
-Stopped at: Completed 01-foundation-01-PLAN.md
+Last session: 2026-04-05T07:30:06.732Z
+Stopped at: Completed 01-foundation-02-PLAN.md
 Resume file: None

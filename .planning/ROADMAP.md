@@ -89,7 +89,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 1/3 | In Progress|  |
+| 1. Foundation | 2/3 | In Progress|  |
 | 2. Device Management | 0/? | Not started | - |
 | 3. Media Service | 0/? | Not started | - |
 | 4. PTZ Service | 0/? | Not started | - |
