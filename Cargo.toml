@@ -18,6 +18,7 @@ bytes = "1"
 chrono = { version = "0.4", features = ["std", "clock"], default-features = false }
 uuid = { version = "1", features = ["v4"] }
 quick-xml = "0.39"
+serde = { version = "1", features = ["derive"] }
 socket2 = { version = "0.5", features = ["all"], optional = true }
 
 [dev-dependencies]
