@@ -1,6 +1,6 @@
 // tests/media_service.rs
 // Integration tests for Phase 3: Media Service (MEDIA-01 through MEDIA-06)
-// All tests start as #[ignore] stubs; #[ignore] removed in Task 3 once handler is implemented.
+// All tests are active and green after Task 3.
 
 use std::sync::Arc;
 use bytes::Bytes;
@@ -27,7 +27,6 @@ fn make_handler() -> MediaServiceHandler {
 }
 
 #[tokio::test]
-#[ignore]
 async fn media_get_profiles() {
     let handler = make_handler();
     let body = Bytes::from_static(
@@ -54,7 +53,6 @@ async fn media_get_profiles() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn media_get_profiles_ptz_config_token() {
     let handler = make_handler();
     let body = Bytes::from_static(
@@ -69,7 +67,6 @@ async fn media_get_profiles_ptz_config_token() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn media_get_stream_uri() {
     let handler = make_handler();
     let body = Bytes::from(
@@ -90,7 +87,6 @@ async fn media_get_stream_uri() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn media_get_snapshot_uri() {
     let handler = make_handler();
     let body = Bytes::from(
@@ -107,7 +103,6 @@ async fn media_get_snapshot_uri() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn media_get_video_sources() {
     let handler = make_handler();
     let body = Bytes::from_static(
@@ -122,7 +117,6 @@ async fn media_get_video_sources() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn media_get_video_source_configurations() {
     let handler = make_handler();
     let body = Bytes::from_static(
@@ -137,7 +131,6 @@ async fn media_get_video_source_configurations() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn media_get_video_encoder_configurations() {
     let handler = make_handler();
     let body = Bytes::from_static(
