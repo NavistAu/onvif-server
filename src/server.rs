@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::service::device::DeviceServiceHandler;
+use crate::service::media::MediaServiceHandler;
 use crate::traits::{DeviceService, EventService, ImagingService, MediaService, PTZService};
 use crate::wsdl_loader::EmbeddedWsdlLoader;
 
@@ -46,15 +47,22 @@ impl OnvifServer {
         let device_svc = self.device_service
             .ok_or("device_service is required to call run()")?;
 
-        let xaddr = format!("http://0.0.0.0:{}/onvif/device_service", self.port);
+        let media_svc = self.media_service
+            .ok_or("media_service is required to call run()")?;
 
+        let xaddr = format!("http://0.0.0.0:{}/onvif/device_service", self.port);
         let handler = DeviceServiceHandler {
             svc: device_svc,
             xaddr,
         };
 
+        let media_xaddr = format!("http://0.0.0.0:{}/onvif/media_service", self.port);
+        let media_handler = MediaServiceHandler::new(media_svc, media_xaddr);
+
         let username = self.username.clone();
         let password = self.password.clone();
+        let username2 = self.username.clone();
+        let password2 = self.password.clone();
         let auth_bypass = self.auth_bypass;
 
         let soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
@@ -74,7 +82,25 @@ impl OnvifServer {
             .build()
             .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
 
-        let router = soap_svc.into_router();
+        let media_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
+                include_bytes!("../wsdl/media.wsdl").to_vec(),
+                EmbeddedWsdlLoader,
+            )
+            .path("/onvif/media_service")
+            .default_handler(media_handler)
+            .auth(move |user: &str| -> Option<String> {
+                if Some(user) == username2.as_deref() {
+                    password2.clone()
+                } else {
+                    None
+                }
+            })
+            .auth_bypass(std::iter::empty::<String>())
+            .build()
+            .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+
+        let router = soap_svc.into_router()
+            .merge(media_soap_svc.into_router());
         let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", self.port)).await?;
         axum::serve(listener, router).await?;
         Ok(())
