@@ -104,5 +104,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 3/3 | Complete   | 2026-04-05 |
 | 2. Device Management | 2/2 | Complete   | 2026-04-05 |
 | 3. Media Service | 1/2 | In Progress|  |
-| 4. PTZ Service | 0/2 | Not started | - |
+| 4. PTZ Service | 1/2 | In Progress|  |
 | 5. Imaging, Events, Discovery, and Polish | 0/? | Not started | - |

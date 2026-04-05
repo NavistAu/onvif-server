@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 context gathered
-last_updated: "2026-04-05T10:37:17.170Z"
+stopped_at: Completed 04-ptz-service/04-01-PLAN.md
+last_updated: "2026-04-05T11:30:57.879Z"
 last_activity: 2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 45
 ---
 
@@ -58,6 +58,7 @@ Progress: [#####░░░░░] 45%
 | Phase 02-device-management P02 | 6 | 2 tasks | 9 files |
 | Phase 03-media-service P01 | 5 | 3 tasks | 7 files |
 | Phase 03-media-service P02 | 5 | 2 tasks | 4 files |
+| Phase 04-ptz-service P01 | 5 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Recent decisions affecting current work:
 - [Phase 03-media-service P01]: quick-xml 0.39 BytesText uses std::str::from_utf8(t.as_ref()) not t.unescape() for text content extraction
 - [Phase 03-media-service P01]: GetProfiles PTZConfiguration always includes DefaultContinuousPanTiltVelocitySpace=TRANSLATION_SPACE_FOV for Frigate PTZ autotracking compatibility
 - [Phase 03-media-service]: media_service required at run() time via ok_or(); std::iter::empty() for media auth_bypass; generated/mod.rs must re-export types before lib.rs
+- [Phase 04-ptz-service]: PTZService trait has 9 control methods only; discovery operations are handler-internal static XML
+- [Phase 04-ptz-service]: OnvifError has no NotFound variant — used InvalidArgument for unknown token errors in GetNode/GetConfiguration
+- [Phase 04-ptz-service]: PTZServiceHandler has no xaddr field — PTZ service does not advertise a separate service URL
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:37:17.167Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-ptz-service/04-CONTEXT.md
+Last session: 2026-04-05T11:30:57.876Z
+Stopped at: Completed 04-ptz-service/04-01-PLAN.md
+Resume file: None

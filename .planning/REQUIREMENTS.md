@@ -40,21 +40,21 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### PTZ Service
 
-- [ ] **PTZ-01**: User can call GetNodes and receive PTZ node(s) advertising TranslationSpaceFov in RelativePanTiltTranslationSpace
-- [ ] **PTZ-02**: User can call GetNode with a node token and receive the specific PTZ node details
-- [ ] **PTZ-03**: User can call GetConfigurations and receive all PTZ configurations with node token references
-- [ ] **PTZ-04**: User can call GetConfiguration with a config token and receive configuration details
-- [ ] **PTZ-05**: User can call GetConfigurationOptions and receive supported PTZ spaces including TranslationSpaceFov with X/Y ranges
-- [ ] **PTZ-06**: User can call GetServiceCapabilities and receive MoveStatus="true" capability advertisement
-- [ ] **PTZ-07**: User can call RelativeMove with pan/tilt/zoom translation and the consumer's trait method is invoked with typed parameters
-- [ ] **PTZ-08**: User can call ContinuousMove with velocity parameters and the consumer's trait method is invoked
-- [ ] **PTZ-09**: User can call Stop and active PTZ movement ceases (PanTilt and Zoom booleans respected)
-- [ ] **PTZ-10**: User can call GetStatus and receive MoveStatus (IDLE/MOVING) for PanTilt and Zoom
-- [ ] **PTZ-11**: User can call GetPresets and receive the consumer's configured preset list
-- [ ] **PTZ-12**: User can call GotoPreset with a preset token and the consumer's trait method is invoked
-- [ ] **PTZ-13**: User can call AbsoluteMove with position parameters and the consumer's trait method is invoked
-- [ ] **PTZ-14**: User can call SetPreset and the consumer's trait method is invoked to create/update a preset
-- [ ] **PTZ-15**: User can call RemovePreset and the consumer's trait method is invoked to delete a preset
+- [x] **PTZ-01**: User can call GetNodes and receive PTZ node(s) advertising TranslationSpaceFov in RelativePanTiltTranslationSpace
+- [x] **PTZ-02**: User can call GetNode with a node token and receive the specific PTZ node details
+- [x] **PTZ-03**: User can call GetConfigurations and receive all PTZ configurations with node token references
+- [x] **PTZ-04**: User can call GetConfiguration with a config token and receive configuration details
+- [x] **PTZ-05**: User can call GetConfigurationOptions and receive supported PTZ spaces including TranslationSpaceFov with X/Y ranges
+- [x] **PTZ-06**: User can call GetServiceCapabilities and receive MoveStatus="true" capability advertisement
+- [x] **PTZ-07**: User can call RelativeMove with pan/tilt/zoom translation and the consumer's trait method is invoked with typed parameters
+- [x] **PTZ-08**: User can call ContinuousMove with velocity parameters and the consumer's trait method is invoked
+- [x] **PTZ-09**: User can call Stop and active PTZ movement ceases (PanTilt and Zoom booleans respected)
+- [x] **PTZ-10**: User can call GetStatus and receive MoveStatus (IDLE/MOVING) for PanTilt and Zoom
+- [x] **PTZ-11**: User can call GetPresets and receive the consumer's configured preset list
+- [x] **PTZ-12**: User can call GotoPreset with a preset token and the consumer's trait method is invoked
+- [x] **PTZ-13**: User can call AbsoluteMove with position parameters and the consumer's trait method is invoked
+- [x] **PTZ-14**: User can call SetPreset and the consumer's trait method is invoked to create/update a preset
+- [x] **PTZ-15**: User can call RemovePreset and the consumer's trait method is invoked to delete a preset
 
 ### Imaging Service
 
@@ -130,21 +130,21 @@ Deferred to future release. Tracked but not in current roadmap.
 | MEDIA-04 | Phase 3 | Complete |
 | MEDIA-05 | Phase 3 | Complete |
 | MEDIA-06 | Phase 3 | Complete |
-| PTZ-01 | Phase 4 | Pending |
-| PTZ-02 | Phase 4 | Pending |
-| PTZ-03 | Phase 4 | Pending |
-| PTZ-04 | Phase 4 | Pending |
-| PTZ-05 | Phase 4 | Pending |
-| PTZ-06 | Phase 4 | Pending |
-| PTZ-07 | Phase 4 | Pending |
-| PTZ-08 | Phase 4 | Pending |
-| PTZ-09 | Phase 4 | Pending |
-| PTZ-10 | Phase 4 | Pending |
-| PTZ-11 | Phase 4 | Pending |
-| PTZ-12 | Phase 4 | Pending |
-| PTZ-13 | Phase 4 | Pending |
-| PTZ-14 | Phase 4 | Pending |
-| PTZ-15 | Phase 4 | Pending |
+| PTZ-01 | Phase 4 | Complete |
+| PTZ-02 | Phase 4 | Complete |
+| PTZ-03 | Phase 4 | Complete |
+| PTZ-04 | Phase 4 | Complete |
+| PTZ-05 | Phase 4 | Complete |
+| PTZ-06 | Phase 4 | Complete |
+| PTZ-07 | Phase 4 | Complete |
+| PTZ-08 | Phase 4 | Complete |
+| PTZ-09 | Phase 4 | Complete |
+| PTZ-10 | Phase 4 | Complete |
+| PTZ-11 | Phase 4 | Complete |
+| PTZ-12 | Phase 4 | Complete |
+| PTZ-13 | Phase 4 | Complete |
+| PTZ-14 | Phase 4 | Complete |
+| PTZ-15 | Phase 4 | Complete |
 | IMG-01 | Phase 5 | Pending |
 | EVT-01 | Phase 5 | Pending |
 | EVT-02 | Phase 5 | Pending |
