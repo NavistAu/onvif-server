@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Crate scaffold, error types, WSDL loader, ONVIF types, token constants, builder skeleton (completed 2026-04-05)
 - [x] **Phase 2: Device Management** - Working ONVIF device endpoint with auth, GetSystemDateAndTime, GetCapabilities, GetServices, and device identity operations (completed 2026-04-05)
 - [ ] **Phase 3: Media Service** - Profile S streaming metadata with correct PTZ profile structure for Frigate compatibility
-- [ ] **Phase 4: PTZ Service** - Full PTZ control surface with TranslationSpaceFov, MoveStatus, and Frigate end-to-end test
+- [x] **Phase 4: PTZ Service** - Full PTZ control surface with TranslationSpaceFov, MoveStatus, and Frigate end-to-end test (completed 2026-04-05)
 - [ ] **Phase 5: Imaging, Events, Discovery, and Polish** - GetImagingSettings, Events service, WS-Discovery, virtual_ptz example, ODM smoke test
 
 ## Phase Details
@@ -104,5 +104,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 3/3 | Complete   | 2026-04-05 |
 | 2. Device Management | 2/2 | Complete   | 2026-04-05 |
 | 3. Media Service | 1/2 | In Progress|  |
-| 4. PTZ Service | 1/2 | In Progress|  |
+| 4. PTZ Service | 2/2 | Complete   | 2026-04-05 |
 | 5. Imaging, Events, Discovery, and Polish | 0/? | Not started | - |

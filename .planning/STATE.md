@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-ptz-service/04-01-PLAN.md
-last_updated: "2026-04-05T11:30:57.879Z"
+stopped_at: Completed 04-ptz-service/04-02-PLAN.md
+last_updated: "2026-04-05T11:37:19.823Z"
 last_activity: 2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 45
 ---
 
@@ -59,6 +59,7 @@ Progress: [#####░░░░░] 45%
 | Phase 03-media-service P01 | 5 | 3 tasks | 7 files |
 | Phase 03-media-service P02 | 5 | 2 tasks | 4 files |
 | Phase 04-ptz-service P01 | 5 | 3 tasks | 7 files |
+| Phase 04-ptz-service P02 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 04-ptz-service]: PTZService trait has 9 control methods only; discovery operations are handler-internal static XML
 - [Phase 04-ptz-service]: OnvifError has no NotFound variant — used InvalidArgument for unknown token errors in GetNode/GetConfiguration
 - [Phase 04-ptz-service]: PTZServiceHandler has no xaddr field — PTZ service does not advertise a separate service URL
+- [Phase 04-ptz-service]: ptz_service required at run() time via ok_or() — consistent with device_service and media_service; callers must register all three services before calling run()
+- [Phase 04-ptz-service]: VirtualPTZ derives Clone and uses Arc<Mutex<_>> internally for multi-slot service registration with shared state
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:30:57.876Z
-Stopped at: Completed 04-ptz-service/04-01-PLAN.md
+Last session: 2026-04-05T11:37:19.819Z
+Stopped at: Completed 04-ptz-service/04-02-PLAN.md
 Resume file: None

@@ -74,8 +74,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Testing & Examples
 
-- [ ] **TEST-01**: Integration test suite replaying Frigate's autotracker call sequence (GetProfiles → GetConfigurationOptions → GetServiceCapabilities → GetStatus → RelativeMove → GotoPreset)
-- [ ] **TEST-02**: virtual_ptz example demonstrating a minimal consumer implementation with all required trait methods
+- [x] **TEST-01**: Integration test suite replaying Frigate's autotracker call sequence (GetProfiles → GetConfigurationOptions → GetServiceCapabilities → GetStatus → RelativeMove → GotoPreset)
+- [x] **TEST-02**: virtual_ptz example demonstrating a minimal consumer implementation with all required trait methods
 - [ ] **TEST-03**: ONVIF Device Manager smoke test validating basic device discovery and info retrieval
 
 ## v2 Requirements
@@ -152,8 +152,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | EVT-04 | Phase 5 | Pending |
 | DISC-01 | Phase 5 | Pending |
 | DISC-02 | Phase 5 | Pending |
-| TEST-01 | Phase 4 | Pending |
-| TEST-02 | Phase 4 | Pending |
+| TEST-01 | Phase 4 | Complete |
+| TEST-02 | Phase 4 | Complete |
 | TEST-03 | Phase 5 | Pending |
 
 **Coverage:**
