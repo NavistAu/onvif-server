@@ -31,6 +31,7 @@ pub struct OnvifServer {
     pub imaging_service: Option<Arc<dyn ImagingService>>,
     pub event_service: Option<Arc<dyn EventService>>,
     pub auth_bypass: HashSet<String>,
+    pub advertised_host: String,
 }
 
 impl OnvifServer {
@@ -62,11 +63,11 @@ impl OnvifServer {
         let event_svc = self.event_service
             .ok_or("event_service is required to call run()")?;
 
-        let xaddr         = format!("http://0.0.0.0:{}/onvif/device_service",  self.port);
-        let media_xaddr   = format!("http://0.0.0.0:{}/onvif/media_service",   self.port);
-        let ptz_xaddr     = format!("http://0.0.0.0:{}/onvif/ptz_service",     self.port);
-        let imaging_xaddr = format!("http://0.0.0.0:{}/onvif/imaging_service", self.port);
-        let events_xaddr  = format!("http://0.0.0.0:{}/onvif/events_service",  self.port);
+        let xaddr         = format!("http://{}:{}/onvif/device_service",  self.advertised_host, self.port);
+        let media_xaddr   = format!("http://{}:{}/onvif/media_service",   self.advertised_host, self.port);
+        let ptz_xaddr     = format!("http://{}:{}/onvif/ptz_service",     self.advertised_host, self.port);
+        let imaging_xaddr = format!("http://{}:{}/onvif/imaging_service", self.advertised_host, self.port);
+        let events_xaddr  = format!("http://{}:{}/onvif/events_service",  self.advertised_host, self.port);
 
         let handler = DeviceServiceHandler::new(
             device_svc,
@@ -78,7 +79,7 @@ impl OnvifServer {
         );
 
         let media_handler   = MediaServiceHandler::new(media_svc, media_xaddr);
-        let ptz_handler     = PTZServiceHandler { svc: ptz_svc };
+        let ptz_handler     = PTZServiceHandler::new(ptz_svc);
         let imaging_handler = ImagingServiceHandler::new(imaging_svc);
         let events_handler  = EventServiceHandler::new(event_svc, events_xaddr.clone());
 
@@ -175,7 +176,7 @@ impl OnvifServer {
 
         #[cfg(feature = "discovery")]
         {
-            let disc_xaddr = format!("http://0.0.0.0:{}/onvif/device_service", self.port);
+            let disc_xaddr = format!("http://{}:{}/onvif/device_service", self.advertised_host, self.port);
             tokio::spawn(async move {
                 if let Err(e) = crate::discovery::run_discovery(disc_xaddr).await {
                     eprintln!("[discovery] task exited: {e}");
@@ -204,6 +205,7 @@ pub struct OnvifServerBuilder {
     pub imaging_service: Option<Arc<dyn ImagingService>>,
     pub event_service: Option<Arc<dyn EventService>>,
     pub auth_bypass: HashSet<String>,
+    pub advertised_host: String,
 }
 
 impl OnvifServerBuilder {
@@ -223,12 +225,21 @@ impl OnvifServerBuilder {
             imaging_service: None,
             event_service: None,
             auth_bypass,
+            advertised_host: "0.0.0.0".to_string(),
         }
     }
 
     /// Set the port the server will listen on. Defaults to 8080.
     pub fn port(mut self, port: u16) -> Self {
         self.port = port;
+        self
+    }
+
+    /// Set the host advertised in XAddrs for GetCapabilities, GetServices, and WS-Discovery.
+    /// Real ONVIF clients need a routable address (e.g. "192.168.1.10"), not "0.0.0.0".
+    /// Defaults to "0.0.0.0" for backward compatibility.
+    pub fn advertised_host(mut self, host: &str) -> Self {
+        self.advertised_host = host.to_string();
         self
     }
 
@@ -292,6 +303,7 @@ impl OnvifServerBuilder {
             imaging_service: self.imaging_service,
             event_service: self.event_service,
             auth_bypass: self.auth_bypass,
+            advertised_host: self.advertised_host,
         })
     }
 }
