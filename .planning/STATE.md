@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 03-01-PLAN.md"
-last_updated: "2026-04-05T10:20:00Z"
-last_activity: "2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-04-05T10:26:25.956Z"
+last_activity: 2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 45
 ---
 
@@ -57,6 +57,7 @@ Progress: [#####░░░░░] 45%
 | Phase 02-device-management P01 | 20 | 2 tasks | 10 files |
 | Phase 02-device-management P02 | 6 | 2 tasks | 9 files |
 | Phase 03-media-service P01 | 5 | 3 tasks | 7 files |
+| Phase 03-media-service P02 | 5 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ Recent decisions affecting current work:
 - [Phase 03-media-service P01]: MediaService trait has only 2 methods (get_stream_uri, get_snapshot_uri); GetProfiles/GetVideoSources/etc. are handler-internal static responses from constants
 - [Phase 03-media-service P01]: quick-xml 0.39 BytesText uses std::str::from_utf8(t.as_ref()) not t.unescape() for text content extraction
 - [Phase 03-media-service P01]: GetProfiles PTZConfiguration always includes DefaultContinuousPanTiltVelocitySpace=TRANSLATION_SPACE_FOV for Frigate PTZ autotracking compatibility
+- [Phase 03-media-service]: media_service required at run() time via ok_or(); std::iter::empty() for media auth_bypass; generated/mod.rs must re-export types before lib.rs
 
 ### Pending Todos
 
@@ -92,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:20:00Z
-Stopped at: Completed 03-01-PLAN.md
-Resume file: .planning/phases/03-media-service/03-02-PLAN.md
+Last session: 2026-04-05T10:26:25.954Z
+Stopped at: Completed 03-02-PLAN.md
+Resume file: None
