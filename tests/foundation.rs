@@ -45,9 +45,16 @@ fn test_embedded_wsdl_loader() {
     assert!(!bytes.is_empty());
 }
 
-#[test]
-#[ignore = "implemented in later plans"]
-fn test_not_implemented_returns_error() {}
+#[tokio::test]
+async fn test_not_implemented_returns_error() {
+    use onvif_server::{DeviceService, OnvifError};
+    struct StubDevice;
+    #[async_trait::async_trait]
+    impl DeviceService for StubDevice {}
+    let svc = StubDevice;
+    let result = svc.get_system_date_and_time().await;
+    assert!(matches!(result, Err(OnvifError::NotImplemented)));
+}
 
 #[test]
 #[ignore = "implemented in later plans"]
