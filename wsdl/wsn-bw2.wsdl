@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal stub for http://docs.oasis-open.org/wsn/bw-2.wsdl -->
+<!-- Bundled to satisfy events.wsdl wsdl:import without network access. -->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
+             targetNamespace="http://docs.oasis-open.org/wsn/bw-2">
+</definitions>

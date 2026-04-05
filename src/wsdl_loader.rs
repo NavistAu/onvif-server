@@ -30,6 +30,12 @@ impl WsdlLoader for EmbeddedWsdlLoader {
             "xmlmime" | "xmlmime.xsd" => Ok(include_bytes!("../wsdl/xmlmime.xsd").to_vec()),
             "soap-envelope" | "soap-envelope.xsd" => Ok(include_bytes!("../wsdl/soap-envelope.xsd").to_vec()),
             "b-2.xsd" => Ok(include_bytes!("../wsdl/wsn-b2.xsd").to_vec()),
+            // OASIS WS-BaseNotification and WS-ResourceFramework WSDLs imported by events.wsdl
+            "bw-2.wsdl" => Ok(include_bytes!("../wsdl/wsn-bw2.wsdl").to_vec()),
+            "rw-2.wsdl" => Ok(include_bytes!("../wsdl/wsrf-rw2.wsdl").to_vec()),
+            // W3C WS-Addressing and OASIS WS-Notification topic XSDs imported by events.wsdl
+            "ws-addr.xsd" => Ok(include_bytes!("../wsdl/ws-addr.xsd").to_vec()),
+            "t-1.xsd" => Ok(include_bytes!("../wsdl/wsn-t1.xsd").to_vec()),
             "include" | "xop-include.xsd" => Ok(include_bytes!("../wsdl/xop-include.xsd").to_vec()),
             other => Err(WsdlError::MalformedXml(format!("Unknown WSDL/XSD: {other}"))),
         }
