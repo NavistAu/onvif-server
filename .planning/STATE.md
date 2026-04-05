@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 context gathered
-last_updated: "2026-04-05T09:26:26.829Z"
-last_activity: "2026-04-05 — OnvifServer::run() implemented; all 7 device management operations pass"
+stopped_at: "Completed 03-01-PLAN.md"
+last_updated: "2026-04-05T10:20:00Z"
+last_activity: "2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
-  percent: 27
+  total_plans: 7
+  completed_plans: 6
+  percent: 45
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 
 ## Current Position
 
-Phase: 2 of 5 (Device Management)
-Plan: 2 of 2 in current phase (phase complete)
-Status: Executing — 02-02 complete, ready for Phase 3
-Last activity: 2026-04-05 — OnvifServer::run() implemented; all 7 device management operations pass
+Phase: 3 of 5 (Media Service)
+Plan: 1 of 2 in current phase
+Status: Executing — 03-01 complete, ready for 03-02
+Last activity: 2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests
 
-Progress: [###░░░░░░░] 27%
+Progress: [#####░░░░░] 45%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [###░░░░░░░] 27%
 | Phase 01-foundation P03 | 2 | 2 tasks | 3 files |
 | Phase 02-device-management P01 | 20 | 2 tasks | 10 files |
 | Phase 02-device-management P02 | 6 | 2 tasks | 9 files |
+| Phase 03-media-service P01 | 5 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 02-device-management P02]: axum added as direct dependency — needed for axum::serve in run() (was only transitive via soap-server)
 - [Phase 02-device-management P02]: Auth tests (valid/invalid WS-Security credential) remain #[ignore] — digest construction deferred to ODM smoke test in Phase 5
 - [Phase 02-device-management P02]: EmbeddedWsdlLoader extended with 4 W3C/OASIS XSD stubs — onvif.xsd imports require resolution at ServerBuilder::build time
+- [Phase 03-media-service P01]: MediaService trait has only 2 methods (get_stream_uri, get_snapshot_uri); GetProfiles/GetVideoSources/etc. are handler-internal static responses from constants
+- [Phase 03-media-service P01]: quick-xml 0.39 BytesText uses std::str::from_utf8(t.as_ref()) not t.unescape() for text content extraction
+- [Phase 03-media-service P01]: GetProfiles PTZConfiguration always includes DefaultContinuousPanTiltVelocitySpace=TRANSLATION_SPACE_FOV for Frigate PTZ autotracking compatibility
 
 ### Pending Todos
 
@@ -88,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T09:26:26.826Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-media-service/03-CONTEXT.md
+Last session: 2026-04-05T10:20:00Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: .planning/phases/03-media-service/03-02-PLAN.md

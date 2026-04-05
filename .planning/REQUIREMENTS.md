@@ -31,12 +31,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Media Service
 
-- [ ] **MEDIA-01**: User can call GetProfiles and receive at least one media profile with video source, encoder, and PTZ configuration references
-- [ ] **MEDIA-02**: User can call GetStreamUri with a profile token and receive an RTSP URL as configured by the consumer
-- [ ] **MEDIA-03**: User can call GetVideoSources and receive video source descriptions with resolution and frame rate
-- [ ] **MEDIA-04**: User can call GetVideoSourceConfigurations and receive configurations linking video sources to profiles
-- [ ] **MEDIA-05**: User can call GetVideoEncoderConfigurations and receive encoder settings (codec, resolution, bitrate)
-- [ ] **MEDIA-06**: User can call GetSnapshotUri with a profile token and receive a snapshot URL as configured by the consumer
+- [x] **MEDIA-01**: User can call GetProfiles and receive at least one media profile with video source, encoder, and PTZ configuration references
+- [x] **MEDIA-02**: User can call GetStreamUri with a profile token and receive an RTSP URL as configured by the consumer
+- [x] **MEDIA-03**: User can call GetVideoSources and receive video source descriptions with resolution and frame rate
+- [x] **MEDIA-04**: User can call GetVideoSourceConfigurations and receive configurations linking video sources to profiles
+- [x] **MEDIA-05**: User can call GetVideoEncoderConfigurations and receive encoder settings (codec, resolution, bitrate)
+- [x] **MEDIA-06**: User can call GetSnapshotUri with a profile token and receive a snapshot URL as configured by the consumer
 
 ### PTZ Service
 
@@ -124,12 +124,12 @@ Deferred to future release. Tracked but not in current roadmap.
 | DEV-05 | Phase 2 | Complete |
 | DEV-06 | Phase 2 | Complete |
 | DEV-07 | Phase 2 | Complete |
-| MEDIA-01 | Phase 3 | Pending |
-| MEDIA-02 | Phase 3 | Pending |
-| MEDIA-03 | Phase 3 | Pending |
-| MEDIA-04 | Phase 3 | Pending |
-| MEDIA-05 | Phase 3 | Pending |
-| MEDIA-06 | Phase 3 | Pending |
+| MEDIA-01 | Phase 3 | Complete |
+| MEDIA-02 | Phase 3 | Complete |
+| MEDIA-03 | Phase 3 | Complete |
+| MEDIA-04 | Phase 3 | Complete |
+| MEDIA-05 | Phase 3 | Complete |
+| MEDIA-06 | Phase 3 | Complete |
 | PTZ-01 | Phase 4 | Pending |
 | PTZ-02 | Phase 4 | Pending |
 | PTZ-03 | Phase 4 | Pending |
