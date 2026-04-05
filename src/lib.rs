@@ -6,7 +6,7 @@ pub mod traits;
 pub mod generated;
 
 pub use error::OnvifError;
-pub use server::{OnvifServer, OnvifServerBuilder};
+pub use server::{OnvifServer, OnvifServerBuilder, BuildError};
 pub use constants::*;
 pub use soap_server::WsdlLoader;
 pub use soap_server::WsdlError;

@@ -1,15 +1,145 @@
-// Server implementation — full builder wired up in plan 03
+// Server implementation — builder skeleton wired in plan 03; actual server start in phase 2
+use std::collections::HashSet;
 use std::sync::Arc;
-use crate::traits::DeviceService;
 
-/// The running ONVIF server handle. Returned by OnvifServerBuilder::build() in plan 03.
-pub struct OnvifServer;
+use crate::traits::{DeviceService, EventService, ImagingService, MediaService, PTZService};
 
-/// Builder for configuring and starting the ONVIF server.
+/// Error returned by [`OnvifServerBuilder::build`] when required configuration is missing.
+#[derive(Debug, thiserror::Error)]
+pub enum BuildError {
+    #[error("Required service not registered: {0}")]
+    MissingRequiredService(String),
+}
+
+/// A built, configured ONVIF server handle.
 ///
-/// Declared here in plan 02 to validate that Arc<dyn DeviceService> compiles
-/// (i.e., DeviceService is object-safe). Real fields and build() are wired in plan 03.
+/// Phase 1 stores all builder fields for Phase 2 to use when actually binding a port
+/// and starting the soap-server. No network activity occurs in Phase 1.
+pub struct OnvifServer {
+    pub port: u16,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub device_service: Option<Arc<dyn DeviceService>>,
+    pub media_service: Option<Arc<dyn MediaService>>,
+    pub ptz_service: Option<Arc<dyn PTZService>>,
+    pub imaging_service: Option<Arc<dyn ImagingService>>,
+    pub event_service: Option<Arc<dyn EventService>>,
+    pub auth_bypass: HashSet<String>,
+}
+
+impl OnvifServer {
+    /// Create a new builder with default settings.
+    ///
+    /// Defaults: port 8080, `GetSystemDateAndTime` pre-registered as an auth bypass
+    /// operation (per ONVIF spec — clock sync must work without credentials).
+    pub fn builder() -> OnvifServerBuilder {
+        OnvifServerBuilder::new()
+    }
+}
+
+/// Builder for configuring and constructing an [`OnvifServer`].
+///
+/// Service registration, auth credentials, port, and auth bypass operations are
+/// all set here. Phase 2 will call `build()` and then wire these fields into
+/// `soap_server::ServerBuilder` to start the actual HTTP listener.
 pub struct OnvifServerBuilder {
     pub port: u16,
+    pub username: Option<String>,
+    pub password: Option<String>,
     pub device_service: Option<Arc<dyn DeviceService>>,
+    pub media_service: Option<Arc<dyn MediaService>>,
+    pub ptz_service: Option<Arc<dyn PTZService>>,
+    pub imaging_service: Option<Arc<dyn ImagingService>>,
+    pub event_service: Option<Arc<dyn EventService>>,
+    pub auth_bypass: HashSet<String>,
+}
+
+impl OnvifServerBuilder {
+    fn new() -> Self {
+        let mut auth_bypass = HashSet::new();
+        // ONVIF spec requires GetSystemDateAndTime to be accessible without auth
+        // so clients can synchronise their clocks before authenticating.
+        auth_bypass.insert("GetSystemDateAndTime".to_string());
+
+        Self {
+            port: 8080,
+            username: None,
+            password: None,
+            device_service: None,
+            media_service: None,
+            ptz_service: None,
+            imaging_service: None,
+            event_service: None,
+            auth_bypass,
+        }
+    }
+
+    /// Set the port the server will listen on. Defaults to 8080.
+    pub fn port(mut self, port: u16) -> Self {
+        self.port = port;
+        self
+    }
+
+    /// Set the credentials used for WS-Security digest auth validation.
+    ///
+    /// Phase 2 will pass these to `soap_server::ServerBuilder::auth()` as a closure
+    /// mapping usernames to their expected passwords.
+    pub fn auth(mut self, username: &str, password: &str) -> Self {
+        self.username = Some(username.to_string());
+        self.password = Some(password.to_string());
+        self
+    }
+
+    /// Register a Device Management Service implementation.
+    pub fn device_service(mut self, svc: impl DeviceService + 'static) -> Self {
+        self.device_service = Some(Arc::new(svc));
+        self
+    }
+
+    /// Register a Media Service implementation.
+    pub fn media_service(mut self, svc: impl MediaService + 'static) -> Self {
+        self.media_service = Some(Arc::new(svc));
+        self
+    }
+
+    /// Register a PTZ Service implementation.
+    pub fn ptz_service(mut self, svc: impl PTZService + 'static) -> Self {
+        self.ptz_service = Some(Arc::new(svc));
+        self
+    }
+
+    /// Register an Imaging Service implementation.
+    pub fn imaging_service(mut self, svc: impl ImagingService + 'static) -> Self {
+        self.imaging_service = Some(Arc::new(svc));
+        self
+    }
+
+    /// Register an Event Service implementation.
+    pub fn event_service(mut self, svc: impl EventService + 'static) -> Self {
+        self.event_service = Some(Arc::new(svc));
+        self
+    }
+
+    /// Accessor for the auth bypass operation set. Used in tests and Phase 2 wiring.
+    pub fn auth_bypass_set(&self) -> &HashSet<String> {
+        &self.auth_bypass
+    }
+
+    /// Build the configured [`OnvifServer`].
+    ///
+    /// Phase 1: validates configuration and returns a server handle with all fields stored.
+    /// Phase 2 will extend this to call `soap_server::ServerBuilder` and bind the port.
+    pub fn build(self) -> Result<OnvifServer, BuildError> {
+        Ok(OnvifServer {
+            port: self.port,
+            username: self.username,
+            password: self.password,
+            device_service: self.device_service,
+            media_service: self.media_service,
+            ptz_service: self.ptz_service,
+            imaging_service: self.imaging_service,
+            event_service: self.event_service,
+            auth_bypass: self.auth_bypass,
+        })
+    }
 }
