@@ -77,7 +77,11 @@ Plans:
   3. The Frigate autotracker call sequence (GetProfiles → GetConfigurationOptions → GetServiceCapabilities → GetStatus → RelativeMove → GotoPreset) runs end-to-end in `tests/frigate_compat.rs` without errors
   4. `GetStatus` returns `MoveStatus` with `PanTilt` and `Zoom` fields set to IDLE or MOVING based on the consumer's trait implementation
   5. The `virtual_ptz` example compiles and starts an ONVIF server with all PTZ operations implemented via a simple in-memory stub
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — PTZ types, typed PTZService trait, PTZServiceHandler with all 15 operations, unit test suite
+- [ ] 04-02-PLAN.md — Wire PTZServiceHandler into run(), Frigate compat integration test, virtual_ptz example
 
 ### Phase 5: Imaging, Events, Discovery, and Polish
 **Goal**: The full v1 service surface is complete — Imaging and Events trait APIs exist, WS-Discovery responds on multicast, and an ODM smoke test confirms basic discovery and info retrieval
@@ -100,5 +104,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 3/3 | Complete   | 2026-04-05 |
 | 2. Device Management | 2/2 | Complete   | 2026-04-05 |
 | 3. Media Service | 1/2 | In Progress|  |
-| 4. PTZ Service | 0/? | Not started | - |
+| 4. PTZ Service | 0/2 | Not started | - |
 | 5. Imaging, Events, Discovery, and Polish | 0/? | Not started | - |
