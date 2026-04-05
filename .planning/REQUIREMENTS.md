@@ -117,50 +117,50 @@ Deferred to future release. Tracked but not in current roadmap.
 | INFRA-07 | Phase 1 | Pending |
 | INFRA-08 | Phase 1 | Pending |
 | INFRA-09 | Phase 1 | Pending |
-| DEV-01 | Phase 1 | Pending |
-| DEV-02 | Phase 1 | Pending |
-| DEV-03 | Phase 1 | Pending |
-| DEV-04 | Phase 1 | Pending |
-| DEV-05 | Phase 1 | Pending |
-| DEV-06 | Phase 1 | Pending |
-| DEV-07 | Phase 1 | Pending |
-| MEDIA-01 | Phase 1 | Pending |
-| MEDIA-02 | Phase 1 | Pending |
-| MEDIA-03 | Phase 1 | Pending |
-| MEDIA-04 | Phase 1 | Pending |
-| MEDIA-05 | Phase 1 | Pending |
-| MEDIA-06 | Phase 1 | Pending |
-| PTZ-01 | Phase 1 | Pending |
-| PTZ-02 | Phase 1 | Pending |
-| PTZ-03 | Phase 1 | Pending |
-| PTZ-04 | Phase 1 | Pending |
-| PTZ-05 | Phase 1 | Pending |
-| PTZ-06 | Phase 1 | Pending |
-| PTZ-07 | Phase 1 | Pending |
-| PTZ-08 | Phase 1 | Pending |
-| PTZ-09 | Phase 1 | Pending |
-| PTZ-10 | Phase 1 | Pending |
-| PTZ-11 | Phase 1 | Pending |
-| PTZ-12 | Phase 1 | Pending |
-| PTZ-13 | Phase 1 | Pending |
-| PTZ-14 | Phase 1 | Pending |
-| PTZ-15 | Phase 1 | Pending |
-| IMG-01 | Phase 1 | Pending |
-| EVT-01 | Phase 1 | Pending |
-| EVT-02 | Phase 1 | Pending |
-| EVT-03 | Phase 1 | Pending |
-| EVT-04 | Phase 1 | Pending |
-| DISC-01 | Phase 1 | Pending |
-| DISC-02 | Phase 1 | Pending |
-| TEST-01 | Phase 1 | Pending |
-| TEST-02 | Phase 1 | Pending |
-| TEST-03 | Phase 1 | Pending |
+| DEV-01 | Phase 2 | Pending |
+| DEV-02 | Phase 2 | Pending |
+| DEV-03 | Phase 2 | Pending |
+| DEV-04 | Phase 2 | Pending |
+| DEV-05 | Phase 2 | Pending |
+| DEV-06 | Phase 2 | Pending |
+| DEV-07 | Phase 2 | Pending |
+| MEDIA-01 | Phase 3 | Pending |
+| MEDIA-02 | Phase 3 | Pending |
+| MEDIA-03 | Phase 3 | Pending |
+| MEDIA-04 | Phase 3 | Pending |
+| MEDIA-05 | Phase 3 | Pending |
+| MEDIA-06 | Phase 3 | Pending |
+| PTZ-01 | Phase 4 | Pending |
+| PTZ-02 | Phase 4 | Pending |
+| PTZ-03 | Phase 4 | Pending |
+| PTZ-04 | Phase 4 | Pending |
+| PTZ-05 | Phase 4 | Pending |
+| PTZ-06 | Phase 4 | Pending |
+| PTZ-07 | Phase 4 | Pending |
+| PTZ-08 | Phase 4 | Pending |
+| PTZ-09 | Phase 4 | Pending |
+| PTZ-10 | Phase 4 | Pending |
+| PTZ-11 | Phase 4 | Pending |
+| PTZ-12 | Phase 4 | Pending |
+| PTZ-13 | Phase 4 | Pending |
+| PTZ-14 | Phase 4 | Pending |
+| PTZ-15 | Phase 4 | Pending |
+| IMG-01 | Phase 5 | Pending |
+| EVT-01 | Phase 5 | Pending |
+| EVT-02 | Phase 5 | Pending |
+| EVT-03 | Phase 5 | Pending |
+| EVT-04 | Phase 5 | Pending |
+| DISC-01 | Phase 5 | Pending |
+| DISC-02 | Phase 5 | Pending |
+| TEST-01 | Phase 4 | Pending |
+| TEST-02 | Phase 4 | Pending |
+| TEST-03 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 42 total
 - Mapped to phases: 42
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after initial definition*
+*Last updated: 2026-04-05 after roadmap creation*
