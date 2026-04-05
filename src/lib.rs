@@ -14,8 +14,10 @@ pub use soap_server::WsdlError;
 pub use generated::{
     DeviceInfo, Scope, ScopeDefinition, HostnameInformation, NetworkInterface,
     MediaProfile, VideoSource, VideoSourceConfiguration, VideoEncoderConfiguration,
+    PTZStatusResult, PTZPreset,
 };
 pub use wsdl_loader::EmbeddedWsdlLoader;
 pub use traits::{DeviceService, MediaService, PTZService, ImagingService, EventService};
 pub use service::device::DeviceServiceHandler;
 pub use service::media::MediaServiceHandler;
+pub use service::ptz::PTZServiceHandler;
