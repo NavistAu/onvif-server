@@ -61,7 +61,11 @@ Plans:
   2. `GetStreamUri` returns the RTSP URL provided by the consumer's trait implementation
   3. `GetVideoSources`, `GetVideoSourceConfigurations`, and `GetVideoEncoderConfigurations` all return responses where token values match the crate-level token constants
   4. `GetSnapshotUri` returns the snapshot URL provided by the consumer's trait implementation
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — VIDEO_ENCODER_TOKEN, media type stubs, typed MediaService trait, MediaServiceHandler (all 6 operations), test scaffolding
+- [ ] 03-02-PLAN.md — Wire MediaServiceHandler into run() via Router::merge(), crate-root exports, full test suite green
 
 ### Phase 4: PTZ Service
 **Goal**: Frigate's autotracker runs successfully against the server — PTZ discovery, movement, status polling, and preset operations all work with correct coordinate spaces and capability advertisements
@@ -95,6 +99,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-04-05 |
 | 2. Device Management | 2/2 | Complete   | 2026-04-05 |
-| 3. Media Service | 0/? | Not started | - |
+| 3. Media Service | 0/2 | Not started | - |
 | 4. PTZ Service | 0/? | Not started | - |
 | 5. Imaging, Events, Discovery, and Polish | 0/? | Not started | - |
