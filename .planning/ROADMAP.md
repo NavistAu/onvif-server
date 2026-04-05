@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Media Service** - Profile S streaming metadata with correct PTZ profile structure for Frigate compatibility
 - [x] **Phase 4: PTZ Service** - Full PTZ control surface with TranslationSpaceFov, MoveStatus, and Frigate end-to-end test (completed 2026-04-05)
 - [ ] **Phase 5: Imaging, Events, Discovery, and Polish** - GetImagingSettings, Events service, WS-Discovery, virtual_ptz example, ODM smoke test
+- [ ] **Phase 6: Gap Closure & Polish** - Advertised host for XAddrs, HTTP-level auth tests, PTZ constructor consistency
 
 ## Phase Details
 
@@ -98,15 +99,27 @@ Plans:
 - [ ] 05-01-PLAN.md — ImagingServiceHandler (IMG-01), EventServiceHandler with subscription state (EVT-01..04), typed trait signatures, unit test suites
 - [ ] 05-02-PLAN.md — Wire Imaging/Events into run(), update DeviceServiceHandler XAddrs, WS-Discovery UDP task (DISC-01, DISC-02), virtual_ptz example extension, ODM smoke test (TEST-03)
 
+### Phase 6: Gap Closure & Polish
+**Goal**: Close all audit gaps — advertised host for real client connectivity, HTTP-level auth tests, and constructor consistency
+**Depends on**: Phase 5
+**Requirements**: DEV-02, DEV-03, DEV-05, DISC-01, INFRA-07, PTZ-01
+**Gap Closure:** Closes gaps from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `OnvifServerBuilder::advertised_host()` sets the host used in all XAddr construction — GetCapabilities, GetServices, and WS-Discovery ProbeMatch all return the configured host instead of `0.0.0.0`
+  2. An HTTP-level test sends valid WS-Security credentials and receives HTTP 200; another sends invalid credentials and receives a SOAP auth fault
+  3. `PTZServiceHandler` is constructed via `::new()` in server.rs, consistent with all other handlers
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-04-05 |
 | 2. Device Management | 2/2 | Complete   | 2026-04-05 |
-| 3. Media Service | 1/2 | In Progress|  |
+| 3. Media Service | 2/2 | Complete   | 2026-04-05 |
 | 4. PTZ Service | 2/2 | Complete   | 2026-04-05 |
-| 5. Imaging, Events, Discovery, and Polish | 1/2 | In Progress|  |
+| 5. Imaging, Events, Discovery, and Polish | 2/2 | Complete   | 2026-04-05 |
+| 6. Gap Closure & Polish | 0/? | Not started | - |
