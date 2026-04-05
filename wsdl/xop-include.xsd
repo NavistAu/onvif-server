@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal stub for http://www.w3.org/2004/08/xop/include -->
+<!-- Bundled to satisfy onvif.xsd xs:import without network access. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:xop="http://www.w3.org/2004/08/xop/include"
+           targetNamespace="http://www.w3.org/2004/08/xop/include"
+           elementFormDefault="qualified">
+
+  <xs:element name="Include">
+    <xs:complexType>
+      <xs:attribute name="href" type="xs:anyURI" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

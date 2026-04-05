@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal stub for http://docs.oasis-open.org/wsn/b-2 -->
+<!-- Bundled to satisfy onvif.xsd xs:import without network access. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
+           targetNamespace="http://docs.oasis-open.org/wsn/b-2"
+           elementFormDefault="qualified">
+
+  <!-- Minimal WS-BaseNotification type stubs -->
+  <xs:complexType name="FilterType">
+    <xs:sequence>
+      <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NotificationMessageHolderType">
+    <xs:sequence>
+      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

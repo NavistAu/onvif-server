@@ -2,7 +2,9 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use crate::service::device::DeviceServiceHandler;
 use crate::traits::{DeviceService, EventService, ImagingService, MediaService, PTZService};
+use crate::wsdl_loader::EmbeddedWsdlLoader;
 
 /// Error returned by [`OnvifServerBuilder::build`] when required configuration is missing.
 #[derive(Debug, thiserror::Error)]
@@ -34,6 +36,48 @@ impl OnvifServer {
     /// operation (per ONVIF spec — clock sync must work without credentials).
     pub fn builder() -> OnvifServerBuilder {
         OnvifServerBuilder::new()
+    }
+
+    /// Bind the configured port and start serving SOAP requests.
+    ///
+    /// This method does not return until the server is shut down.
+    /// Requires a tokio async runtime (`#[tokio::main]` or `tokio::runtime::Runtime`).
+    pub async fn run(self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let device_svc = self.device_service
+            .ok_or("device_service is required to call run()")?;
+
+        let xaddr = format!("http://0.0.0.0:{}/onvif/device_service", self.port);
+
+        let handler = DeviceServiceHandler {
+            svc: device_svc,
+            xaddr,
+        };
+
+        let username = self.username.clone();
+        let password = self.password.clone();
+        let auth_bypass = self.auth_bypass;
+
+        let soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
+                include_bytes!("../wsdl/devicemgmt.wsdl").to_vec(),
+                EmbeddedWsdlLoader,
+            )
+            .path("/onvif/device_service")
+            .default_handler(handler)
+            .auth(move |user: &str| -> Option<String> {
+                if Some(user) == username.as_deref() {
+                    password.clone()
+                } else {
+                    None
+                }
+            })
+            .auth_bypass(auth_bypass.into_iter())
+            .build()
+            .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+
+        let router = soap_svc.into_router();
+        let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", self.port)).await?;
+        axum::serve(listener, router).await?;
+        Ok(())
     }
 }
 

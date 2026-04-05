@@ -20,6 +20,17 @@ impl WsdlLoader for EmbeddedWsdlLoader {
             "events.wsdl" | "event.wsdl" => Ok(include_bytes!("../wsdl/events.wsdl").to_vec()),
             "onvif.xsd"       => Ok(include_bytes!("../wsdl/onvif.xsd").to_vec()),
             "common.xsd"      => Ok(include_bytes!("../wsdl/common.xsd").to_vec()),
+            // W3C and OASIS external schemas imported by onvif.xsd.
+            // Bundled as minimal stubs so ServerBuilder resolves the WSDL without network access.
+            // URL → rsplit('/') → match key:
+            //   https://www.w3.org/2005/05/xmlmime           → "xmlmime"
+            //   https://www.w3.org/2003/05/soap-envelope     → "soap-envelope"
+            //   http://docs.oasis-open.org/wsn/b-2.xsd       → "b-2.xsd"
+            //   https://www.w3.org/2004/08/xop/include       → "include"
+            "xmlmime" | "xmlmime.xsd" => Ok(include_bytes!("../wsdl/xmlmime.xsd").to_vec()),
+            "soap-envelope" | "soap-envelope.xsd" => Ok(include_bytes!("../wsdl/soap-envelope.xsd").to_vec()),
+            "b-2.xsd" => Ok(include_bytes!("../wsdl/wsn-b2.xsd").to_vec()),
+            "include" | "xop-include.xsd" => Ok(include_bytes!("../wsdl/xop-include.xsd").to_vec()),
             other => Err(WsdlError::MalformedXml(format!("Unknown WSDL/XSD: {other}"))),
         }
     }
