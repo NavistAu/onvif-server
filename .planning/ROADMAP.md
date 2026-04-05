@@ -108,7 +108,10 @@ Plans:
   1. `OnvifServerBuilder::advertised_host()` sets the host used in all XAddr construction — GetCapabilities, GetServices, and WS-Discovery ProbeMatch all return the configured host instead of `0.0.0.0`
   2. An HTTP-level test sends valid WS-Security credentials and receives HTTP 200; another sends invalid credentials and receives a SOAP auth fault
   3. `PTZServiceHandler` is constructed via `::new()` in server.rs, consistent with all other handlers
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 06-01-PLAN.md — advertised_host builder field, HTTP-level auth tests, PTZServiceHandler::new() fix
 
 ## Progress
 
@@ -122,4 +125,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Media Service | 2/2 | Complete   | 2026-04-05 |
 | 4. PTZ Service | 2/2 | Complete   | 2026-04-05 |
 | 5. Imaging, Events, Discovery, and Polish | 2/2 | Complete   | 2026-04-05 |
-| 6. Gap Closure & Polish | 0/? | Not started | - |
+| 6. Gap Closure & Polish | 0/1 | Not started | - |
