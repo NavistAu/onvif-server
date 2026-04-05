@@ -58,7 +58,6 @@ async fn test_not_implemented_returns_error() {
 }
 
 #[test]
-#[ignore = "implemented in plan 01-03"]
 fn test_builder_accepts_service_calls() {
     use onvif_server::DeviceService;
     struct StubDev;
@@ -74,7 +73,6 @@ fn test_builder_accepts_service_calls() {
 }
 
 #[test]
-#[ignore = "implemented in plan 01-03"]
 fn test_auth_bypass_includes_get_system_date_and_time() {
     let builder = OnvifServer::builder();
     assert!(
