@@ -76,3 +76,17 @@ pub struct VideoEncoderConfiguration {
     pub framerate: i32,
     pub bitrate: i32,
 }
+
+/// Returned by PTZService::get_status(). Handler serializes to nested PTZMoveStatus XML.
+#[derive(Debug, Clone)]
+pub struct PTZStatusResult {
+    pub pan_tilt_moving: bool,
+    pub zoom_moving: bool,
+}
+
+/// One PTZ preset returned by PTZService::get_presets(). Handler serializes to PTZPreset XML.
+#[derive(Debug, Clone)]
+pub struct PTZPreset {
+    pub token: String,
+    pub name: String,
+}
