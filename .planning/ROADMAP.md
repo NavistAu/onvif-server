@@ -30,7 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. `EmbeddedWsdlLoader` can return WSDL bytes for the Device, Media, and PTZ service WSDLs by name — verifiable with a unit test
   4. All token constants (profile, video source, PTZ node, PTZ config) are defined as crate-level `pub const` strings and used in at least one test
   5. `OnvifServer::builder()` compiles and accepts service registration calls even with no services registered yet
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Crate scaffold, OnvifError with ter: namespace, token constants
+- [ ] 01-02-PLAN.md — yaserde spike, WSDL file bundling, EmbeddedWsdlLoader, service trait stubs
+- [ ] 01-03-PLAN.md — OnvifServer builder skeleton, auth wiring, full test suite green
 
 ### Phase 2: Device Management
 **Goal**: A running ONVIF device endpoint answers all standard Device Management calls with correct responses — any ONVIF client can authenticate and retrieve device identity
@@ -84,7 +89,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 0/3 | Not started | - |
 | 2. Device Management | 0/? | Not started | - |
 | 3. Media Service | 0/? | Not started | - |
 | 4. PTZ Service | 0/? | Not started | - |
