@@ -58,14 +58,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Imaging Service
 
-- [ ] **IMG-01**: User can call GetImagingSettings with a video source token and receive imaging settings from the consumer's trait implementation
+- [x] **IMG-01**: User can call GetImagingSettings with a video source token and receive imaging settings from the consumer's trait implementation
 
 ### Events Service
 
-- [ ] **EVT-01**: User can call GetEventProperties and receive supported event topics from the consumer's trait implementation
-- [ ] **EVT-02**: User can call CreatePullPointSubscription and receive a subscription reference for polling events
-- [ ] **EVT-03**: User can call PullMessages on a subscription and receive queued event notifications
-- [ ] **EVT-04**: User can call Unsubscribe to terminate an event subscription
+- [x] **EVT-01**: User can call GetEventProperties and receive supported event topics from the consumer's trait implementation
+- [x] **EVT-02**: User can call CreatePullPointSubscription and receive a subscription reference for polling events
+- [x] **EVT-03**: User can call PullMessages on a subscription and receive queued event notifications
+- [x] **EVT-04**: User can call Unsubscribe to terminate an event subscription
 
 ### Discovery
 
@@ -145,11 +145,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | PTZ-13 | Phase 4 | Complete |
 | PTZ-14 | Phase 4 | Complete |
 | PTZ-15 | Phase 4 | Complete |
-| IMG-01 | Phase 5 | Pending |
-| EVT-01 | Phase 5 | Pending |
-| EVT-02 | Phase 5 | Pending |
-| EVT-03 | Phase 5 | Pending |
-| EVT-04 | Phase 5 | Pending |
+| IMG-01 | Phase 5 | Complete |
+| EVT-01 | Phase 5 | Complete |
+| EVT-02 | Phase 5 | Complete |
+| EVT-03 | Phase 5 | Complete |
+| EVT-04 | Phase 5 | Complete |
 | DISC-01 | Phase 5 | Pending |
 | DISC-02 | Phase 5 | Pending |
 | TEST-01 | Phase 4 | Complete |

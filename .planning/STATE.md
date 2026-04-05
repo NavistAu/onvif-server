@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-04-05T11:42:17.135Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-05T12:41:18.763Z"
 last_activity: 2026-04-05 — MediaServiceHandler implemented; all 7 media service operations pass with green tests
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
   percent: 45
 ---
 
@@ -60,6 +60,7 @@ Progress: [#####░░░░░] 45%
 | Phase 03-media-service P02 | 5 | 2 tasks | 4 files |
 | Phase 04-ptz-service P01 | 5 | 3 tasks | 7 files |
 | Phase 04-ptz-service P02 | 4 | 2 tasks | 4 files |
+| Phase 05-imaging-events-discovery-and-polish P01 | 18 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - [Phase 04-ptz-service]: PTZServiceHandler has no xaddr field — PTZ service does not advertise a separate service URL
 - [Phase 04-ptz-service]: ptz_service required at run() time via ok_or() — consistent with device_service and media_service; callers must register all three services before calling run()
 - [Phase 04-ptz-service]: VirtualPTZ derives Clone and uses Arc<Mutex<_>> internally for multi-slot service registration with shared state
+- [Phase 05-imaging-events-discovery-and-polish]: ImagingSettings serializes only Some fields — None fields produce no XML element
+- [Phase 05-imaging-events-discovery-and-polish]: EventService trait has only get_event_properties; CreatePullPointSubscription/PullMessages/Unsubscribe are handler-internal state operations
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:42:17.132Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-imaging-events-discovery-and-polish/05-CONTEXT.md
+Last session: 2026-04-05T12:41:18.761Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None

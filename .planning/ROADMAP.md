@@ -109,4 +109,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Device Management | 2/2 | Complete   | 2026-04-05 |
 | 3. Media Service | 1/2 | In Progress|  |
 | 4. PTZ Service | 2/2 | Complete   | 2026-04-05 |
-| 5. Imaging, Events, Discovery, and Polish | 0/2 | Not started | - |
+| 5. Imaging, Events, Discovery, and Polish | 1/2 | In Progress|  |
