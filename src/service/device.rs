@@ -11,14 +11,29 @@ use crate::traits::DeviceService;
 
 pub struct DeviceServiceHandler {
     pub(crate) svc: Arc<dyn DeviceService>,
-    pub(crate) xaddr: String, // e.g. "http://192.168.1.10:8080/onvif/device_service"
+    pub(crate) xaddr: String,
+    pub(crate) media_xaddr: String,
+    pub(crate) ptz_xaddr: String,
+    pub(crate) imaging_xaddr: String,
+    pub(crate) events_xaddr: String,
 }
 
 impl DeviceServiceHandler {
-    pub fn new(svc: Arc<dyn DeviceService>, xaddr: impl Into<String>) -> Self {
+    pub fn new(
+        svc: Arc<dyn DeviceService>,
+        xaddr: impl Into<String>,
+        media_xaddr: impl Into<String>,
+        ptz_xaddr: impl Into<String>,
+        imaging_xaddr: impl Into<String>,
+        events_xaddr: impl Into<String>,
+    ) -> Self {
         Self {
             svc,
             xaddr: xaddr.into(),
+            media_xaddr: media_xaddr.into(),
+            ptz_xaddr: ptz_xaddr.into(),
+            imaging_xaddr: imaging_xaddr.into(),
+            events_xaddr: events_xaddr.into(),
         }
     }
 }
@@ -83,12 +98,22 @@ impl DeviceServiceHandler {
         let xml = format!(
             r#"<tds:GetCapabilitiesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tds:Capabilities>
-    <tt:Device>
-      <tt:XAddr>{}</tt:XAddr>
-    </tt:Device>
+    <tt:Device><tt:XAddr>{xaddr}</tt:XAddr></tt:Device>
+    <tt:Media><tt:XAddr>{media_xaddr}</tt:XAddr></tt:Media>
+    <tt:PTZ><tt:XAddr>{ptz_xaddr}</tt:XAddr></tt:PTZ>
+    <tt:Imaging><tt:XAddr>{imaging_xaddr}</tt:XAddr></tt:Imaging>
+    <tt:Events>
+      <tt:XAddr>{events_xaddr}</tt:XAddr>
+      <tt:WSSubscriptionPolicySupport>false</tt:WSSubscriptionPolicySupport>
+      <tt:WSPullPointSupport>true</tt:WSPullPointSupport>
+    </tt:Events>
   </tds:Capabilities>
 </tds:GetCapabilitiesResponse>"#,
-            self.xaddr
+            xaddr = self.xaddr,
+            media_xaddr = self.media_xaddr,
+            ptz_xaddr = self.ptz_xaddr,
+            imaging_xaddr = self.imaging_xaddr,
+            events_xaddr = self.events_xaddr,
         );
         Ok(Bytes::from(xml))
     }
@@ -98,11 +123,35 @@ impl DeviceServiceHandler {
             r#"<tds:GetServicesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tds:Service>
     <tds:Namespace>http://www.onvif.org/ver10/device/wsdl</tds:Namespace>
-    <tds:XAddr>{}</tds:XAddr>
+    <tds:XAddr>{xaddr}</tds:XAddr>
+    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
+  </tds:Service>
+  <tds:Service>
+    <tds:Namespace>http://www.onvif.org/ver10/media/wsdl</tds:Namespace>
+    <tds:XAddr>{media_xaddr}</tds:XAddr>
+    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
+  </tds:Service>
+  <tds:Service>
+    <tds:Namespace>http://www.onvif.org/ver20/ptz/wsdl</tds:Namespace>
+    <tds:XAddr>{ptz_xaddr}</tds:XAddr>
+    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
+  </tds:Service>
+  <tds:Service>
+    <tds:Namespace>http://www.onvif.org/ver20/imaging/wsdl</tds:Namespace>
+    <tds:XAddr>{imaging_xaddr}</tds:XAddr>
+    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
+  </tds:Service>
+  <tds:Service>
+    <tds:Namespace>http://www.onvif.org/ver10/events/wsdl</tds:Namespace>
+    <tds:XAddr>{events_xaddr}</tds:XAddr>
     <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
   </tds:Service>
 </tds:GetServicesResponse>"#,
-            self.xaddr
+            xaddr = self.xaddr,
+            media_xaddr = self.media_xaddr,
+            ptz_xaddr = self.ptz_xaddr,
+            imaging_xaddr = self.imaging_xaddr,
+            events_xaddr = self.events_xaddr,
         );
         Ok(Bytes::from(xml))
     }

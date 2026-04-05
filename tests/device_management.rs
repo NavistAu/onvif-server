@@ -5,7 +5,7 @@
 use std::sync::Arc;
 use bytes::Bytes;
 use soap_server::SoapHandler;
-use onvif_server::{DeviceService, DeviceServiceHandler, DeviceInfo, MediaService, PTZService, NetworkInterface};
+use onvif_server::{DeviceService, DeviceServiceHandler, DeviceInfo, MediaService, PTZService, ImagingService, EventService, NetworkInterface, ImagingSettings};
 
 /// A minimal DeviceService implementation for tests
 struct TestDevice {
@@ -41,6 +41,22 @@ struct TestPTZ;
 #[async_trait::async_trait]
 impl PTZService for TestPTZ {}
 
+/// Minimal ImagingService stub
+struct TestImaging;
+
+#[async_trait::async_trait]
+impl ImagingService for TestImaging {
+    async fn get_imaging_settings(&self, _token: String) -> Result<ImagingSettings, onvif_server::OnvifError> {
+        Ok(ImagingSettings { brightness: Some(50.0), ..Default::default() })
+    }
+}
+
+/// Minimal EventService stub — uses all defaults
+struct TestEvent;
+
+#[async_trait::async_trait]
+impl EventService for TestEvent {}
+
 fn make_handler() -> DeviceServiceHandler {
     let svc = Arc::new(TestDevice {
         info: DeviceInfo {
@@ -51,7 +67,14 @@ fn make_handler() -> DeviceServiceHandler {
             hardware_id: "HW-REV-A".into(),
         },
     });
-    DeviceServiceHandler::new(svc, "http://192.168.1.10:8080/onvif/device_service")
+    DeviceServiceHandler::new(
+        svc,
+        "http://192.168.1.10:8080/onvif/device_service",
+        "http://192.168.1.10:8080/onvif/media_service",
+        "http://192.168.1.10:8080/onvif/ptz_service",
+        "http://192.168.1.10:8080/onvif/imaging_service",
+        "http://192.168.1.10:8080/onvif/events_service",
+    )
 }
 
 #[tokio::test]
@@ -229,6 +252,8 @@ async fn device_server_binds_and_serves_auth_exempt_op() {
         })
         .media_service(TestMedia)
         .ptz_service(TestPTZ)
+        .imaging_service(TestImaging)
+        .event_service(TestEvent)
         .build()
         .expect("build must succeed");
 

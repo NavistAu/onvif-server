@@ -5,6 +5,8 @@ use std::sync::Arc;
 use crate::service::device::DeviceServiceHandler;
 use crate::service::media::MediaServiceHandler;
 use crate::service::ptz::PTZServiceHandler;
+use crate::service::imaging::ImagingServiceHandler;
+use crate::service::events::EventServiceHandler;
 use crate::traits::{DeviceService, EventService, ImagingService, MediaService, PTZService};
 use crate::wsdl_loader::EmbeddedWsdlLoader;
 
@@ -54,23 +56,42 @@ impl OnvifServer {
         let ptz_svc = self.ptz_service
             .ok_or("ptz_service is required to call run()")?;
 
-        let xaddr = format!("http://0.0.0.0:{}/onvif/device_service", self.port);
-        let handler = DeviceServiceHandler {
-            svc: device_svc,
+        let imaging_svc = self.imaging_service
+            .ok_or("imaging_service is required to call run()")?;
+
+        let event_svc = self.event_service
+            .ok_or("event_service is required to call run()")?;
+
+        let xaddr         = format!("http://0.0.0.0:{}/onvif/device_service",  self.port);
+        let media_xaddr   = format!("http://0.0.0.0:{}/onvif/media_service",   self.port);
+        let ptz_xaddr     = format!("http://0.0.0.0:{}/onvif/ptz_service",     self.port);
+        let imaging_xaddr = format!("http://0.0.0.0:{}/onvif/imaging_service", self.port);
+        let events_xaddr  = format!("http://0.0.0.0:{}/onvif/events_service",  self.port);
+
+        let handler = DeviceServiceHandler::new(
+            device_svc,
             xaddr,
-        };
+            media_xaddr.clone(),
+            ptz_xaddr,
+            imaging_xaddr.clone(),
+            events_xaddr.clone(),
+        );
 
-        let media_xaddr = format!("http://0.0.0.0:{}/onvif/media_service", self.port);
-        let media_handler = MediaServiceHandler::new(media_svc, media_xaddr);
+        let media_handler   = MediaServiceHandler::new(media_svc, media_xaddr);
+        let ptz_handler     = PTZServiceHandler { svc: ptz_svc };
+        let imaging_handler = ImagingServiceHandler::new(imaging_svc);
+        let events_handler  = EventServiceHandler::new(event_svc, events_xaddr.clone());
 
-        let ptz_handler = PTZServiceHandler { svc: ptz_svc };
-
-        let username = self.username.clone();
-        let password = self.password.clone();
+        let username  = self.username.clone();
+        let password  = self.password.clone();
         let username2 = self.username.clone();
         let password2 = self.password.clone();
         let username3 = self.username.clone();
         let password3 = self.password.clone();
+        let username4 = self.username.clone();
+        let password4 = self.password.clone();
+        let username5 = self.username.clone();
+        let password5 = self.password.clone();
         let auth_bypass = self.auth_bypass;
 
         let soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
@@ -120,9 +141,48 @@ impl OnvifServer {
             .build()
             .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
 
+        let imaging_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
+                include_bytes!("../wsdl/imaging.wsdl").to_vec(),
+                EmbeddedWsdlLoader,
+            )
+            .path("/onvif/imaging_service")
+            .default_handler(imaging_handler)
+            .auth(move |user: &str| -> Option<String> {
+                if Some(user) == username4.as_deref() { password4.clone() } else { None }
+            })
+            .auth_bypass(std::iter::empty::<String>())
+            .build()
+            .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+
+        let events_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
+                include_bytes!("../wsdl/events.wsdl").to_vec(),
+                EmbeddedWsdlLoader,
+            )
+            .path("/onvif/events_service")
+            .default_handler(events_handler)
+            .auth(move |user: &str| -> Option<String> {
+                if Some(user) == username5.as_deref() { password5.clone() } else { None }
+            })
+            .auth_bypass(std::iter::empty::<String>())
+            .build()
+            .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+
         let router = soap_svc.into_router()
             .merge(media_soap_svc.into_router())
-            .merge(ptz_soap_svc.into_router());
+            .merge(ptz_soap_svc.into_router())
+            .merge(imaging_soap_svc.into_router())
+            .merge(events_soap_svc.into_router());
+
+        #[cfg(feature = "discovery")]
+        {
+            let disc_xaddr = format!("http://0.0.0.0:{}/onvif/device_service", self.port);
+            tokio::spawn(async move {
+                if let Err(e) = crate::discovery::run_discovery(disc_xaddr).await {
+                    eprintln!("[discovery] task exited: {e}");
+                }
+            });
+        }
+
         let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", self.port)).await?;
         axum::serve(listener, router).await?;
         Ok(())
