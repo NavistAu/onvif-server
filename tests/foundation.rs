@@ -7,6 +7,7 @@ use onvif_server::{
     TRANSLATION_SPACE_FOV,
     EmbeddedWsdlLoader,
     WsdlLoader,
+    OnvifServer,
 };
 
 #[test]
@@ -57,9 +58,27 @@ async fn test_not_implemented_returns_error() {
 }
 
 #[test]
-#[ignore = "implemented in later plans"]
-fn test_builder_accepts_service_calls() {}
+#[ignore = "implemented in plan 01-03"]
+fn test_builder_accepts_service_calls() {
+    use onvif_server::DeviceService;
+    struct StubDev;
+    #[async_trait::async_trait]
+    impl DeviceService for StubDev {}
+
+    let result = OnvifServer::builder()
+        .port(8080)
+        .device_service(StubDev)
+        .auth("user", "pass")
+        .build();
+    assert!(result.is_ok(), "build() should return Ok for valid builder");
+}
 
 #[test]
-#[ignore = "implemented in later plans"]
-fn test_auth_bypass_includes_get_system_date_and_time() {}
+#[ignore = "implemented in plan 01-03"]
+fn test_auth_bypass_includes_get_system_date_and_time() {
+    let builder = OnvifServer::builder();
+    assert!(
+        builder.auth_bypass_set().contains("GetSystemDateAndTime"),
+        "GetSystemDateAndTime must be in auth_bypass by default"
+    );
+}
