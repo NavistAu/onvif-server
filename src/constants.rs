@@ -18,3 +18,6 @@ pub const PTZ_CONFIG_TOKEN: &str = "ptz_cfg_0";
 /// Used as the Space field in RelativeMove PanTilt arguments.
 pub const TRANSLATION_SPACE_FOV: &str =
     "http://www.onvif.org/ver10/tptz/PanTiltSpaces/TranslationSpaceFov";
+
+/// Token for the single video encoder configuration.
+pub const VIDEO_ENCODER_TOKEN: &str = "video_enc_0";

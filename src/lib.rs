@@ -15,3 +15,4 @@ pub use generated::{DeviceInfo, Scope, ScopeDefinition, HostnameInformation, Net
 pub use wsdl_loader::EmbeddedWsdlLoader;
 pub use traits::{DeviceService, MediaService, PTZService, ImagingService, EventService};
 pub use service::device::DeviceServiceHandler;
+pub use service::media::MediaServiceHandler;

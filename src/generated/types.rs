@@ -37,3 +37,42 @@ pub struct NetworkInterface {
     pub hw_address: String,
     pub mtu: u32,
 }
+
+#[derive(Debug, Clone)]
+pub struct MediaProfile {
+    pub token: String,
+    pub name: String,
+    pub video_source_cfg_token: String,
+    pub video_encoder_cfg_token: String,
+    pub ptz_cfg_token: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct VideoSource {
+    pub token: String,
+    pub framerate: f32,
+    pub width: i32,
+    pub height: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct VideoSourceConfiguration {
+    pub token: String,
+    pub name: String,
+    pub source_token: String,
+    pub bounds_x: i32,
+    pub bounds_y: i32,
+    pub bounds_width: i32,
+    pub bounds_height: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct VideoEncoderConfiguration {
+    pub token: String,
+    pub name: String,
+    pub encoding: String,
+    pub width: i32,
+    pub height: i32,
+    pub framerate: i32,
+    pub bitrate: i32,
+}
