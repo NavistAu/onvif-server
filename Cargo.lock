@@ -520,6 +520,7 @@ name = "onvif-server"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "axum",
  "bytes",
  "chrono",
  "quick-xml",

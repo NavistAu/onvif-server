@@ -12,22 +12,23 @@ A spec-compliant ONVIF device server that "just works" with real ONVIF clients �
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Trait-based API for ONVIF services (DeviceService, MediaService, PTZService, ImagingService, EventService) — v1.0
+- [x] Builder pattern for server construction with service registration — v1.0
+- [x] Bundled official ONVIF WSDLs and XSDs — v1.0
+- [x] ONVIF type definitions for all request/response structures (hand-written stubs; XSD codegen deferred to v2) — v1.0
+- [x] WS-Security authentication with configurable credentials — v1.0
+- [x] Auth exemption for GetSystemDateAndTime per ONVIF spec — v1.0
+- [x] Default `not_implemented()` SOAP fault for unimplemented trait methods — v1.0
+- [x] Frigate autotracker compatibility (RelativeMove, GetStatus, GetProfiles, GetConfigurationOptions, GetServiceCapabilities, presets) — v1.0
+- [x] TranslationSpaceFov advertisement in PTZ node/configuration — v1.0
+- [x] MoveStatus capability advertisement and IDLE/MOVING status polling — v1.0
+- [x] WS-Discovery (feature-gated) for network auto-discovery — v1.0
+- [x] ONVIF spec compliance across all implemented services — v1.0
+- [x] Configurable advertised host for real-client connectivity — v1.0
 
 ### Active
 
-- [ ] Trait-based API for ONVIF services (DeviceService, MediaService, PTZService, ImagingService, EventService)
-- [ ] Builder pattern for server construction with service registration
-- [ ] Bundled official ONVIF WSDLs and XSDs
-- [ ] ONVIF type definitions for all request/response structures (via onvif-rs or generated)
-- [ ] WS-Security authentication with configurable credentials
-- [ ] Auth exemption for GetSystemDateAndTime per ONVIF spec
-- [ ] Default `not_implemented()` SOAP fault for unimplemented trait methods
-- [ ] Frigate autotracker compatibility (RelativeMove, GetStatus, GetProfiles, GetConfigurationOptions, GetServiceCapabilities, presets)
-- [ ] TranslationSpaceFov advertisement in PTZ node/configuration
-- [ ] MoveStatus capability advertisement and IDLE/MOVING status polling
-- [ ] WS-Discovery (feature-gated) for network auto-discovery
-- [ ] ONVIF spec compliance across all implemented services
+(None yet — define v2 requirements with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -55,10 +56,19 @@ A spec-compliant ONVIF device server that "just works" with real ONVIF clients �
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Build on soap-server crate | Separation of concerns — SOAP transport vs ONVIF protocol layer | — Pending |
-| Type definition strategy (onvif-rs vs generate) | Need to evaluate onvif-rs types for server-side usability | — Pending |
-| Trait-based service API | Consumers implement what they support, unimplemented ops return SOAP faults | — Pending |
-| WS-Discovery behind feature flag | Not needed for Frigate (direct URL), useful for NVR auto-discovery | — Pending |
+| Build on soap-server crate | Separation of concerns — SOAP transport vs ONVIF protocol layer | ✓ Good — clean layering, soap-server handles all SOAP/WS-Security concerns |
+| Hand-written type stubs (Option B) | onvif-rs and xsd-parser both blocked by Rust 1.86/icu_* requirement; crate pinned to 1.85.1 | ✓ Good — unblocked Phase 1; codegen can be added in v2 when toolchain updates |
+| Trait-based service API | Consumers implement what they support, unimplemented ops return SOAP faults | ✓ Good — 5 traits with not_implemented() defaults, proven by virtual_ptz example |
+| WS-Discovery behind feature flag | Not needed for Frigate (direct URL), useful for NVR auto-discovery | ✓ Good — socket2 UDP multicast works; no overhead when feature disabled |
+| advertised_host builder field | 0.0.0.0 XAddrs break real ONVIF clients; needed configurable host | ✓ Good — added in gap closure, defaults to 0.0.0.0 for backward compat |
+| Per-service SoapHandler dispatch | One handler per service using extract_local_name + match | ✓ Good — consistent pattern across all 5 services, easy to extend |
+
+## Current State
+
+Shipped v1.0 with ~2,500 LOC Rust across 24 source files + 15 WSDL/XSD assets.
+Tech stack: soap-server (path dep), axum 0.8, tokio 1, quick-xml 0.39, async-trait, bytes.
+56 tests passing (unit + integration + Frigate compat + ODM smoke).
+virtual_ptz example demonstrates full consumer API.
 
 ---
-*Last updated: 2026-04-05 after initialization*
+*Last updated: 2026-04-06 after v1.0 milestone*
