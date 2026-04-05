@@ -124,16 +124,69 @@ impl DeviceServiceHandler {
         Ok(Bytes::from(xml))
     }
 
-    // GetScopes, GetHostname, GetNetworkInterfaces — implemented in Plan 02
     async fn handle_get_scopes(&self) -> Result<Bytes, SoapFault> {
-        Err(OnvifError::ActionNotSupported.into_soap_fault())
+        let scopes = self.svc.get_scopes().await.map_err(|e| e.into_soap_fault())?;
+        let mut items = String::new();
+        for s in &scopes {
+            let def = match s.scope_def {
+                crate::generated::types::ScopeDefinition::Fixed => "Fixed",
+                crate::generated::types::ScopeDefinition::Configurable => "Configurable",
+            };
+            items.push_str(&format!(
+                "  <tds:Scopes>\n    <tt:ScopeDef>{}</tt:ScopeDef>\n    <tt:ScopeItem>{}</tt:ScopeItem>\n  </tds:Scopes>\n",
+                def, s.scope_item
+            ));
+        }
+        let xml = format!(
+            "<tds:GetScopesResponse xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\" xmlns:tt=\"http://www.onvif.org/ver10/schema\">\n{}</tds:GetScopesResponse>",
+            items
+        );
+        Ok(Bytes::from(xml))
     }
 
     async fn handle_get_hostname(&self) -> Result<Bytes, SoapFault> {
-        Err(OnvifError::ActionNotSupported.into_soap_fault())
+        let info = self.svc.get_hostname().await.map_err(|e| e.into_soap_fault())?;
+        let name_el = match &info.name {
+            Some(n) => format!("    <tt:Name>{}</tt:Name>\n", n),
+            None => String::new(),
+        };
+        let xml = format!(
+            r#"<tds:GetHostnameResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+  <tds:HostnameInformation>
+    <tt:FromDHCP>{}</tt:FromDHCP>
+{}  </tds:HostnameInformation>
+</tds:GetHostnameResponse>"#,
+            info.from_dhcp,
+            name_el
+        );
+        Ok(Bytes::from(xml))
     }
 
     async fn handle_get_network_interfaces(&self) -> Result<Bytes, SoapFault> {
-        Err(OnvifError::ActionNotSupported.into_soap_fault())
+        let ifaces = self.svc.get_network_interfaces().await.map_err(|e| e.into_soap_fault())?;
+        let mut iface_els = String::new();
+        for iface in &ifaces {
+            iface_els.push_str(&format!(
+                r#"  <tds:NetworkInterfaces token="{token}">
+    <tt:Enabled>{enabled}</tt:Enabled>
+    <tt:Info>
+      <tt:Name>{name}</tt:Name>
+      <tt:HwAddress>{hw}</tt:HwAddress>
+      <tt:MTU>{mtu}</tt:MTU>
+    </tt:Info>
+  </tds:NetworkInterfaces>
+"#,
+                token = iface.token,
+                enabled = iface.enabled,
+                name = iface.name,
+                hw = iface.hw_address,
+                mtu = iface.mtu,
+            ));
+        }
+        let xml = format!(
+            "<tds:GetNetworkInterfacesResponse xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\" xmlns:tt=\"http://www.onvif.org/ver10/schema\">\n{}</tds:GetNetworkInterfacesResponse>",
+            iface_els
+        );
+        Ok(Bytes::from(xml))
     }
 }

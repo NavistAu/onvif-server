@@ -5,7 +5,7 @@
 use std::sync::Arc;
 use bytes::Bytes;
 use soap_server::SoapHandler;
-use onvif_server::{DeviceService, DeviceServiceHandler, DeviceInfo};
+use onvif_server::{DeviceService, DeviceServiceHandler, DeviceInfo, NetworkInterface};
 
 /// A minimal DeviceService implementation for tests
 struct TestDevice {
@@ -16,6 +16,16 @@ struct TestDevice {
 impl DeviceService for TestDevice {
     async fn get_device_information(&self) -> Result<DeviceInfo, onvif_server::OnvifError> {
         Ok(self.info.clone())
+    }
+
+    async fn get_network_interfaces(&self) -> Result<Vec<NetworkInterface>, onvif_server::OnvifError> {
+        Ok(vec![NetworkInterface {
+            token: "eth0".into(),
+            enabled: true,
+            name: "eth0".into(),
+            hw_address: "00:00:00:00:00:00".into(),
+            mtu: 1500,
+        }])
     }
 }
 
@@ -119,24 +129,65 @@ async fn device_get_device_information() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn device_get_scopes() {
-    // TODO: authenticated GetScopes; assert Fixed scope URIs present
-    todo!()
+    let handler = make_handler();
+    let body = Bytes::from_static(
+        b"<tds:GetScopes xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
+    );
+    let result = handler.handle(body).await.expect("GetScopes must succeed");
+    let xml = String::from_utf8(result.to_vec()).unwrap();
+    assert!(
+        xml.contains("onvif://www.onvif.org/type/video_encoder"),
+        "Response must contain video_encoder scope URI, got: {xml}"
+    );
+    assert!(
+        xml.contains("onvif://www.onvif.org/Profile/Streaming"),
+        "Response must contain Profile/Streaming scope URI, got: {xml}"
+    );
+    assert!(
+        xml.contains("Fixed"),
+        "Response must contain Fixed scope definition, got: {xml}"
+    );
 }
 
 #[tokio::test]
-#[ignore]
 async fn device_get_hostname() {
-    // TODO: authenticated GetHostname; assert HostnameInformation/Name present
-    todo!()
+    let handler = make_handler();
+    let body = Bytes::from_static(
+        b"<tds:GetHostname xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
+    );
+    let result = handler.handle(body).await.expect("GetHostname must succeed");
+    let xml = String::from_utf8(result.to_vec()).unwrap();
+    assert!(
+        xml.contains("<tt:Name>onvif-device</tt:Name>"),
+        "Response must contain tt:Name element with default hostname, got: {xml}"
+    );
+    assert!(
+        xml.contains("tt:FromDHCP"),
+        "Response must contain tt:FromDHCP element, got: {xml}"
+    );
 }
 
 #[tokio::test]
-#[ignore]
 async fn device_get_network_interfaces() {
-    // TODO: authenticated GetNetworkInterfaces; assert at least one NetworkInterfaces element
-    todo!()
+    let handler = make_handler();
+    let body = Bytes::from_static(
+        b"<tds:GetNetworkInterfaces xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
+    );
+    let result = handler.handle(body).await.expect("GetNetworkInterfaces must succeed");
+    let xml = String::from_utf8(result.to_vec()).unwrap();
+    assert!(
+        xml.contains("token=\"eth0\""),
+        "Response must contain NetworkInterfaces element with token attribute, got: {xml}"
+    );
+    assert!(
+        xml.contains("tt:Enabled"),
+        "Response must contain tt:Enabled element, got: {xml}"
+    );
+    assert!(
+        xml.contains("tt:HwAddress"),
+        "Response must contain tt:HwAddress element, got: {xml}"
+    );
 }
 
 #[tokio::test]
