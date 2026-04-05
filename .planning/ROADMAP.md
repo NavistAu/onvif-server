@@ -46,7 +46,11 @@ Plans:
   2. `GetCapabilities` and `GetServices` both return service XAddrs that match the server's bound address
   3. `GetDeviceInformation` returns consumer-configured manufacturer, model, firmware version, serial number, and hardware ID
   4. An ONVIF client sending a valid WS-Security UsernameToken digest receives HTTP 200 on authenticated operations; an invalid credential receives a SOAP auth fault
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Expanded types + DeviceService trait signatures + DeviceServiceHandler (GetSystemDateAndTime, GetCapabilities, GetServices, GetDeviceInformation)
+- [ ] 02-02-PLAN.md — GetScopes, GetHostname, GetNetworkInterfaces handlers + OnvifServer::run() + auth wiring
 
 ### Phase 3: Media Service
 **Goal**: A consumer can configure stream URIs and snapshot URIs, and any ONVIF client can retrieve complete Profile S media metadata including profiles with correct PTZ configuration references
@@ -90,7 +94,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-04-05 |
-| 2. Device Management | 0/? | Not started | - |
+| 2. Device Management | 0/2 | Not started | - |
 | 3. Media Service | 0/? | Not started | - |
 | 4. PTZ Service | 0/? | Not started | - |
 | 5. Imaging, Events, Discovery, and Polish | 0/? | Not started | - |
