@@ -5,6 +5,8 @@ use onvif_server::{
     PTZ_NODE_TOKEN,
     PTZ_CONFIG_TOKEN,
     TRANSLATION_SPACE_FOV,
+    EmbeddedWsdlLoader,
+    WsdlLoader,
 };
 
 #[test]
@@ -33,8 +35,15 @@ fn test_token_constants_defined() {
 // Stubs for future plans — implemented in later plans
 
 #[test]
-#[ignore = "implemented in later plans"]
-fn test_embedded_wsdl_loader() {}
+fn test_embedded_wsdl_loader() {
+    let loader = EmbeddedWsdlLoader;
+    let bytes = loader.load("devicemgmt.wsdl").expect("devicemgmt.wsdl must load");
+    assert!(!bytes.is_empty());
+    let bytes = loader.load("media.wsdl").expect("media.wsdl must load");
+    assert!(!bytes.is_empty());
+    let bytes = loader.load("ptz.wsdl").expect("ptz.wsdl must load");
+    assert!(!bytes.is_empty());
+}
 
 #[test]
 #[ignore = "implemented in later plans"]
