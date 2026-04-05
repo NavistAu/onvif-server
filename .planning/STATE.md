@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-04-05T08:02:38Z"
-last_activity: 2026-04-05 — Phase 2 Plan 01 complete; DeviceServiceHandler implemented
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-04-05T08:11:47Z"
+last_activity: 2026-04-05 — Phase 2 Plan 02 complete; OnvifServer::run() implemented, all 7 device operations working
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 3
-  completed_plans: 1
-  percent: 20
+  completed_plans: 2
+  percent: 27
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 ## Current Position
 
 Phase: 2 of 5 (Device Management)
-Plan: 1 of ? in current phase
-Status: Executing — 02-01 complete, ready for 02-02
-Last activity: 2026-04-05 — DeviceServiceHandler implemented with 4 operations
+Plan: 2 of 2 in current phase (phase complete)
+Status: Executing — 02-02 complete, ready for Phase 3
+Last activity: 2026-04-05 — OnvifServer::run() implemented; all 7 device management operations pass
 
-Progress: [##░░░░░░░░] 20%
+Progress: [###░░░░░░░] 27%
 
 ## Performance Metrics
 
@@ -44,7 +44,7 @@ Progress: [##░░░░░░░░] 20%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3 | ~54 min | ~18 min |
-| 02-device-management | 1 | ~20 min | ~20 min |
+| 02-device-management | 2 | ~26 min | ~13 min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -55,6 +55,7 @@ Progress: [##░░░░░░░░] 20%
 | Phase 01-foundation P02 | 6 | 3 tasks | 21 files |
 | Phase 01-foundation P03 | 2 | 2 tasks | 3 files |
 | Phase 02-device-management P01 | 20 | 2 tasks | 10 files |
+| Phase 02-device-management P02 | 6 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 02-device-management P01]: GetCapabilities and GetServices are handler-internal — not on DeviceService trait; handler builds XML from bound xaddr
 - [Phase 02-device-management P01]: not_implemented() made generic (Result<T, OnvifError>) to serve typed trait stubs
 - [Phase 02-device-management P01]: get_system_date_and_time defaults to Ok(Utc::now()) — always returns time without requiring implementor override
+- [Phase 02-device-management P02]: axum added as direct dependency — needed for axum::serve in run() (was only transitive via soap-server)
+- [Phase 02-device-management P02]: Auth tests (valid/invalid WS-Security credential) remain #[ignore] — digest construction deferred to ODM smoke test in Phase 5
+- [Phase 02-device-management P02]: EmbeddedWsdlLoader extended with 4 W3C/OASIS XSD stubs — onvif.xsd imports require resolution at ServerBuilder::build time
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T08:02:38Z
-Stopped at: Completed 02-01-PLAN.md
-Resume file: .planning/phases/02-device-management/02-01-SUMMARY.md
+Last session: 2026-04-05T08:11:47Z
+Stopped at: Completed 02-02-PLAN.md
+Resume file: .planning/phases/02-device-management/02-02-SUMMARY.md

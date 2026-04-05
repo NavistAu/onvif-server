@@ -13,7 +13,7 @@ Build a spec-compliant ONVIF device server crate in Rust. The journey starts wit
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Crate scaffold, error types, WSDL loader, ONVIF types, token constants, builder skeleton (completed 2026-04-05)
-- [ ] **Phase 2: Device Management** - Working ONVIF device endpoint with auth, GetSystemDateAndTime, GetCapabilities, GetServices, and device identity operations
+- [x] **Phase 2: Device Management** - Working ONVIF device endpoint with auth, GetSystemDateAndTime, GetCapabilities, GetServices, and device identity operations (completed 2026-04-05)
 - [ ] **Phase 3: Media Service** - Profile S streaming metadata with correct PTZ profile structure for Frigate compatibility
 - [ ] **Phase 4: PTZ Service** - Full PTZ control surface with TranslationSpaceFov, MoveStatus, and Frigate end-to-end test
 - [ ] **Phase 5: Imaging, Events, Discovery, and Polish** - GetImagingSettings, Events service, WS-Discovery, virtual_ptz example, ODM smoke test
@@ -94,7 +94,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-04-05 |
-| 2. Device Management | 1/2 | In Progress|  |
+| 2. Device Management | 2/2 | Complete   | 2026-04-05 |
 | 3. Media Service | 0/? | Not started | - |
 | 4. PTZ Service | 0/? | Not started | - |
 | 5. Imaging, Events, Discovery, and Polish | 0/? | Not started | - |

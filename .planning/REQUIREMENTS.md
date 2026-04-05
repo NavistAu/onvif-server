@@ -25,9 +25,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DEV-02**: User can call GetCapabilities and receive XAddrs (service URLs) for all registered services
 - [x] **DEV-03**: User can call GetServices and receive service namespace, XAddr, and capabilities for all registered services
 - [x] **DEV-04**: User can call GetDeviceInformation and receive manufacturer, model, firmware version, serial number, and hardware ID as configured by the consumer
-- [ ] **DEV-05**: User can call GetScopes and receive ONVIF-standard scope URIs identifying device type and name
-- [ ] **DEV-06**: User can call GetHostname and receive the device hostname
-- [ ] **DEV-07**: User can call GetNetworkInterfaces and receive network interface information
+- [x] **DEV-05**: User can call GetScopes and receive ONVIF-standard scope URIs identifying device type and name
+- [x] **DEV-06**: User can call GetHostname and receive the device hostname
+- [x] **DEV-07**: User can call GetNetworkInterfaces and receive network interface information
 
 ### Media Service
 
@@ -121,9 +121,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | DEV-02 | Phase 2 | Complete |
 | DEV-03 | Phase 2 | Complete |
 | DEV-04 | Phase 2 | Complete |
-| DEV-05 | Phase 2 | Pending |
-| DEV-06 | Phase 2 | Pending |
-| DEV-07 | Phase 2 | Pending |
+| DEV-05 | Phase 2 | Complete |
+| DEV-06 | Phase 2 | Complete |
+| DEV-07 | Phase 2 | Complete |
 | MEDIA-01 | Phase 3 | Pending |
 | MEDIA-02 | Phase 3 | Pending |
 | MEDIA-03 | Phase 3 | Pending |
