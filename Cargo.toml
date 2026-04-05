@@ -1,0 +1,24 @@
+[package]
+name = "onvif-server"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A spec-compliant ONVIF device server library for Rust"
+
+[features]
+default = []
+discovery = ["socket2"]
+
+[dependencies]
+soap-server = { path = "../soap-server" }
+tokio = { version = "1", features = ["sync"] }
+async-trait = "0.1"
+thiserror = "2"
+bytes = "1"
+chrono = { version = "0.4", features = ["std", "clock"], default-features = false }
+uuid = { version = "1", features = ["v4"] }
+quick-xml = "0.39"
+socket2 = { version = "0.5", features = ["all"], optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
