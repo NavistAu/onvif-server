@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-04-05T07:41:11.900Z"
-last_activity: 2026-04-05 — Roadmap created, ready for Phase 1 planning
+status: executing
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-04-05T08:02:38Z"
+last_activity: 2026-04-05 — Phase 2 Plan 01 complete; DeviceServiceHandler implemented
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 3
-  completed_plans: 3
-  percent: 0
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -21,29 +21,30 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** A spec-compliant ONVIF device server that "just works" with real ONVIF clients — consumers implement trait methods, the crate handles everything else.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 2 — Device Management
 
 ## Current Position
 
-Phase: 1 of 5 (Foundation)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-04-05 — Roadmap created, ready for Phase 1 planning
+Phase: 2 of 5 (Device Management)
+Plan: 1 of ? in current phase
+Status: Executing — 02-01 complete, ready for 02-02
+Last activity: 2026-04-05 — DeviceServiceHandler implemented with 4 operations
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [##░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 4
+- Average duration: ~18 min
+- Total execution time: ~1.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-foundation | 3 | ~54 min | ~18 min |
+| 02-device-management | 1 | ~20 min | ~20 min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -53,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-foundation P01 | 15 | 2 tasks | 9 files |
 | Phase 01-foundation P02 | 6 | 3 tasks | 21 files |
 | Phase 01-foundation P03 | 2 | 2 tasks | 3 files |
+| Phase 02-device-management P01 | 20 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -68,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Type strategy Option B (hand-written stubs): both onvif-schema and xsd-parser require Rust 1.86 via icu_* chain; crate pinned to 1.85.1 — DeviceInfo is a Phase 1 hand-written stub, XSD codegen deferred to Phase 2+
 - [Phase 01-foundation]: build() returns Ok(OnvifServer) skeleton with no network activity — soap_server::ServerBuilder wiring deferred to Phase 2 per plan
 - [Phase 01-foundation]: GetSystemDateAndTime inserted into auth_bypass at OnvifServerBuilder::new() — invariant holds even if builder is inspected before build()
+- [Phase 02-device-management P01]: GetCapabilities and GetServices are handler-internal — not on DeviceService trait; handler builds XML from bound xaddr
+- [Phase 02-device-management P01]: not_implemented() made generic (Result<T, OnvifError>) to serve typed trait stubs
+- [Phase 02-device-management P01]: get_system_date_and_time defaults to Ok(Utc::now()) — always returns time without requiring implementor override
 
 ### Pending Todos
 
@@ -79,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T07:41:11.898Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-device-management/02-CONTEXT.md
+Last session: 2026-04-05T08:02:38Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: .planning/phases/02-device-management/02-01-SUMMARY.md

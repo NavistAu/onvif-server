@@ -21,10 +21,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Device Management
 
-- [ ] **DEV-01**: User can call GetSystemDateAndTime without authentication and receive current UTC time and timezone
-- [ ] **DEV-02**: User can call GetCapabilities and receive XAddrs (service URLs) for all registered services
-- [ ] **DEV-03**: User can call GetServices and receive service namespace, XAddr, and capabilities for all registered services
-- [ ] **DEV-04**: User can call GetDeviceInformation and receive manufacturer, model, firmware version, serial number, and hardware ID as configured by the consumer
+- [x] **DEV-01**: User can call GetSystemDateAndTime without authentication and receive current UTC time and timezone
+- [x] **DEV-02**: User can call GetCapabilities and receive XAddrs (service URLs) for all registered services
+- [x] **DEV-03**: User can call GetServices and receive service namespace, XAddr, and capabilities for all registered services
+- [x] **DEV-04**: User can call GetDeviceInformation and receive manufacturer, model, firmware version, serial number, and hardware ID as configured by the consumer
 - [ ] **DEV-05**: User can call GetScopes and receive ONVIF-standard scope URIs identifying device type and name
 - [ ] **DEV-06**: User can call GetHostname and receive the device hostname
 - [ ] **DEV-07**: User can call GetNetworkInterfaces and receive network interface information
@@ -117,10 +117,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | INFRA-07 | Phase 1 | Complete |
 | INFRA-08 | Phase 1 | Complete |
 | INFRA-09 | Phase 1 | Complete |
-| DEV-01 | Phase 2 | Pending |
-| DEV-02 | Phase 2 | Pending |
-| DEV-03 | Phase 2 | Pending |
-| DEV-04 | Phase 2 | Pending |
+| DEV-01 | Phase 2 | Complete |
+| DEV-02 | Phase 2 | Complete |
+| DEV-03 | Phase 2 | Complete |
+| DEV-04 | Phase 2 | Complete |
 | DEV-05 | Phase 2 | Pending |
 | DEV-06 | Phase 2 | Pending |
 | DEV-07 | Phase 2 | Pending |
