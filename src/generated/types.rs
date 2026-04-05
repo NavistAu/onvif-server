@@ -90,3 +90,15 @@ pub struct PTZPreset {
     pub token: String,
     pub name: String,
 }
+
+/// Returned by ImagingService::get_imaging_settings(). Handler serializes to ImagingSettings XML.
+/// Only Some fields are emitted — None fields produce no XML element.
+#[derive(Debug, Clone, Default)]
+pub struct ImagingSettings {
+    pub brightness: Option<f32>,
+    pub color_saturation: Option<f32>,
+    pub contrast: Option<f32>,
+    pub sharpness: Option<f32>,
+    pub white_balance_cr_gain: Option<f32>,
+    pub white_balance_cb_gain: Option<f32>,
+}
