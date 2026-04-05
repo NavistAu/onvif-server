@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Media Service** - Profile S streaming metadata with correct PTZ profile structure for Frigate compatibility
 - [x] **Phase 4: PTZ Service** - Full PTZ control surface with TranslationSpaceFov, MoveStatus, and Frigate end-to-end test (completed 2026-04-05)
 - [ ] **Phase 5: Imaging, Events, Discovery, and Polish** - GetImagingSettings, Events service, WS-Discovery, virtual_ptz example, ODM smoke test
-- [ ] **Phase 6: Gap Closure & Polish** - Advertised host for XAddrs, HTTP-level auth tests, PTZ constructor consistency
+- [x] **Phase 6: Gap Closure & Polish** - Advertised host for XAddrs, HTTP-level auth tests, PTZ constructor consistency (completed 2026-04-05)
 
 ## Phase Details
 
@@ -125,4 +125,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Media Service | 2/2 | Complete   | 2026-04-05 |
 | 4. PTZ Service | 2/2 | Complete   | 2026-04-05 |
 | 5. Imaging, Events, Discovery, and Polish | 2/2 | Complete   | 2026-04-05 |
-| 6. Gap Closure & Polish | 0/1 | Not started | - |
+| 6. Gap Closure & Polish | 1/1 | Complete   | 2026-04-05 |
