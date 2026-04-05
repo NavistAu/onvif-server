@@ -92,7 +92,11 @@ Plans:
   2. `CreatePullPointSubscription`, `PullMessages`, and `Unsubscribe` complete a full event subscription lifecycle without panics
   3. When the `discovery` feature flag is enabled, the server responds to a WS-Discovery Probe message sent to UDP 239.255.255.250:3702 with a ProbeMatch containing the server's XAddrs
   4. ONVIF Device Manager (ODM) can connect, list device information, and list services without errors — verified by TEST-03 smoke test steps
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — ImagingServiceHandler (IMG-01), EventServiceHandler with subscription state (EVT-01..04), typed trait signatures, unit test suites
+- [ ] 05-02-PLAN.md — Wire Imaging/Events into run(), update DeviceServiceHandler XAddrs, WS-Discovery UDP task (DISC-01, DISC-02), virtual_ptz example extension, ODM smoke test (TEST-03)
 
 ## Progress
 
@@ -105,4 +109,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Device Management | 2/2 | Complete   | 2026-04-05 |
 | 3. Media Service | 1/2 | In Progress|  |
 | 4. PTZ Service | 2/2 | Complete   | 2026-04-05 |
-| 5. Imaging, Events, Discovery, and Polish | 0/? | Not started | - |
+| 5. Imaging, Events, Discovery, and Polish | 0/2 | Not started | - |
