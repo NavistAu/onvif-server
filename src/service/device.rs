@@ -132,7 +132,7 @@ impl DeviceServiceHandler {
     <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
   </tds:Service>
   <tds:Service>
-    <tds:Namespace>http://www.onvif.org/ver20/ptz/wsdl</tds:Namespace>
+    <tds:Namespace>http://www.onvif.org/ver10/ptz/wsdl</tds:Namespace>
     <tds:XAddr>{ptz_xaddr}</tds:XAddr>
     <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
   </tds:Service>

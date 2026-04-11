@@ -145,6 +145,14 @@ async fn device_get_services() {
         xml.contains("http://192.168.1.10:8080/onvif/device_service"),
         "Response must contain the handler's xaddr in tds:XAddr, got: {xml}"
     );
+    assert!(
+        xml.contains("http://www.onvif.org/ver10/ptz/wsdl"),
+        "GetServices must advertise PTZ as ver10/ptz/wsdl (not ver20): {xml}"
+    );
+    assert!(
+        !xml.contains("http://www.onvif.org/ver20/ptz/wsdl"),
+        "GetServices must NOT advertise PTZ as ver20/ptz/wsdl: {xml}"
+    );
 }
 
 #[tokio::test]
@@ -358,6 +366,80 @@ async fn device_auth_valid_credential() {
     assert!(
         response_str.contains("GetDeviceInformationResponse"),
         "Response body must contain GetDeviceInformationResponse, got: {response_str}"
+    );
+}
+
+/// Verify PTZ GetConfigurationOptions routes correctly over HTTP with ver10 namespace.
+/// This test catches the class of bug where GetServices advertises a wrong namespace,
+/// causing clients to send requests the dispatch table cannot route.
+#[tokio::test]
+async fn ptz_dispatch_get_configuration_options_over_http() {
+    use onvif_server::OnvifServer;
+    use tokio::net::TcpListener;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+
+    let server = OnvifServer::builder()
+        .port(port)
+        .auth("admin", "secret")
+        .device_service(TestDevice { info: DeviceInfo {
+            manufacturer: "Test".into(), model: "Test".into(),
+            firmware_version: "0.0.1".into(), serial_number: "TEST-001".into(),
+            hardware_id: "HW-TEST".into(),
+        }})
+        .media_service(TestMedia)
+        .ptz_service(TestPTZ)
+        .imaging_service(TestImaging)
+        .event_service(TestEvent)
+        .build().expect("build must succeed");
+
+    tokio::spawn(async move { server.run().await.unwrap(); });
+    tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+
+    // Use ver10 namespace — matches what GetServices advertises and what the dispatch
+    // table is keyed on. A regression to ver20 in GetServices would cause this to fail.
+    let soap_body = r#"<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"
+            xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+  <s:Header>
+    <wsse:Security>
+      <wsse:UsernameToken>
+        <wsse:Username>admin</wsse:Username>
+        <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">secret</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </s:Header>
+  <s:Body>
+    <tptz:GetConfigurationOptions xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl">
+      <tptz:ConfigurationToken>ptz_cfg_0</tptz:ConfigurationToken>
+    </tptz:GetConfigurationOptions>
+  </s:Body>
+</s:Envelope>"#;
+
+    let request = format!(
+        "POST /onvif/ptz_service HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/soap+xml; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        soap_body.len(),
+        soap_body
+    );
+
+    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}")).await
+        .expect("must connect to test server");
+    stream.write_all(request.as_bytes()).await.unwrap();
+
+    let mut response = Vec::new();
+    stream.read_to_end(&mut response).await.unwrap();
+    let response_str = String::from_utf8_lossy(&response);
+
+    assert!(
+        response_str.starts_with("HTTP/1.1 200"),
+        "GetConfigurationOptions must return HTTP 200, got: {response_str}"
+    );
+    assert!(
+        response_str.contains("TranslationSpaceFov"),
+        "GetConfigurationOptions response must contain TranslationSpaceFov URI, got: {response_str}"
     );
 }
 
