@@ -7,9 +7,9 @@ Recipients of this document may copy, distribute, publish, or display this docum
 THIS DOCUMENT IS PROVIDED "AS IS," AND THE CORPORATION AND ITS MEMBERS AND THEIR AFFILIATES, MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, OR TITLE; THAT THE CONTENTS OF THIS DOCUMENT ARE SUITABLE FOR ANY PURPOSE; OR THAT THE IMPLEMENTATION OF SUCH CONTENTS WILL NOT INFRINGE ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
 IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, PUNITIVE OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR RELATING TO ANY USE OR DISTRIBUTION OF THIS DOCUMENT, WHETHER OR NOT (1) THE CORPORATION, MEMBERS OR THEIR AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, OR (2) SUCH DAMAGES WERE REASONABLY FORESEEABLE, AND ARISING OUT OF OR RELATING TO ANY USE OR DISTRIBUTION OF THIS DOCUMENT.  THE FOREGOING DISCLAIMER AND LIMITATION ON LIABILITY DO NOT APPLY TO, INVALIDATE, OR LIMIT REPRESENTATIONS AND WARRANTIES MADE BY THE MEMBERS AND THEIR RESPECTIVE AFFILIATES TO THE CORPORATION AND OTHER MEMBERS IN CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 -->
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2" xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xop="http://www.w3.org/2004/08/xop/include" name="PTZService" targetNamespace="http://www.onvif.org/ver10/ptz/wsdl">
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2" xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xop="http://www.w3.org/2004/08/xop/include" name="PTZService" targetNamespace="http://www.onvif.org/ver20/ptz/wsdl">
   <wsdl:types>
-    <xs:schema targetNamespace="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:schema targetNamespace="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
       <xs:import namespace="http://www.onvif.org/ver10/schema" schemaLocation="onvif.xsd"/>
       <!--  Message Request/Responses elements  -->
       <!--===============================-->
@@ -538,7 +538,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
   <wsdl:binding name="PTZBinding" type="tptz:PTZ">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
     <wsdl:operation name="GetConfigurations">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GetConfigurations"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GetConfigurations"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -547,7 +547,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetPresets">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GetPresets"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GetPresets"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -556,7 +556,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="SetPreset">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/SetPreset"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/SetPreset"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -565,7 +565,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="RemovePreset">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/RemovePreset"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/RemovePreset"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -574,7 +574,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GotoPreset">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GotoPreset"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GotoPreset"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -583,7 +583,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetStatus">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GetStatus"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GetStatus"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -592,7 +592,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetConfiguration">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GetConfiguration"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GetConfiguration"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -601,7 +601,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetNodes">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GetNodes"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GetNodes"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -610,7 +610,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetNode">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GetNode"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GetNode"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -619,7 +619,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="SetConfiguration">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/SetConfiguration"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/SetConfiguration"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -628,7 +628,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetConfigurationOptions">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GetConfigurationOptions"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GetConfigurationOptions"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -637,7 +637,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GotoHomePosition">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/GotoHomePosition"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/GotoHomePosition"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -646,7 +646,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="SetHomePosition">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/SetHomePosition"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/SetHomePosition"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -655,7 +655,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="ContinuousMove">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/ContinuousMove"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/ContinuousMove"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -664,7 +664,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="RelativeMove">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/RelativeMove"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/RelativeMove"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -673,7 +673,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="SendAuxiliaryCommand">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/SendAuxiliaryCommand"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/SendAuxiliaryCommand"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -682,7 +682,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="AbsoluteMove">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/AbsoluteMove"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/AbsoluteMove"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -691,7 +691,7 @@ If no stop argument for pan, tilt or zoom is set, the NVT will stop all ongoing 
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="Stop">
-      <soap:operation soapAction="http://www.onvif.org/ver10/ptz/wsdl/Stop"/>
+      <soap:operation soapAction="http://www.onvif.org/ver20/ptz/wsdl/Stop"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>

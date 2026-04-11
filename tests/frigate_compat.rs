@@ -162,7 +162,7 @@ async fn frigate_autotracker_call_sequence() {
     {
         let body = Bytes::from_static(
             b"<tptz:GetConfigurationOptions \
-              xmlns:tptz=\"http://www.onvif.org/ver10/ptz/wsdl\">\
+              xmlns:tptz=\"http://www.onvif.org/ver20/ptz/wsdl\">\
               <tptz:ConfigurationToken>ptz_cfg_0</tptz:ConfigurationToken>\
               </tptz:GetConfigurationOptions>",
         );
@@ -180,7 +180,7 @@ async fn frigate_autotracker_call_sequence() {
     {
         let body = Bytes::from_static(
             b"<tptz:GetServiceCapabilities \
-              xmlns:tptz=\"http://www.onvif.org/ver10/ptz/wsdl\"/>",
+              xmlns:tptz=\"http://www.onvif.org/ver20/ptz/wsdl\"/>",
         );
         let result = ptz_handler.handle(body).await
             .expect("Step 3 GetServiceCapabilities must not return SoapFault");
@@ -195,7 +195,7 @@ async fn frigate_autotracker_call_sequence() {
     // Step 4: PTZ::GetPresets — must return Ok (even if empty)
     {
         let body = Bytes::from_static(
-            b"<tptz:GetPresets xmlns:tptz=\"http://www.onvif.org/ver10/ptz/wsdl\">\
+            b"<tptz:GetPresets xmlns:tptz=\"http://www.onvif.org/ver20/ptz/wsdl\">\
               <tptz:ProfileToken>profile_0</tptz:ProfileToken>\
               </tptz:GetPresets>",
         );
@@ -209,7 +209,7 @@ async fn frigate_autotracker_call_sequence() {
     // Step 5: PTZ::GetStatus — must contain IDLE, PanTilt and Zoom elements
     {
         let body = Bytes::from_static(
-            b"<tptz:GetStatus xmlns:tptz=\"http://www.onvif.org/ver10/ptz/wsdl\">\
+            b"<tptz:GetStatus xmlns:tptz=\"http://www.onvif.org/ver20/ptz/wsdl\">\
               <tptz:ProfileToken>profile_0</tptz:ProfileToken>\
               </tptz:GetStatus>",
         );
@@ -234,7 +234,7 @@ async fn frigate_autotracker_call_sequence() {
     // Step 6: PTZ::RelativeMove — must return Ok
     {
         let body = Bytes::from_static(
-            b"<tptz:RelativeMove xmlns:tptz=\"http://www.onvif.org/ver10/ptz/wsdl\">\
+            b"<tptz:RelativeMove xmlns:tptz=\"http://www.onvif.org/ver20/ptz/wsdl\">\
               <tptz:ProfileToken>profile_0</tptz:ProfileToken>\
               <tptz:Translation>\
                 <tt:PanTilt xmlns:tt=\"http://www.onvif.org/ver10/schema\" x=\"0.5\" y=\"0.3\"/>\
@@ -251,7 +251,7 @@ async fn frigate_autotracker_call_sequence() {
     // Step 7: PTZ::GotoPreset — must return Ok
     {
         let body = Bytes::from_static(
-            b"<tptz:GotoPreset xmlns:tptz=\"http://www.onvif.org/ver10/ptz/wsdl\">\
+            b"<tptz:GotoPreset xmlns:tptz=\"http://www.onvif.org/ver20/ptz/wsdl\">\
               <tptz:ProfileToken>profile_0</tptz:ProfileToken>\
               <tptz:PresetToken>home</tptz:PresetToken>\
               </tptz:GotoPreset>",

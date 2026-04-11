@@ -132,7 +132,7 @@ impl PTZServiceHandler {
 
     async fn handle_get_nodes(&self) -> Result<Bytes, SoapFault> {
         let xml = format!(
-            r#"<tptz:GetNodesResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+            r#"<tptz:GetNodesResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tptz:PTZNode token="{node_token}" FixedHomePosition="false">
     <tt:Name>PTZNode</tt:Name>
     <tt:SupportedPTZSpaces>
@@ -159,7 +159,7 @@ impl PTZServiceHandler {
         }
         // Return same structure as GetNodes but wrapped in GetNodeResponse
         let xml = format!(
-            r#"<tptz:GetNodeResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+            r#"<tptz:GetNodeResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tptz:PTZNode token="{node_token}" FixedHomePosition="false">
     <tt:Name>PTZNode</tt:Name>
     <tt:SupportedPTZSpaces>
@@ -181,7 +181,7 @@ impl PTZServiceHandler {
 
     async fn handle_get_configurations(&self) -> Result<Bytes, SoapFault> {
         let xml = format!(
-            r#"<tptz:GetConfigurationsResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+            r#"<tptz:GetConfigurationsResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tptz:PTZConfiguration token="{cfg_token}">
     <tt:Name>PTZConfig</tt:Name>
     <tt:UseCount>1</tt:UseCount>
@@ -202,7 +202,7 @@ impl PTZServiceHandler {
             return Err(OnvifError::InvalidArgument(format!("Unknown ConfigurationToken: {token}")).into_soap_fault());
         }
         let xml = format!(
-            r#"<tptz:GetConfigurationResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+            r#"<tptz:GetConfigurationResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tptz:PTZConfiguration token="{cfg_token}">
     <tt:Name>PTZConfig</tt:Name>
     <tt:UseCount>1</tt:UseCount>
@@ -219,7 +219,7 @@ impl PTZServiceHandler {
 
     async fn handle_get_configuration_options(&self, _body: &Bytes) -> Result<Bytes, SoapFault> {
         let xml = format!(
-            r#"<tptz:GetConfigurationOptionsResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+            r#"<tptz:GetConfigurationOptionsResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tptz:PTZConfigurationOptions>
     <tt:Spaces>
       <tt:RelativePanTiltTranslationSpace>
@@ -239,7 +239,7 @@ impl PTZServiceHandler {
     async fn handle_get_service_capabilities(&self) -> Result<Bytes, SoapFault> {
         // MoveStatus MUST be an XML attribute on Capabilities, NOT a child element.
         // Frigate calls find_by_key(vars(capabilities), "MoveStatus") — requires attribute form.
-        let xml = r#"<tptz:GetServiceCapabilitiesResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl">
+        let xml = r#"<tptz:GetServiceCapabilitiesResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
   <tptz:Capabilities MoveStatus="true" StatusPosition="false"/>
 </tptz:GetServiceCapabilitiesResponse>"#;
         Ok(Bytes::from(xml))
@@ -254,7 +254,7 @@ impl PTZServiceHandler {
         let pan_tilt = if status.pan_tilt_moving { "MOVING" } else { "IDLE" };
         let zoom = if status.zoom_moving { "MOVING" } else { "IDLE" };
         let xml = format!(
-            r#"<tptz:GetStatusResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+            r#"<tptz:GetStatusResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tptz:PTZStatus>
     <tt:MoveStatus>
       <tt:PanTilt>{pan_tilt}</tt:PanTilt>
@@ -281,7 +281,7 @@ impl PTZServiceHandler {
             .parse::<f32>().unwrap_or(0.0);
         self.svc.relative_move(&profile_token, pan, tilt, zoom).await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:RelativeMoveResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl"/>"#;
+        let xml = r#"<tptz:RelativeMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -298,7 +298,7 @@ impl PTZServiceHandler {
             .parse::<f32>().unwrap_or(0.0);
         self.svc.absolute_move(&profile_token, pan, tilt, zoom).await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:AbsoluteMoveResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl"/>"#;
+        let xml = r#"<tptz:AbsoluteMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -315,7 +315,7 @@ impl PTZServiceHandler {
             .parse::<f32>().unwrap_or(0.0);
         self.svc.continuous_move(&profile_token, pan, tilt, zoom).await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:ContinuousMoveResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl"/>"#;
+        let xml = r#"<tptz:ContinuousMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -332,7 +332,7 @@ impl PTZServiceHandler {
         };
         self.svc.stop(&profile_token, pan_tilt, zoom).await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:StopResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl"/>"#;
+        let xml = r#"<tptz:StopResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -350,7 +350,7 @@ impl PTZServiceHandler {
             ));
         }
         let xml = format!(
-            r#"<tptz:GetPresetsResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+            r#"<tptz:GetPresetsResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
 {presets}</tptz:GetPresetsResponse>"#,
             presets = preset_xml,
         );
@@ -362,7 +362,7 @@ impl PTZServiceHandler {
         let preset_token = extract_text_element(body, "PresetToken")?;
         self.svc.goto_preset(&profile_token, &preset_token).await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:GotoPresetResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl"/>"#;
+        let xml = r#"<tptz:GotoPresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -376,7 +376,7 @@ impl PTZServiceHandler {
             preset_token.as_deref(),
         ).await.map_err(|e| e.into_soap_fault())?;
         let xml = format!(
-            r#"<tptz:SetPresetResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl">
+            r#"<tptz:SetPresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
   <tptz:PresetToken>{token}</tptz:PresetToken>
 </tptz:SetPresetResponse>"#,
             token = token,
@@ -389,7 +389,7 @@ impl PTZServiceHandler {
         let preset_token = extract_text_element(body, "PresetToken")?;
         self.svc.remove_preset(&profile_token, &preset_token).await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:RemovePresetResponse xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl"/>"#;
+        let xml = r#"<tptz:RemovePresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 }

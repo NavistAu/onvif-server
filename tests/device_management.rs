@@ -413,7 +413,7 @@ async fn ptz_dispatch_get_configuration_options_over_http() {
     </wsse:Security>
   </s:Header>
   <s:Body>
-    <tptz:GetConfigurationOptions xmlns:tptz="http://www.onvif.org/ver10/ptz/wsdl">
+    <tptz:GetConfigurationOptions xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
       <tptz:ConfigurationToken>ptz_cfg_0</tptz:ConfigurationToken>
     </tptz:GetConfigurationOptions>
   </s:Body>
