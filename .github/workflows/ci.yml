@@ -25,13 +25,18 @@ jobs:
     name: Check
     needs: rust-version
     runs-on: macos-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Checkout soap-server (path dependency)
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          path: ../soap-server
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: soap-server-dep
+      - name: Make soap-server available at ../soap-server
+        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}
@@ -48,13 +53,18 @@ jobs:
     name: Check (Linux)
     needs: rust-version
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Checkout soap-server (path dependency)
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          path: ../soap-server
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: soap-server-dep
+      - name: Make soap-server available at ../soap-server
+        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}
@@ -71,13 +81,18 @@ jobs:
     name: Test
     needs: rust-version
     runs-on: macos-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Checkout soap-server (path dependency)
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          path: ../soap-server
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: soap-server-dep
+      - name: Make soap-server available at ../soap-server
+        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}
@@ -89,13 +104,18 @@ jobs:
     name: Test (Linux)
     needs: rust-version
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Checkout soap-server (path dependency)
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          path: ../soap-server
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: soap-server-dep
+      - name: Make soap-server available at ../soap-server
+        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}
