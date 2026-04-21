@@ -1,0 +1,39 @@
+# NOTE: This workflow uses crates.io Trusted Publishing (OIDC).
+# Trusted Publishing MUST be configured on crates.io AFTER the first manual publish
+# (see plan 05-09). The first 0.1.0 publish bypasses this workflow entirely and is
+# performed manually from the command line (cargo login + cargo publish). Subsequent
+# 0.1.x/0.2.x/etc. releases will use this OIDC flow automatically once Trusted
+# Publishing is configured on crates.io for NavistAu/onvif-server with workflow
+# filename "publish.yml".
+#
+# After first publish is confirmed on crates.io:
+#   1. Go to crates.io → onvif-server → Settings → Trusted Publishing
+#   2. Add publisher: GitHub Actions, owner: NavistAu, repo: onvif-server,
+#      workflow: publish.yml, environment: (leave blank)
+#   3. Remove the "environment: production-first-publish" line below
+#   4. All future releases will publish automatically on tag push
+
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    environment: production-first-publish
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: crates-auth
+      - name: Publish
+        run: cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.crates-auth.outputs.token }}

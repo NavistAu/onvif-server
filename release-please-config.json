@@ -1,0 +1,9 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "rust",
+      "include-component-in-tag": false,
+      "bootstrap-sha": "61d8cb9d63c4f16ba803b9a0be8109b6aafec212"
+    }
+  }
+}
