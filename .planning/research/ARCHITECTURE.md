@@ -52,7 +52,7 @@
                                    │ Rust trait method calls
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                  Consumer (e.g. fovealink)                           │
+│                  Consumer (e.g. your application)                    │
 │  Implements DeviceService, MediaService, PTZService, etc.           │
 │  Contains actual hardware/business logic (Reolink camera calls)     │
 └─────────────────────────────────────────────────────────────────────┘

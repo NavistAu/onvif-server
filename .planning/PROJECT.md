@@ -32,17 +32,17 @@ A spec-compliant ONVIF device server that "just works" with real ONVIF clients �
 
 ### Out of Scope
 
-- Fovealink application logic — that's the downstream consumer, not this crate
+- Downstream application logic — that's the consumer's responsibility, not this crate
 - Camera hardware integration — this crate provides the server framework, not driver code
 - ONVIF client functionality — this is server-side only
 
 ## Context
 
-- Dependency chain: `soap-server` <- `onvif-server` <- `fovealink`
+- Dependency chain: `soap-server` <- `onvif-server`
 - `soap-server` is a sibling project at `~/ws/soap-server`, currently at phase 1 completion — provides SOAP transport, WSDL handling, and WS-Security foundation
 - Primary validation target is Frigate's autotracker (python-onvif-zeep), but the crate must be spec-compliant for any ONVIF client
 - This is essentially a port informed by examining the best prior art: onvif-rs (lumeohq), python-onvif-zeep, and the official ONVIF specification
-- Part of the Fovealink project — an ONVIF PTZ proxy for Reolink cameras
+- Publishes to crates.io under NavistAu ownership
 - Design document at `docs/DESIGN.md` is a starting point, not a final spec — technical decisions (type generation strategy, exact trait signatures, etc.) to be resolved through research
 
 ## Constraints
