@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use bytes::Bytes;
 use soap_server::SoapHandler;
-use onvif_server::{EventService, OnvifError};
+use onvif_server::EventService;
 use onvif_server::service::events::EventServiceHandler;
 
 struct TestEvents;

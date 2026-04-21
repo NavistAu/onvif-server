@@ -27,6 +27,11 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout soap-server (path dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: NavistAu/soap-server
+          path: ../soap-server
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}
@@ -45,6 +50,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout soap-server (path dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: NavistAu/soap-server
+          path: ../soap-server
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}
@@ -63,6 +73,11 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout soap-server (path dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: NavistAu/soap-server
+          path: ../soap-server
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}
@@ -76,6 +91,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout soap-server (path dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: NavistAu/soap-server
+          path: ../soap-server
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ needs.rust-version.outputs.version }}

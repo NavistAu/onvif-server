@@ -12,6 +12,7 @@ use crate::constants::{
     TRANSLATION_SPACE_FOV, VIDEO_ENCODER_TOKEN,
 };
 
+#[allow(dead_code)]
 pub struct MediaServiceHandler {
     pub(crate) svc: Arc<dyn MediaService>,
     pub(crate) xaddr: String,

@@ -15,10 +15,10 @@ pub trait PTZService: Send + Sync + 'static {
     /// Performs a relative pan/tilt/zoom movement.
     async fn relative_move(
         &self,
-        profile_token: &str,
-        pan: f32,
-        tilt: f32,
-        zoom: f32,
+        _profile_token: &str,
+        _pan: f32,
+        _tilt: f32,
+        _zoom: f32,
     ) -> Result<(), OnvifError> {
         not_implemented()
     }
@@ -26,10 +26,10 @@ pub trait PTZService: Send + Sync + 'static {
     /// Performs an absolute pan/tilt/zoom movement.
     async fn absolute_move(
         &self,
-        profile_token: &str,
-        pan: f32,
-        tilt: f32,
-        zoom: f32,
+        _profile_token: &str,
+        _pan: f32,
+        _tilt: f32,
+        _zoom: f32,
     ) -> Result<(), OnvifError> {
         not_implemented()
     }
@@ -37,10 +37,10 @@ pub trait PTZService: Send + Sync + 'static {
     /// Performs a continuous pan/tilt/zoom movement.
     async fn continuous_move(
         &self,
-        profile_token: &str,
-        pan: f32,
-        tilt: f32,
-        zoom: f32,
+        _profile_token: &str,
+        _pan: f32,
+        _tilt: f32,
+        _zoom: f32,
     ) -> Result<(), OnvifError> {
         not_implemented()
     }
@@ -48,9 +48,9 @@ pub trait PTZService: Send + Sync + 'static {
     /// Stops any ongoing PTZ movement.
     async fn stop(
         &self,
-        profile_token: &str,
-        pan_tilt: bool,
-        zoom: bool,
+        _profile_token: &str,
+        _pan_tilt: bool,
+        _zoom: bool,
     ) -> Result<(), OnvifError> {
         not_implemented()
     }
@@ -58,7 +58,7 @@ pub trait PTZService: Send + Sync + 'static {
     /// Returns the current PTZ position and move status.
     async fn get_status(
         &self,
-        profile_token: &str,
+        _profile_token: &str,
     ) -> Result<PTZStatusResult, OnvifError> {
         not_implemented()
     }
@@ -66,7 +66,7 @@ pub trait PTZService: Send + Sync + 'static {
     /// Returns all saved preset positions. Defaults to empty list.
     async fn get_presets(
         &self,
-        profile_token: &str,
+        _profile_token: &str,
     ) -> Result<Vec<PTZPreset>, OnvifError> {
         Ok(vec![])
     }
@@ -74,8 +74,8 @@ pub trait PTZService: Send + Sync + 'static {
     /// Moves the camera to a saved preset position.
     async fn goto_preset(
         &self,
-        profile_token: &str,
-        preset_token: &str,
+        _profile_token: &str,
+        _preset_token: &str,
     ) -> Result<(), OnvifError> {
         not_implemented()
     }
@@ -83,9 +83,9 @@ pub trait PTZService: Send + Sync + 'static {
     /// Saves the current position as a named preset. Returns the preset token.
     async fn set_preset(
         &self,
-        profile_token: &str,
-        preset_name: Option<&str>,
-        preset_token: Option<&str>,
+        _profile_token: &str,
+        _preset_name: Option<&str>,
+        _preset_token: Option<&str>,
     ) -> Result<String, OnvifError> {
         not_implemented()
     }
@@ -93,8 +93,8 @@ pub trait PTZService: Send + Sync + 'static {
     /// Deletes a saved preset.
     async fn remove_preset(
         &self,
-        profile_token: &str,
-        preset_token: &str,
+        _profile_token: &str,
+        _preset_token: &str,
     ) -> Result<(), OnvifError> {
         not_implemented()
     }

@@ -15,6 +15,7 @@ struct SubscriptionInfo {
     termination_time: DateTime<Utc>,
 }
 
+#[allow(dead_code)]
 pub struct EventServiceHandler {
     pub(crate) svc: Arc<dyn EventService>,
     pub(crate) xaddr: String,

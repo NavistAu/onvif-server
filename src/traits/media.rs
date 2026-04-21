@@ -9,12 +9,12 @@ use crate::error::{OnvifError, not_implemented};
 #[async_trait]
 pub trait MediaService: Send + Sync + 'static {
     /// Returns the RTSP streaming URI for the given profile token.
-    async fn get_stream_uri(&self, profile_token: &str) -> Result<String, OnvifError> {
+    async fn get_stream_uri(&self, _profile_token: &str) -> Result<String, OnvifError> {
         not_implemented()
     }
 
     /// Returns the HTTP snapshot URI for the given profile token.
-    async fn get_snapshot_uri(&self, profile_token: &str) -> Result<String, OnvifError> {
+    async fn get_snapshot_uri(&self, _profile_token: &str) -> Result<String, OnvifError> {
         not_implemented()
     }
 }
