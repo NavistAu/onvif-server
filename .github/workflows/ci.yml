@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
           path: soap-server-dep
       - name: Make soap-server available at ../soap-server
         run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
           path: soap-server-dep
       - name: Make soap-server available at ../soap-server
         run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
           path: soap-server-dep
       - name: Make soap-server available at ../soap-server
         run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
@@ -112,7 +112,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: NavistAu/soap-server
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
           path: soap-server-dep
       - name: Make soap-server available at ../soap-server
         run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
