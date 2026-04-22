@@ -23,11 +23,11 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use onvif_server::{
-    DeviceService, MediaService, PTZService, ImagingService, EventService,
-    OnvifError, PTZStatusResult, PTZPreset, ImagingSettings,
-};
 use onvif_server::generated::DeviceInfo;
+use onvif_server::{
+    DeviceService, EventService, ImagingService, ImagingSettings, MediaService, OnvifError,
+    PTZPreset, PTZService, PTZStatusResult,
+};
 
 // ---------------------------------------------------------------------------
 // VirtualPTZ — shared state via Arc<Mutex<_>>
@@ -135,9 +135,7 @@ impl PTZService for VirtualPTZ {
         pan_tilt: bool,
         zoom: bool,
     ) -> Result<(), OnvifError> {
-        println!(
-            "[VirtualPTZ] stop: profile={profile_token} pan_tilt={pan_tilt} zoom={zoom}"
-        );
+        println!("[VirtualPTZ] stop: profile={profile_token} pan_tilt={pan_tilt} zoom={zoom}");
         Ok(())
     }
 
@@ -179,18 +177,15 @@ impl PTZService for VirtualPTZ {
             format!("preset_{}", *counter)
         };
         let name = preset_name.unwrap_or(&token).to_string();
-        self.presets.lock().unwrap().insert(token.clone(), name.clone());
-        println!(
-            "[VirtualPTZ] set_preset: profile={profile_token} token={token} name={name}"
-        );
+        self.presets
+            .lock()
+            .unwrap()
+            .insert(token.clone(), name.clone());
+        println!("[VirtualPTZ] set_preset: profile={profile_token} token={token} name={name}");
         Ok(token)
     }
 
-    async fn goto_preset(
-        &self,
-        profile_token: &str,
-        preset_token: &str,
-    ) -> Result<(), OnvifError> {
+    async fn goto_preset(&self, profile_token: &str, preset_token: &str) -> Result<(), OnvifError> {
         println!(
             "[VirtualPTZ] goto_preset: profile={profile_token} moving to preset={preset_token}"
         );
@@ -216,7 +211,10 @@ impl PTZService for VirtualPTZ {
 
 #[async_trait]
 impl ImagingService for VirtualPTZ {
-    async fn get_imaging_settings(&self, _video_source_token: String) -> Result<ImagingSettings, OnvifError> {
+    async fn get_imaging_settings(
+        &self,
+        _video_source_token: String,
+    ) -> Result<ImagingSettings, OnvifError> {
         Ok(ImagingSettings {
             brightness: Some(50.0),
             contrast: Some(50.0),

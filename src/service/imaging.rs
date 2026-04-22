@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use async_trait::async_trait;
 use bytes::Bytes;
-use soap_server::{SoapHandler, SoapFault};
-use quick_xml::NsReader;
 use quick_xml::events::Event;
+use quick_xml::NsReader;
+use soap_server::{SoapFault, SoapHandler};
+use std::sync::Arc;
 
 use crate::error::OnvifError;
 use crate::traits::ImagingService;
@@ -33,7 +33,10 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
     let mut reader = NsReader::from_reader(body.as_ref());
     reader.config_mut().trim_text(true);
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) | (_, Event::Empty(e)) => {
                 let local = std::str::from_utf8(e.local_name().as_ref())
                     .map_err(|e| SoapFault::sender(format!("{e}")))?
@@ -51,7 +54,10 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
     reader.config_mut().trim_text(true);
     let mut inside_target = false;
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) => {
                 let local_name = e.local_name();
                 let local = std::str::from_utf8(local_name.as_ref())
@@ -65,9 +71,11 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
                     .map(|s| s.to_owned())
                     .map_err(|e| SoapFault::sender(format!("{e}")));
             }
-            (_, Event::Eof) => return Err(SoapFault::sender(
-                format!("Element {element_name} not found in body")
-            )),
+            (_, Event::Eof) => {
+                return Err(SoapFault::sender(format!(
+                    "Element {element_name} not found in body"
+                )))
+            }
             _ => {}
         }
     }
@@ -76,7 +84,10 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
 impl ImagingServiceHandler {
     async fn handle_get_imaging_settings(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let token = extract_text_element(body, "VideoSourceToken")?;
-        let settings = self.svc.get_imaging_settings(token).await
+        let settings = self
+            .svc
+            .get_imaging_settings(token)
+            .await
             .map_err(|e| e.into_soap_fault())?;
 
         let mut inner = String::new();
@@ -90,13 +101,22 @@ impl ImagingServiceHandler {
             inner.push_str(&format!("<tt:Sharpness>{}</tt:Sharpness>", v as i32));
         }
         if let Some(v) = settings.color_saturation {
-            inner.push_str(&format!("<tt:ColorSaturation>{}</tt:ColorSaturation>", v as i32));
+            inner.push_str(&format!(
+                "<tt:ColorSaturation>{}</tt:ColorSaturation>",
+                v as i32
+            ));
         }
         if let Some(v) = settings.white_balance_cr_gain {
-            inner.push_str(&format!("<tt:WhiteBalance><tt:CrGain>{}</tt:CrGain></tt:WhiteBalance>", v));
+            inner.push_str(&format!(
+                "<tt:WhiteBalance><tt:CrGain>{}</tt:CrGain></tt:WhiteBalance>",
+                v
+            ));
         }
         if let Some(v) = settings.white_balance_cb_gain {
-            inner.push_str(&format!("<tt:WhiteBalance><tt:CbGain>{}</tt:CbGain></tt:WhiteBalance>", v));
+            inner.push_str(&format!(
+                "<tt:WhiteBalance><tt:CbGain>{}</tt:CbGain></tt:WhiteBalance>",
+                v
+            ));
         }
 
         let xml = format!(

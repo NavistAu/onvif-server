@@ -3,13 +3,13 @@
 // Validates the exact sequence Frigate PTZ autotracker uses on startup,
 // exercising both MediaServiceHandler and PTZServiceHandler without HTTP.
 
-use std::sync::Arc;
 use bytes::Bytes;
-use soap_server::SoapHandler;
 use onvif_server::{
-    PTZService, MediaService, PTZServiceHandler, MediaServiceHandler,
-    OnvifError, PTZStatusResult, PTZPreset,
+    MediaService, MediaServiceHandler, OnvifError, PTZPreset, PTZService, PTZServiceHandler,
+    PTZStatusResult,
 };
+use soap_server::SoapHandler;
+use std::sync::Arc;
 
 // ---------------------------------------------------------------------------
 // Test stubs
@@ -71,20 +71,14 @@ impl PTZService for TestPTZFrigate {
         Ok(())
     }
 
-    async fn get_status(
-        &self,
-        _profile_token: &str,
-    ) -> Result<PTZStatusResult, OnvifError> {
+    async fn get_status(&self, _profile_token: &str) -> Result<PTZStatusResult, OnvifError> {
         Ok(PTZStatusResult {
             pan_tilt_moving: false,
             zoom_moving: false,
         })
     }
 
-    async fn get_presets(
-        &self,
-        _profile_token: &str,
-    ) -> Result<Vec<PTZPreset>, OnvifError> {
+    async fn get_presets(&self, _profile_token: &str) -> Result<Vec<PTZPreset>, OnvifError> {
         Ok(vec![])
     }
 
@@ -131,10 +125,8 @@ impl PTZService for TestPTZFrigate {
 #[tokio::test]
 async fn frigate_autotracker_call_sequence() {
     let media_svc = Arc::new(TestMediaFrigate);
-    let media_handler = MediaServiceHandler::new(
-        media_svc,
-        "http://localhost:8080/onvif/media_service",
-    );
+    let media_handler =
+        MediaServiceHandler::new(media_svc, "http://localhost:8080/onvif/media_service");
 
     let ptz_svc = Arc::new(TestPTZFrigate);
     let ptz_handler = PTZServiceHandler::new(ptz_svc);
@@ -144,7 +136,9 @@ async fn frigate_autotracker_call_sequence() {
         let body = Bytes::from_static(
             b"<trt:GetProfiles xmlns:trt=\"http://www.onvif.org/ver10/media/wsdl\"/>",
         );
-        let result = media_handler.handle(body).await
+        let result = media_handler
+            .handle(body)
+            .await
             .expect("Step 1 GetProfiles must not return SoapFault");
         let xml = String::from_utf8(result.to_vec()).unwrap();
 
@@ -166,7 +160,9 @@ async fn frigate_autotracker_call_sequence() {
               <tptz:ConfigurationToken>ptz_cfg_0</tptz:ConfigurationToken>\
               </tptz:GetConfigurationOptions>",
         );
-        let result = ptz_handler.handle(body).await
+        let result = ptz_handler
+            .handle(body)
+            .await
             .expect("Step 2 GetConfigurationOptions must not return SoapFault");
         let xml = String::from_utf8(result.to_vec()).unwrap();
 
@@ -182,7 +178,9 @@ async fn frigate_autotracker_call_sequence() {
             b"<tptz:GetServiceCapabilities \
               xmlns:tptz=\"http://www.onvif.org/ver20/ptz/wsdl\"/>",
         );
-        let result = ptz_handler.handle(body).await
+        let result = ptz_handler
+            .handle(body)
+            .await
             .expect("Step 3 GetServiceCapabilities must not return SoapFault");
         let xml = String::from_utf8(result.to_vec()).unwrap();
 
@@ -202,7 +200,8 @@ async fn frigate_autotracker_call_sequence() {
         let result = ptz_handler.handle(body).await;
         assert!(
             result.is_ok(),
-            "Step 4: GetPresets must return Ok, got: {:?}", result.err()
+            "Step 4: GetPresets must return Ok, got: {:?}",
+            result.err()
         );
     }
 
@@ -213,7 +212,9 @@ async fn frigate_autotracker_call_sequence() {
               <tptz:ProfileToken>profile_0</tptz:ProfileToken>\
               </tptz:GetStatus>",
         );
-        let result = ptz_handler.handle(body).await
+        let result = ptz_handler
+            .handle(body)
+            .await
             .expect("Step 5 GetStatus must not return SoapFault");
         let xml = String::from_utf8(result.to_vec()).unwrap();
 
@@ -244,7 +245,8 @@ async fn frigate_autotracker_call_sequence() {
         let result = ptz_handler.handle(body).await;
         assert!(
             result.is_ok(),
-            "Step 6: RelativeMove must return Ok, got: {:?}", result.err()
+            "Step 6: RelativeMove must return Ok, got: {:?}",
+            result.err()
         );
     }
 
@@ -259,7 +261,8 @@ async fn frigate_autotracker_call_sequence() {
         let result = ptz_handler.handle(body).await;
         assert!(
             result.is_ok(),
-            "Step 7: GotoPreset must return Ok (Frigate issues GotoPreset on startup), got: {:?}", result.err()
+            "Step 7: GotoPreset must return Ok (Frigate issues GotoPreset on startup), got: {:?}",
+            result.err()
         );
     }
 }

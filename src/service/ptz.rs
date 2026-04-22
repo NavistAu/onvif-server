@@ -1,14 +1,14 @@
-use std::sync::Arc;
 use async_trait::async_trait;
 use bytes::Bytes;
-use soap_server::{SoapHandler, SoapFault};
-use quick_xml::NsReader;
 use quick_xml::events::Event;
+use quick_xml::NsReader;
+use soap_server::{SoapFault, SoapHandler};
+use std::sync::Arc;
 
+use crate::constants::{PTZ_CONFIG_TOKEN, PTZ_NODE_TOKEN, TRANSLATION_SPACE_FOV};
 use crate::error::OnvifError;
+use crate::generated::{PTZPreset, PTZStatusResult};
 use crate::traits::PTZService;
-use crate::generated::{PTZStatusResult, PTZPreset};
-use crate::constants::{PTZ_NODE_TOKEN, PTZ_CONFIG_TOKEN, TRANSLATION_SPACE_FOV};
 
 pub struct PTZServiceHandler {
     pub(crate) svc: Arc<dyn PTZService>,
@@ -25,21 +25,21 @@ impl SoapHandler for PTZServiceHandler {
     async fn handle(&self, body: Bytes) -> Result<Bytes, SoapFault> {
         let op = extract_local_name(&body)?;
         match op.as_str() {
-            "GetNodes"                => self.handle_get_nodes().await,
-            "GetNode"                 => self.handle_get_node(&body).await,
-            "GetConfigurations"       => self.handle_get_configurations().await,
-            "GetConfiguration"        => self.handle_get_configuration(&body).await,
+            "GetNodes" => self.handle_get_nodes().await,
+            "GetNode" => self.handle_get_node(&body).await,
+            "GetConfigurations" => self.handle_get_configurations().await,
+            "GetConfiguration" => self.handle_get_configuration(&body).await,
             "GetConfigurationOptions" => self.handle_get_configuration_options(&body).await,
-            "GetServiceCapabilities"  => self.handle_get_service_capabilities().await,
-            "RelativeMove"            => self.handle_relative_move(&body).await,
-            "AbsoluteMove"            => self.handle_absolute_move(&body).await,
-            "ContinuousMove"          => self.handle_continuous_move(&body).await,
-            "Stop"                    => self.handle_stop(&body).await,
-            "GetStatus"               => self.handle_get_status(&body).await,
-            "GetPresets"              => self.handle_get_presets(&body).await,
-            "GotoPreset"              => self.handle_goto_preset(&body).await,
-            "SetPreset"               => self.handle_set_preset(&body).await,
-            "RemovePreset"            => self.handle_remove_preset(&body).await,
+            "GetServiceCapabilities" => self.handle_get_service_capabilities().await,
+            "RelativeMove" => self.handle_relative_move(&body).await,
+            "AbsoluteMove" => self.handle_absolute_move(&body).await,
+            "ContinuousMove" => self.handle_continuous_move(&body).await,
+            "Stop" => self.handle_stop(&body).await,
+            "GetStatus" => self.handle_get_status(&body).await,
+            "GetPresets" => self.handle_get_presets(&body).await,
+            "GotoPreset" => self.handle_goto_preset(&body).await,
+            "SetPreset" => self.handle_set_preset(&body).await,
+            "RemovePreset" => self.handle_remove_preset(&body).await,
             _ => Err(OnvifError::ActionNotSupported.into_soap_fault()),
         }
     }
@@ -49,7 +49,10 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
     let mut reader = NsReader::from_reader(body.as_ref());
     reader.config_mut().trim_text(true);
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) | (_, Event::Empty(e)) => {
                 let local = std::str::from_utf8(e.local_name().as_ref())
                     .map_err(|e| SoapFault::sender(format!("{e}")))?
@@ -67,7 +70,10 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
     reader.config_mut().trim_text(true);
     let mut inside_target = false;
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) => {
                 let local_name = e.local_name();
                 let local = std::str::from_utf8(local_name.as_ref())
@@ -81,9 +87,11 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
                     .map(|s| s.to_owned())
                     .map_err(|e| SoapFault::sender(format!("{e}")));
             }
-            (_, Event::Eof) => return Err(SoapFault::sender(
-                format!("Element {element_name} not found in body")
-            )),
+            (_, Event::Eof) => {
+                return Err(SoapFault::sender(format!(
+                    "Element {element_name} not found in body"
+                )))
+            }
             _ => {}
         }
     }
@@ -99,7 +107,10 @@ fn extract_element_attribute(
     let mut reader = NsReader::from_reader(body.as_ref());
     reader.config_mut().trim_text(true);
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) | (_, Event::Empty(e)) => {
                 let local_bytes = e.local_name();
                 let local = std::str::from_utf8(local_bytes.as_ref())
@@ -155,7 +166,10 @@ impl PTZServiceHandler {
     async fn handle_get_node(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let token = extract_text_element(body, "NodeToken")?;
         if token != PTZ_NODE_TOKEN {
-            return Err(OnvifError::InvalidArgument(format!("Unknown NodeToken: {token}")).into_soap_fault());
+            return Err(
+                OnvifError::InvalidArgument(format!("Unknown NodeToken: {token}"))
+                    .into_soap_fault(),
+            );
         }
         // Return same structure as GetNodes but wrapped in GetNodeResponse
         let xml = format!(
@@ -199,7 +213,10 @@ impl PTZServiceHandler {
     async fn handle_get_configuration(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let token = extract_text_element(body, "ConfigurationToken")?;
         if token != PTZ_CONFIG_TOKEN {
-            return Err(OnvifError::InvalidArgument(format!("Unknown ConfigurationToken: {token}")).into_soap_fault());
+            return Err(OnvifError::InvalidArgument(format!(
+                "Unknown ConfigurationToken: {token}"
+            ))
+            .into_soap_fault());
         }
         let xml = format!(
             r#"<tptz:GetConfigurationResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
@@ -249,9 +266,16 @@ impl PTZServiceHandler {
 
     async fn handle_get_status(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
-        let status: PTZStatusResult = self.svc.get_status(&profile_token).await
+        let status: PTZStatusResult = self
+            .svc
+            .get_status(&profile_token)
+            .await
             .map_err(|e| e.into_soap_fault())?;
-        let pan_tilt = if status.pan_tilt_moving { "MOVING" } else { "IDLE" };
+        let pan_tilt = if status.pan_tilt_moving {
+            "MOVING"
+        } else {
+            "IDLE"
+        };
         let zoom = if status.zoom_moving { "MOVING" } else { "IDLE" };
         let xml = format!(
             r#"<tptz:GetStatusResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
@@ -272,16 +296,22 @@ impl PTZServiceHandler {
         let profile_token = extract_text_element(body, "ProfileToken")?;
         let pan = extract_element_attribute(body, "PanTilt", "x")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
+            .parse::<f32>()
+            .unwrap_or(0.0);
         let tilt = extract_element_attribute(body, "PanTilt", "y")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
+            .parse::<f32>()
+            .unwrap_or(0.0);
         let zoom = extract_element_attribute(body, "Zoom", "x")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
-        self.svc.relative_move(&profile_token, pan, tilt, zoom).await
+            .parse::<f32>()
+            .unwrap_or(0.0);
+        self.svc
+            .relative_move(&profile_token, pan, tilt, zoom)
+            .await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:RelativeMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
+        let xml =
+            r#"<tptz:RelativeMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -289,16 +319,22 @@ impl PTZServiceHandler {
         let profile_token = extract_text_element(body, "ProfileToken")?;
         let pan = extract_element_attribute(body, "PanTilt", "x")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
+            .parse::<f32>()
+            .unwrap_or(0.0);
         let tilt = extract_element_attribute(body, "PanTilt", "y")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
+            .parse::<f32>()
+            .unwrap_or(0.0);
         let zoom = extract_element_attribute(body, "Zoom", "x")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
-        self.svc.absolute_move(&profile_token, pan, tilt, zoom).await
+            .parse::<f32>()
+            .unwrap_or(0.0);
+        self.svc
+            .absolute_move(&profile_token, pan, tilt, zoom)
+            .await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:AbsoluteMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
+        let xml =
+            r#"<tptz:AbsoluteMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -306,16 +342,22 @@ impl PTZServiceHandler {
         let profile_token = extract_text_element(body, "ProfileToken")?;
         let pan = extract_element_attribute(body, "PanTilt", "x")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
+            .parse::<f32>()
+            .unwrap_or(0.0);
         let tilt = extract_element_attribute(body, "PanTilt", "y")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
+            .parse::<f32>()
+            .unwrap_or(0.0);
         let zoom = extract_element_attribute(body, "Zoom", "x")?
             .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>().unwrap_or(0.0);
-        self.svc.continuous_move(&profile_token, pan, tilt, zoom).await
+            .parse::<f32>()
+            .unwrap_or(0.0);
+        self.svc
+            .continuous_move(&profile_token, pan, tilt, zoom)
+            .await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:ContinuousMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
+        let xml =
+            r#"<tptz:ContinuousMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 
@@ -330,7 +372,9 @@ impl PTZServiceHandler {
             Ok(v) => v == "true" || v == "1",
             Err(_) => true,
         };
-        self.svc.stop(&profile_token, pan_tilt, zoom).await
+        self.svc
+            .stop(&profile_token, pan_tilt, zoom)
+            .await
             .map_err(|e| e.into_soap_fault())?;
         let xml = r#"<tptz:StopResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
@@ -338,7 +382,10 @@ impl PTZServiceHandler {
 
     async fn handle_get_presets(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
-        let presets: Vec<PTZPreset> = self.svc.get_presets(&profile_token).await
+        let presets: Vec<PTZPreset> = self
+            .svc
+            .get_presets(&profile_token)
+            .await
             .map_err(|e| e.into_soap_fault())?;
         let mut preset_xml = String::new();
         for p in &presets {
@@ -360,7 +407,9 @@ impl PTZServiceHandler {
     async fn handle_goto_preset(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
         let preset_token = extract_text_element(body, "PresetToken")?;
-        self.svc.goto_preset(&profile_token, &preset_token).await
+        self.svc
+            .goto_preset(&profile_token, &preset_token)
+            .await
             .map_err(|e| e.into_soap_fault())?;
         let xml = r#"<tptz:GotoPresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
@@ -370,11 +419,15 @@ impl PTZServiceHandler {
         let profile_token = extract_text_element(body, "ProfileToken")?;
         let preset_name = extract_text_element(body, "PresetName").ok();
         let preset_token = extract_text_element(body, "PresetToken").ok();
-        let token = self.svc.set_preset(
-            &profile_token,
-            preset_name.as_deref(),
-            preset_token.as_deref(),
-        ).await.map_err(|e| e.into_soap_fault())?;
+        let token = self
+            .svc
+            .set_preset(
+                &profile_token,
+                preset_name.as_deref(),
+                preset_token.as_deref(),
+            )
+            .await
+            .map_err(|e| e.into_soap_fault())?;
         let xml = format!(
             r#"<tptz:SetPresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
   <tptz:PresetToken>{token}</tptz:PresetToken>
@@ -387,10 +440,12 @@ impl PTZServiceHandler {
     async fn handle_remove_preset(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
         let preset_token = extract_text_element(body, "PresetToken")?;
-        self.svc.remove_preset(&profile_token, &preset_token).await
+        self.svc
+            .remove_preset(&profile_token, &preset_token)
+            .await
             .map_err(|e| e.into_soap_fault())?;
-        let xml = r#"<tptz:RemovePresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
+        let xml =
+            r#"<tptz:RemovePresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 }
-

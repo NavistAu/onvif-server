@@ -1,6 +1,6 @@
 pub mod types;
 pub use types::{
-    DeviceInfo, Scope, ScopeDefinition, HostnameInformation, NetworkInterface,
-    MediaProfile, VideoSource, VideoSourceConfiguration, VideoEncoderConfiguration,
-    PTZStatusResult, PTZPreset, ImagingSettings,
+    DeviceInfo, HostnameInformation, ImagingSettings, MediaProfile, NetworkInterface, PTZPreset,
+    PTZStatusResult, Scope, ScopeDefinition, VideoEncoderConfiguration, VideoSource,
+    VideoSourceConfiguration,
 };

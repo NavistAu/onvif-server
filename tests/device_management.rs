@@ -2,10 +2,13 @@
 // Integration tests for Phase 2: Device Management (DEV-01 through DEV-07)
 // Wave 0: stubs compile; #[ignore] removed as each handler is implemented.
 
-use std::sync::Arc;
 use bytes::Bytes;
+use onvif_server::{
+    DeviceInfo, DeviceService, DeviceServiceHandler, EventService, ImagingService, ImagingSettings,
+    MediaService, NetworkInterface, PTZService,
+};
 use soap_server::SoapHandler;
-use onvif_server::{DeviceService, DeviceServiceHandler, DeviceInfo, MediaService, PTZService, ImagingService, EventService, NetworkInterface, ImagingSettings};
+use std::sync::Arc;
 
 /// A minimal DeviceService implementation for tests
 struct TestDevice {
@@ -18,7 +21,9 @@ impl DeviceService for TestDevice {
         Ok(self.info.clone())
     }
 
-    async fn get_network_interfaces(&self) -> Result<Vec<NetworkInterface>, onvif_server::OnvifError> {
+    async fn get_network_interfaces(
+        &self,
+    ) -> Result<Vec<NetworkInterface>, onvif_server::OnvifError> {
         Ok(vec![NetworkInterface {
             token: "eth0".into(),
             enabled: true,
@@ -46,8 +51,14 @@ struct TestImaging;
 
 #[async_trait::async_trait]
 impl ImagingService for TestImaging {
-    async fn get_imaging_settings(&self, _token: String) -> Result<ImagingSettings, onvif_server::OnvifError> {
-        Ok(ImagingSettings { brightness: Some(50.0), ..Default::default() })
+    async fn get_imaging_settings(
+        &self,
+        _token: String,
+    ) -> Result<ImagingSettings, onvif_server::OnvifError> {
+        Ok(ImagingSettings {
+            brightness: Some(50.0),
+            ..Default::default()
+        })
     }
 }
 
@@ -83,7 +94,10 @@ async fn device_get_system_date_and_time() {
     let body = Bytes::from_static(
         b"<tds:GetSystemDateAndTime xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetSystemDateAndTime must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetSystemDateAndTime must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("tt:UTCDateTime"),
@@ -113,7 +127,10 @@ async fn device_get_capabilities_xaddr() {
     let body = Bytes::from_static(
         b"<tds:GetCapabilities xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetCapabilities must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetCapabilities must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("tt:XAddr"),
@@ -131,7 +148,10 @@ async fn device_get_services() {
     let body = Bytes::from_static(
         b"<tds:GetServices xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetServices must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetServices must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("tds:Service"),
@@ -161,14 +181,32 @@ async fn device_get_device_information() {
     let body = Bytes::from_static(
         b"<tds:GetDeviceInformation xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetDeviceInformation must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetDeviceInformation must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
-    assert!(xml.contains("Acme"), "Manufacturer must be present, got: {xml}");
+    assert!(
+        xml.contains("Acme"),
+        "Manufacturer must be present, got: {xml}"
+    );
     assert!(xml.contains("Cam1"), "Model must be present, got: {xml}");
-    assert!(xml.contains("1.0.0"), "FirmwareVersion must be present, got: {xml}");
-    assert!(xml.contains("SN-001"), "SerialNumber must be present, got: {xml}");
-    assert!(xml.contains("HW-REV-A"), "HardwareId must be present, got: {xml}");
-    assert!(xml.contains("tds:Manufacturer"), "tds:Manufacturer element must be present, got: {xml}");
+    assert!(
+        xml.contains("1.0.0"),
+        "FirmwareVersion must be present, got: {xml}"
+    );
+    assert!(
+        xml.contains("SN-001"),
+        "SerialNumber must be present, got: {xml}"
+    );
+    assert!(
+        xml.contains("HW-REV-A"),
+        "HardwareId must be present, got: {xml}"
+    );
+    assert!(
+        xml.contains("tds:Manufacturer"),
+        "tds:Manufacturer element must be present, got: {xml}"
+    );
 }
 
 #[tokio::test]
@@ -199,7 +237,10 @@ async fn device_get_hostname() {
     let body = Bytes::from_static(
         b"<tds:GetHostname xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetHostname must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetHostname must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("<tt:Name>onvif-device</tt:Name>"),
@@ -217,7 +258,10 @@ async fn device_get_network_interfaces() {
     let body = Bytes::from_static(
         b"<tds:GetNetworkInterfaces xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetNetworkInterfaces must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetNetworkInterfaces must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("token=\"eth0\""),
@@ -238,8 +282,8 @@ async fn device_get_network_interfaces() {
 #[tokio::test]
 async fn device_server_binds_and_serves_auth_exempt_op() {
     use onvif_server::OnvifServer;
-    use tokio::net::TcpListener;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
 
     // Pick an OS-assigned free port
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -287,7 +331,8 @@ async fn device_server_binds_and_serves_auth_exempt_op() {
         soap_body
     );
 
-    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}")).await
+    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}"))
+        .await
         .expect("must connect to test server");
     stream.write_all(request.as_bytes()).await.unwrap();
 
@@ -308,8 +353,8 @@ async fn device_server_binds_and_serves_auth_exempt_op() {
 #[tokio::test]
 async fn device_auth_valid_credential() {
     use onvif_server::OnvifServer;
-    use tokio::net::TcpListener;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
@@ -318,18 +363,25 @@ async fn device_auth_valid_credential() {
     let server = OnvifServer::builder()
         .port(port)
         .auth("admin", "secret")
-        .device_service(TestDevice { info: DeviceInfo {
-            manufacturer: "Test".into(), model: "Test".into(),
-            firmware_version: "0.0.1".into(), serial_number: "TEST-001".into(),
-            hardware_id: "HW-TEST".into(),
-        }})
+        .device_service(TestDevice {
+            info: DeviceInfo {
+                manufacturer: "Test".into(),
+                model: "Test".into(),
+                firmware_version: "0.0.1".into(),
+                serial_number: "TEST-001".into(),
+                hardware_id: "HW-TEST".into(),
+            },
+        })
         .media_service(TestMedia)
         .ptz_service(TestPTZ)
         .imaging_service(TestImaging)
         .event_service(TestEvent)
-        .build().expect("build must succeed");
+        .build()
+        .expect("build must succeed");
 
-    tokio::spawn(async move { server.run().await.unwrap(); });
+    tokio::spawn(async move {
+        server.run().await.unwrap();
+    });
     tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
 
     let soap_body = r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -353,7 +405,9 @@ async fn device_auth_valid_credential() {
         soap_body.len(), soap_body
     );
 
-    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}")).await.unwrap();
+    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}"))
+        .await
+        .unwrap();
     stream.write_all(request.as_bytes()).await.unwrap();
     let mut response = Vec::new();
     stream.read_to_end(&mut response).await.unwrap();
@@ -375,8 +429,8 @@ async fn device_auth_valid_credential() {
 #[tokio::test]
 async fn ptz_dispatch_get_configuration_options_over_http() {
     use onvif_server::OnvifServer;
-    use tokio::net::TcpListener;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
@@ -385,18 +439,25 @@ async fn ptz_dispatch_get_configuration_options_over_http() {
     let server = OnvifServer::builder()
         .port(port)
         .auth("admin", "secret")
-        .device_service(TestDevice { info: DeviceInfo {
-            manufacturer: "Test".into(), model: "Test".into(),
-            firmware_version: "0.0.1".into(), serial_number: "TEST-001".into(),
-            hardware_id: "HW-TEST".into(),
-        }})
+        .device_service(TestDevice {
+            info: DeviceInfo {
+                manufacturer: "Test".into(),
+                model: "Test".into(),
+                firmware_version: "0.0.1".into(),
+                serial_number: "TEST-001".into(),
+                hardware_id: "HW-TEST".into(),
+            },
+        })
         .media_service(TestMedia)
         .ptz_service(TestPTZ)
         .imaging_service(TestImaging)
         .event_service(TestEvent)
-        .build().expect("build must succeed");
+        .build()
+        .expect("build must succeed");
 
-    tokio::spawn(async move { server.run().await.unwrap(); });
+    tokio::spawn(async move {
+        server.run().await.unwrap();
+    });
     tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
 
     // Use ver10 namespace — matches what GetServices advertises and what the dispatch
@@ -425,7 +486,8 @@ async fn ptz_dispatch_get_configuration_options_over_http() {
         soap_body
     );
 
-    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}")).await
+    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}"))
+        .await
         .expect("must connect to test server");
     stream.write_all(request.as_bytes()).await.unwrap();
 
@@ -446,8 +508,8 @@ async fn ptz_dispatch_get_configuration_options_over_http() {
 #[tokio::test]
 async fn device_auth_invalid_credential() {
     use onvif_server::OnvifServer;
-    use tokio::net::TcpListener;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
@@ -456,18 +518,25 @@ async fn device_auth_invalid_credential() {
     let server = OnvifServer::builder()
         .port(port)
         .auth("admin", "secret")
-        .device_service(TestDevice { info: DeviceInfo {
-            manufacturer: "Test".into(), model: "Test".into(),
-            firmware_version: "0.0.1".into(), serial_number: "TEST-001".into(),
-            hardware_id: "HW-TEST".into(),
-        }})
+        .device_service(TestDevice {
+            info: DeviceInfo {
+                manufacturer: "Test".into(),
+                model: "Test".into(),
+                firmware_version: "0.0.1".into(),
+                serial_number: "TEST-001".into(),
+                hardware_id: "HW-TEST".into(),
+            },
+        })
         .media_service(TestMedia)
         .ptz_service(TestPTZ)
         .imaging_service(TestImaging)
         .event_service(TestEvent)
-        .build().expect("build must succeed");
+        .build()
+        .expect("build must succeed");
 
-    tokio::spawn(async move { server.run().await.unwrap(); });
+    tokio::spawn(async move {
+        server.run().await.unwrap();
+    });
     tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
 
     let soap_body = r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -491,7 +560,9 @@ async fn device_auth_invalid_credential() {
         soap_body.len(), soap_body
     );
 
-    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}")).await.unwrap();
+    let mut stream = tokio::net::TcpStream::connect(format!("127.0.0.1:{port}"))
+        .await
+        .unwrap();
     stream.write_all(request.as_bytes()).await.unwrap();
     let mut response = Vec::new();
     stream.read_to_end(&mut response).await.unwrap();

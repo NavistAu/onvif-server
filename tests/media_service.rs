@@ -2,10 +2,10 @@
 // Integration tests for Phase 3: Media Service (MEDIA-01 through MEDIA-06)
 // All tests are active and green after Task 3.
 
-use std::sync::Arc;
 use bytes::Bytes;
-use soap_server::SoapHandler;
 use onvif_server::{MediaService, MediaServiceHandler, OnvifError};
+use soap_server::SoapHandler;
+use std::sync::Arc;
 
 /// Minimal MediaService implementation for tests
 struct TestMedia;
@@ -32,7 +32,10 @@ async fn media_get_profiles() {
     let body = Bytes::from_static(
         b"<trt:GetProfiles xmlns:trt=\"http://www.onvif.org/ver10/media/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetProfiles must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetProfiles must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("profile_0"),
@@ -58,7 +61,10 @@ async fn media_get_profiles_ptz_config_token() {
     let body = Bytes::from_static(
         b"<trt:GetProfiles xmlns:trt=\"http://www.onvif.org/ver10/media/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetProfiles must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetProfiles must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("ptz_cfg_0"),
@@ -78,7 +84,10 @@ async fn media_get_stream_uri() {
   <trt:ProfileToken>profile_0</trt:ProfileToken>
 </trt:GetStreamUri>"#,
     );
-    let result = handler.handle(body).await.expect("GetStreamUri must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetStreamUri must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("rtsp://test/profile_0"),
@@ -94,7 +103,10 @@ async fn media_get_snapshot_uri() {
   <trt:ProfileToken>profile_0</trt:ProfileToken>
 </trt:GetSnapshotUri>"#,
     );
-    let result = handler.handle(body).await.expect("GetSnapshotUri must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetSnapshotUri must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("http://test/profile_0/snapshot.jpg"),
@@ -108,7 +120,10 @@ async fn media_get_video_sources() {
     let body = Bytes::from_static(
         b"<trt:GetVideoSources xmlns:trt=\"http://www.onvif.org/ver10/media/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetVideoSources must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetVideoSources must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("video_src_0"),
@@ -122,7 +137,10 @@ async fn media_get_video_source_configurations() {
     let body = Bytes::from_static(
         b"<trt:GetVideoSourceConfigurations xmlns:trt=\"http://www.onvif.org/ver10/media/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetVideoSourceConfigurations must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetVideoSourceConfigurations must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("video_src_0"),
@@ -136,7 +154,10 @@ async fn media_get_video_encoder_configurations() {
     let body = Bytes::from_static(
         b"<trt:GetVideoEncoderConfigurations xmlns:trt=\"http://www.onvif.org/ver10/media/wsdl\"/>",
     );
-    let result = handler.handle(body).await.expect("GetVideoEncoderConfigurations must succeed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetVideoEncoderConfigurations must succeed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("H264"),

@@ -1,5 +1,5 @@
+use crate::error::{not_implemented, OnvifError};
 use async_trait::async_trait;
-use crate::error::{OnvifError, not_implemented};
 
 /// ONVIF Event Service (WS-BaseNotification pull-point pattern).
 ///

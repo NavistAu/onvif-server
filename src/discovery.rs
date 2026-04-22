@@ -9,9 +9,13 @@ pub async fn run_discovery(xaddr: String) -> Result<(), Box<dyn std::error::Erro
     let multicast_addr: Ipv4Addr = "239.255.255.250".parse().unwrap();
     let bind_addr: Ipv4Addr = {
         #[cfg(unix)]
-        { multicast_addr }
+        {
+            multicast_addr
+        }
         #[cfg(not(unix))]
-        { Ipv4Addr::UNSPECIFIED }
+        {
+            Ipv4Addr::UNSPECIFIED
+        }
     };
 
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
@@ -31,8 +35,8 @@ pub async fn run_discovery(xaddr: String) -> Result<(), Box<dyn std::error::Erro
         let msg = &buf[..len];
         // Only respond to Probe messages — check for wsdd:Probe element name in body bytes
         if msg.windows(5).any(|w| w == b"Probe") {
-            let msg_id = extract_message_id(msg)
-                .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+            let msg_id =
+                extract_message_id(msg).unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
             let reply = build_probe_match(&msg_id, &xaddr);
             let _ = udp.send_to(reply.as_bytes(), src).await;
         }

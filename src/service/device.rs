@@ -1,10 +1,10 @@
-use std::sync::Arc;
 use async_trait::async_trait;
 use bytes::Bytes;
 use chrono::{Datelike, Timelike};
-use soap_server::{SoapHandler, SoapFault};
-use quick_xml::NsReader;
 use quick_xml::events::Event;
+use quick_xml::NsReader;
+use soap_server::{SoapFault, SoapHandler};
+use std::sync::Arc;
 
 use crate::error::OnvifError;
 use crate::traits::DeviceService;
@@ -44,11 +44,11 @@ impl SoapHandler for DeviceServiceHandler {
         let op = extract_local_name(&body)?;
         match op.as_str() {
             "GetSystemDateAndTime" => self.handle_get_system_date_and_time().await,
-            "GetCapabilities"      => self.handle_get_capabilities().await,
-            "GetServices"          => self.handle_get_services().await,
+            "GetCapabilities" => self.handle_get_capabilities().await,
+            "GetServices" => self.handle_get_services().await,
             "GetDeviceInformation" => self.handle_get_device_information().await,
-            "GetScopes"            => self.handle_get_scopes().await,
-            "GetHostname"          => self.handle_get_hostname().await,
+            "GetScopes" => self.handle_get_scopes().await,
+            "GetHostname" => self.handle_get_hostname().await,
             "GetNetworkInterfaces" => self.handle_get_network_interfaces().await,
             _ => Err(OnvifError::ActionNotSupported.into_soap_fault()),
         }
@@ -59,7 +59,10 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
     let mut reader = NsReader::from_reader(body.as_ref());
     reader.config_mut().trim_text(true);
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) | (_, Event::Empty(e)) => {
                 let local = std::str::from_utf8(e.local_name().as_ref())
                     .map_err(|e| SoapFault::sender(format!("{e}")))?
@@ -74,7 +77,10 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
 
 impl DeviceServiceHandler {
     async fn handle_get_system_date_and_time(&self) -> Result<Bytes, SoapFault> {
-        let dt = self.svc.get_system_date_and_time().await
+        let dt = self
+            .svc
+            .get_system_date_and_time()
+            .await
             .map_err(|e| e.into_soap_fault())?;
         let xml = format!(
             r#"<tds:GetSystemDateAndTimeResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
@@ -88,8 +94,12 @@ impl DeviceServiceHandler {
     </tt:UTCDateTime>
   </tds:SystemDateAndTime>
 </tds:GetSystemDateAndTimeResponse>"#,
-            dt.hour(), dt.minute(), dt.second(),
-            dt.year(), dt.month(), dt.day()
+            dt.hour(),
+            dt.minute(),
+            dt.second(),
+            dt.year(),
+            dt.month(),
+            dt.day()
         );
         Ok(Bytes::from(xml))
     }
@@ -157,7 +167,10 @@ impl DeviceServiceHandler {
     }
 
     async fn handle_get_device_information(&self) -> Result<Bytes, SoapFault> {
-        let info = self.svc.get_device_information().await
+        let info = self
+            .svc
+            .get_device_information()
+            .await
             .map_err(|e| e.into_soap_fault())?;
         let xml = format!(
             r#"<tds:GetDeviceInformationResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
@@ -167,14 +180,21 @@ impl DeviceServiceHandler {
   <tds:SerialNumber>{}</tds:SerialNumber>
   <tds:HardwareId>{}</tds:HardwareId>
 </tds:GetDeviceInformationResponse>"#,
-            info.manufacturer, info.model, info.firmware_version,
-            info.serial_number, info.hardware_id
+            info.manufacturer,
+            info.model,
+            info.firmware_version,
+            info.serial_number,
+            info.hardware_id
         );
         Ok(Bytes::from(xml))
     }
 
     async fn handle_get_scopes(&self) -> Result<Bytes, SoapFault> {
-        let scopes = self.svc.get_scopes().await.map_err(|e| e.into_soap_fault())?;
+        let scopes = self
+            .svc
+            .get_scopes()
+            .await
+            .map_err(|e| e.into_soap_fault())?;
         let mut items = String::new();
         for s in &scopes {
             let def = match s.scope_def {
@@ -194,7 +214,11 @@ impl DeviceServiceHandler {
     }
 
     async fn handle_get_hostname(&self) -> Result<Bytes, SoapFault> {
-        let info = self.svc.get_hostname().await.map_err(|e| e.into_soap_fault())?;
+        let info = self
+            .svc
+            .get_hostname()
+            .await
+            .map_err(|e| e.into_soap_fault())?;
         let name_el = match &info.name {
             Some(n) => format!("    <tt:Name>{}</tt:Name>\n", n),
             None => String::new(),
@@ -205,14 +229,17 @@ impl DeviceServiceHandler {
     <tt:FromDHCP>{}</tt:FromDHCP>
 {}  </tds:HostnameInformation>
 </tds:GetHostnameResponse>"#,
-            info.from_dhcp,
-            name_el
+            info.from_dhcp, name_el
         );
         Ok(Bytes::from(xml))
     }
 
     async fn handle_get_network_interfaces(&self) -> Result<Bytes, SoapFault> {
-        let ifaces = self.svc.get_network_interfaces().await.map_err(|e| e.into_soap_fault())?;
+        let ifaces = self
+            .svc
+            .get_network_interfaces()
+            .await
+            .map_err(|e| e.into_soap_fault())?;
         let mut iface_els = String::new();
         for iface in &ifaces {
             iface_els.push_str(&format!(

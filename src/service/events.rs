@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use bytes::Bytes;
-use soap_server::{SoapHandler, SoapFault};
-use quick_xml::NsReader;
-use quick_xml::events::Event;
 use chrono::{DateTime, Utc};
+use quick_xml::events::Event;
+use quick_xml::NsReader;
+use soap_server::{SoapFault, SoapHandler};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 use crate::error::OnvifError;
@@ -37,10 +37,10 @@ impl SoapHandler for EventServiceHandler {
     async fn handle(&self, body: Bytes) -> Result<Bytes, SoapFault> {
         let op = extract_local_name(&body)?;
         match op.as_str() {
-            "GetEventProperties"           => self.handle_get_event_properties().await,
-            "CreatePullPointSubscription"  => self.handle_create_pull_point_subscription().await,
-            "PullMessages"                 => self.handle_pull_messages(&body).await,
-            "Unsubscribe"                  => self.handle_unsubscribe(&body).await,
+            "GetEventProperties" => self.handle_get_event_properties().await,
+            "CreatePullPointSubscription" => self.handle_create_pull_point_subscription().await,
+            "PullMessages" => self.handle_pull_messages(&body).await,
+            "Unsubscribe" => self.handle_unsubscribe(&body).await,
             _ => Err(OnvifError::ActionNotSupported.into_soap_fault()),
         }
     }
@@ -50,7 +50,10 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
     let mut reader = NsReader::from_reader(body.as_ref());
     reader.config_mut().trim_text(true);
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) | (_, Event::Empty(e)) => {
                 let local = std::str::from_utf8(e.local_name().as_ref())
                     .map_err(|e| SoapFault::sender(format!("{e}")))?
@@ -68,7 +71,10 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
     reader.config_mut().trim_text(true);
     let mut inside_target = false;
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) => {
                 let local_name = e.local_name();
                 let local = std::str::from_utf8(local_name.as_ref())
@@ -82,9 +88,11 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
                     .map(|s| s.to_owned())
                     .map_err(|e| SoapFault::sender(format!("{e}")));
             }
-            (_, Event::Eof) => return Err(SoapFault::sender(
-                format!("Element {element_name} not found in body")
-            )),
+            (_, Event::Eof) => {
+                return Err(SoapFault::sender(format!(
+                    "Element {element_name} not found in body"
+                )))
+            }
             _ => {}
         }
     }
@@ -102,9 +110,16 @@ impl EventServiceHandler {
         let termination = now + chrono::Duration::seconds(60);
 
         {
-            let mut subs = self.subscriptions.lock()
+            let mut subs = self
+                .subscriptions
+                .lock()
                 .map_err(|e| SoapFault::sender(format!("lock poisoned: {e}")))?;
-            subs.insert(sub_id.clone(), SubscriptionInfo { termination_time: termination });
+            subs.insert(
+                sub_id.clone(),
+                SubscriptionInfo {
+                    termination_time: termination,
+                },
+            );
         }
 
         let xml = format!(
@@ -121,7 +136,9 @@ impl EventServiceHandler {
         let sub_id = extract_text_element(body, "SubscriptionId")?;
 
         let termination_time = {
-            let subs = self.subscriptions.lock()
+            let subs = self
+                .subscriptions
+                .lock()
                 .map_err(|e| SoapFault::sender(format!("lock poisoned: {e}")))?;
             match subs.get(&sub_id) {
                 Some(info) => info.termination_time,
@@ -142,12 +159,15 @@ impl EventServiceHandler {
         let sub_id = extract_text_element(body, "SubscriptionId")?;
 
         {
-            let mut subs = self.subscriptions.lock()
+            let mut subs = self
+                .subscriptions
+                .lock()
                 .map_err(|e| SoapFault::sender(format!("lock poisoned: {e}")))?;
             subs.remove(&sub_id);
         }
 
-        let xml = r#"<tev:UnsubscribeResponse xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#;
+        let xml =
+            r#"<tev:UnsubscribeResponse xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#;
         Ok(Bytes::from(xml))
     }
 }

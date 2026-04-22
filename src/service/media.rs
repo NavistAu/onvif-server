@@ -1,16 +1,16 @@
-use std::sync::Arc;
 use async_trait::async_trait;
 use bytes::Bytes;
-use soap_server::{SoapHandler, SoapFault};
-use quick_xml::NsReader;
 use quick_xml::events::Event;
+use quick_xml::NsReader;
+use soap_server::{SoapFault, SoapHandler};
+use std::sync::Arc;
 
+use crate::constants::{
+    PROFILE_TOKEN, PTZ_CONFIG_TOKEN, PTZ_NODE_TOKEN, TRANSLATION_SPACE_FOV, VIDEO_ENCODER_TOKEN,
+    VIDEO_SOURCE_TOKEN,
+};
 use crate::error::OnvifError;
 use crate::traits::MediaService;
-use crate::constants::{
-    PROFILE_TOKEN, VIDEO_SOURCE_TOKEN, PTZ_NODE_TOKEN, PTZ_CONFIG_TOKEN,
-    TRANSLATION_SPACE_FOV, VIDEO_ENCODER_TOKEN,
-};
 
 #[allow(dead_code)]
 pub struct MediaServiceHandler {
@@ -20,7 +20,10 @@ pub struct MediaServiceHandler {
 
 impl MediaServiceHandler {
     pub fn new(svc: Arc<dyn MediaService>, xaddr: impl Into<String>) -> Self {
-        Self { svc, xaddr: xaddr.into() }
+        Self {
+            svc,
+            xaddr: xaddr.into(),
+        }
     }
 }
 
@@ -29,11 +32,11 @@ impl SoapHandler for MediaServiceHandler {
     async fn handle(&self, body: Bytes) -> Result<Bytes, SoapFault> {
         let op = extract_local_name(&body)?;
         match op.as_str() {
-            "GetProfiles"                   => self.handle_get_profiles().await,
-            "GetStreamUri"                  => self.handle_get_stream_uri(&body).await,
-            "GetSnapshotUri"                => self.handle_get_snapshot_uri(&body).await,
-            "GetVideoSources"               => self.handle_get_video_sources().await,
-            "GetVideoSourceConfigurations"  => self.handle_get_video_source_configurations().await,
+            "GetProfiles" => self.handle_get_profiles().await,
+            "GetStreamUri" => self.handle_get_stream_uri(&body).await,
+            "GetSnapshotUri" => self.handle_get_snapshot_uri(&body).await,
+            "GetVideoSources" => self.handle_get_video_sources().await,
+            "GetVideoSourceConfigurations" => self.handle_get_video_source_configurations().await,
             "GetVideoEncoderConfigurations" => self.handle_get_video_encoder_configurations().await,
             _ => Err(OnvifError::ActionNotSupported.into_soap_fault()),
         }
@@ -44,7 +47,10 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
     let mut reader = NsReader::from_reader(body.as_ref());
     reader.config_mut().trim_text(true);
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) | (_, Event::Empty(e)) => {
                 let local = std::str::from_utf8(e.local_name().as_ref())
                     .map_err(|e| SoapFault::sender(format!("{e}")))?
@@ -62,7 +68,10 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
     reader.config_mut().trim_text(true);
     let mut inside_target = false;
     loop {
-        match reader.read_resolved_event().map_err(|e| SoapFault::sender(format!("{e}")))? {
+        match reader
+            .read_resolved_event()
+            .map_err(|e| SoapFault::sender(format!("{e}")))?
+        {
             (_, Event::Start(e)) => {
                 let local_name = e.local_name();
                 let local = std::str::from_utf8(local_name.as_ref())
@@ -76,9 +85,11 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
                     .map(|s| s.to_owned())
                     .map_err(|e| SoapFault::sender(format!("{e}")));
             }
-            (_, Event::Eof) => return Err(SoapFault::sender(
-                format!("Element {element_name} not found in body")
-            )),
+            (_, Event::Eof) => {
+                return Err(SoapFault::sender(format!(
+                    "Element {element_name} not found in body"
+                )))
+            }
             _ => {}
         }
     }
@@ -136,7 +147,10 @@ impl MediaServiceHandler {
 
     async fn handle_get_stream_uri(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
-        let uri = self.svc.get_stream_uri(&profile_token).await
+        let uri = self
+            .svc
+            .get_stream_uri(&profile_token)
+            .await
             .map_err(|e| e.into_soap_fault())?;
         let xml = format!(
             r#"<trt:GetStreamUriResponse xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
@@ -154,7 +168,10 @@ impl MediaServiceHandler {
 
     async fn handle_get_snapshot_uri(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
-        let uri = self.svc.get_snapshot_uri(&profile_token).await
+        let uri = self
+            .svc
+            .get_snapshot_uri(&profile_token)
+            .await
             .map_err(|e| e.into_soap_fault())?;
         let xml = format!(
             r#"<trt:GetSnapshotUriResponse xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">

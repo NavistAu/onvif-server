@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use bytes::Bytes;
-use soap_server::SoapHandler;
-use onvif_server::{ImagingService, OnvifError};
 use onvif_server::generated::ImagingSettings;
 use onvif_server::service::imaging::ImagingServiceHandler;
+use onvif_server::{ImagingService, OnvifError};
+use soap_server::SoapHandler;
+use std::sync::Arc;
 
 struct TestImaging;
 
@@ -31,7 +31,10 @@ async fn imaging_get_imaging_settings_response_element() {
     let body = Bytes::from(
         r#"<timg:GetImagingSettings xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"><timg:VideoSourceToken>video_source_0</timg:VideoSourceToken></timg:GetImagingSettings>"#,
     );
-    let result = handler.handle(body).await.expect("GetImagingSettings failed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetImagingSettings failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("timg:GetImagingSettingsResponse"),
@@ -45,7 +48,10 @@ async fn imaging_get_imaging_settings_contains_imaging_settings_element() {
     let body = Bytes::from(
         r#"<timg:GetImagingSettings xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"><timg:VideoSourceToken>video_source_0</timg:VideoSourceToken></timg:GetImagingSettings>"#,
     );
-    let result = handler.handle(body).await.expect("GetImagingSettings failed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetImagingSettings failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("timg:ImagingSettings"),
@@ -59,7 +65,10 @@ async fn imaging_brightness_value_in_xml() {
     let body = Bytes::from(
         r#"<timg:GetImagingSettings xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"><timg:VideoSourceToken>video_source_0</timg:VideoSourceToken></timg:GetImagingSettings>"#,
     );
-    let result = handler.handle(body).await.expect("GetImagingSettings failed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetImagingSettings failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("<tt:Brightness>50</tt:Brightness>"),
@@ -83,7 +92,10 @@ async fn imaging_none_fields_produce_empty_imaging_settings() {
     let body = Bytes::from(
         r#"<timg:GetImagingSettings xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"><timg:VideoSourceToken>video_source_0</timg:VideoSourceToken></timg:GetImagingSettings>"#,
     );
-    let result = handler.handle(body).await.expect("GetImagingSettings failed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetImagingSettings failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     // No stray empty child elements — no <tt:Brightness/> or similar
     assert!(
@@ -99,9 +111,8 @@ async fn imaging_none_fields_produce_empty_imaging_settings() {
 #[tokio::test]
 async fn imaging_unknown_operation_returns_soap_fault() {
     let handler = make_handler();
-    let body = Bytes::from(
-        r#"<timg:UnknownOp xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"/>"#,
-    );
+    let body =
+        Bytes::from(r#"<timg:UnknownOp xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"/>"#);
     let result = handler.handle(body).await;
     assert!(result.is_err(), "unknown operation must return SoapFault");
 }

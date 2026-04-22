@@ -1,6 +1,8 @@
+use crate::error::{not_implemented, OnvifError};
+use crate::generated::types::{
+    DeviceInfo, HostnameInformation, NetworkInterface, Scope, ScopeDefinition,
+};
 use async_trait::async_trait;
-use crate::error::{OnvifError, not_implemented};
-use crate::generated::types::{DeviceInfo, Scope, ScopeDefinition, HostnameInformation, NetworkInterface};
 
 /// ONVIF Device Management Service (Profile S core).
 ///

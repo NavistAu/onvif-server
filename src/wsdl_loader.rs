@@ -1,4 +1,4 @@
-use soap_server::{WsdlLoader, WsdlError};
+use soap_server::{WsdlError, WsdlLoader};
 
 /// Serves bundled ONVIF WSDL and XSD files from bytes embedded at compile time.
 ///
@@ -13,13 +13,13 @@ impl WsdlLoader for EmbeddedWsdlLoader {
         let filename = location.rsplit('/').next().unwrap_or(location);
         match filename {
             "devicemgmt.wsdl" => Ok(include_bytes!("../wsdl/devicemgmt.wsdl").to_vec()),
-            "media.wsdl"      => Ok(include_bytes!("../wsdl/media.wsdl").to_vec()),
-            "ptz.wsdl"        => Ok(include_bytes!("../wsdl/ptz.wsdl").to_vec()),
-            "imaging.wsdl"    => Ok(include_bytes!("../wsdl/imaging.wsdl").to_vec()),
+            "media.wsdl" => Ok(include_bytes!("../wsdl/media.wsdl").to_vec()),
+            "ptz.wsdl" => Ok(include_bytes!("../wsdl/ptz.wsdl").to_vec()),
+            "imaging.wsdl" => Ok(include_bytes!("../wsdl/imaging.wsdl").to_vec()),
             // ONVIF events WSDL is named "event.wsdl" at source but stored as "events.wsdl"
             "events.wsdl" | "event.wsdl" => Ok(include_bytes!("../wsdl/events.wsdl").to_vec()),
-            "onvif.xsd"       => Ok(include_bytes!("../wsdl/onvif.xsd").to_vec()),
-            "common.xsd"      => Ok(include_bytes!("../wsdl/common.xsd").to_vec()),
+            "onvif.xsd" => Ok(include_bytes!("../wsdl/onvif.xsd").to_vec()),
+            "common.xsd" => Ok(include_bytes!("../wsdl/common.xsd").to_vec()),
             // W3C and OASIS external schemas imported by onvif.xsd.
             // Bundled as minimal stubs so ServerBuilder resolves the WSDL without network access.
             // URL → rsplit('/') → match key:
@@ -28,7 +28,9 @@ impl WsdlLoader for EmbeddedWsdlLoader {
             //   http://docs.oasis-open.org/wsn/b-2.xsd       → "b-2.xsd"
             //   https://www.w3.org/2004/08/xop/include       → "include"
             "xmlmime" | "xmlmime.xsd" => Ok(include_bytes!("../wsdl/xmlmime.xsd").to_vec()),
-            "soap-envelope" | "soap-envelope.xsd" => Ok(include_bytes!("../wsdl/soap-envelope.xsd").to_vec()),
+            "soap-envelope" | "soap-envelope.xsd" => {
+                Ok(include_bytes!("../wsdl/soap-envelope.xsd").to_vec())
+            }
             "b-2.xsd" => Ok(include_bytes!("../wsdl/wsn-b2.xsd").to_vec()),
             // OASIS WS-BaseNotification and WS-ResourceFramework WSDLs imported by events.wsdl
             "bw-2.wsdl" => Ok(include_bytes!("../wsdl/wsn-bw2.wsdl").to_vec()),
@@ -37,7 +39,9 @@ impl WsdlLoader for EmbeddedWsdlLoader {
             "ws-addr.xsd" => Ok(include_bytes!("../wsdl/ws-addr.xsd").to_vec()),
             "t-1.xsd" => Ok(include_bytes!("../wsdl/wsn-t1.xsd").to_vec()),
             "include" | "xop-include.xsd" => Ok(include_bytes!("../wsdl/xop-include.xsd").to_vec()),
-            other => Err(WsdlError::MalformedXml(format!("Unknown WSDL/XSD: {other}"))),
+            other => Err(WsdlError::MalformedXml(format!(
+                "Unknown WSDL/XSD: {other}"
+            ))),
         }
     }
 }

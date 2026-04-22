@@ -1,6 +1,6 @@
+use crate::error::{not_implemented, OnvifError};
+use crate::generated::{PTZPreset, PTZStatusResult};
 use async_trait::async_trait;
-use crate::error::{OnvifError, not_implemented};
-use crate::generated::{PTZStatusResult, PTZPreset};
 
 /// ONVIF PTZ Service (Profile S) — control operations only.
 ///
@@ -56,18 +56,12 @@ pub trait PTZService: Send + Sync + 'static {
     }
 
     /// Returns the current PTZ position and move status.
-    async fn get_status(
-        &self,
-        _profile_token: &str,
-    ) -> Result<PTZStatusResult, OnvifError> {
+    async fn get_status(&self, _profile_token: &str) -> Result<PTZStatusResult, OnvifError> {
         not_implemented()
     }
 
     /// Returns all saved preset positions. Defaults to empty list.
-    async fn get_presets(
-        &self,
-        _profile_token: &str,
-    ) -> Result<Vec<PTZPreset>, OnvifError> {
+    async fn get_presets(&self, _profile_token: &str) -> Result<Vec<PTZPreset>, OnvifError> {
         Ok(vec![])
     }
 

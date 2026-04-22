@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use bytes::Bytes;
-use soap_server::SoapHandler;
-use onvif_server::EventService;
 use onvif_server::service::events::EventServiceHandler;
+use onvif_server::EventService;
+use soap_server::SoapHandler;
+use std::sync::Arc;
 
 struct TestEvents;
 
@@ -10,7 +10,10 @@ struct TestEvents;
 impl EventService for TestEvents {}
 
 fn make_handler() -> EventServiceHandler {
-    EventServiceHandler::new(Arc::new(TestEvents), "http://0.0.0.0:8080/onvif/events_service")
+    EventServiceHandler::new(
+        Arc::new(TestEvents),
+        "http://0.0.0.0:8080/onvif/events_service",
+    )
 }
 
 #[tokio::test]
@@ -19,7 +22,10 @@ async fn events_get_event_properties_response_element() {
     let body = Bytes::from(
         r#"<tev:GetEventProperties xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#,
     );
-    let result = handler.handle(body).await.expect("GetEventProperties failed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("GetEventProperties failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("tev:GetEventPropertiesResponse"),
@@ -37,7 +43,10 @@ async fn events_create_pull_point_subscription_returns_reference() {
     let body = Bytes::from(
         r#"<tev:CreatePullPointSubscription xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#,
     );
-    let result = handler.handle(body).await.expect("CreatePullPointSubscription failed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("CreatePullPointSubscription failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("tev:SubscriptionReference"),
@@ -55,7 +64,10 @@ async fn events_create_pull_point_subscription_contains_times() {
     let body = Bytes::from(
         r#"<tev:CreatePullPointSubscription xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#,
     );
-    let result = handler.handle(body).await.expect("CreatePullPointSubscription failed");
+    let result = handler
+        .handle(body)
+        .await
+        .expect("CreatePullPointSubscription failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("wsnt:CurrentTime"),
@@ -74,7 +86,10 @@ async fn events_pull_messages_returns_response_with_times() {
     let create_body = Bytes::from(
         r#"<tev:CreatePullPointSubscription xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#,
     );
-    let create_result = handler.handle(create_body).await.expect("CreatePullPointSubscription failed");
+    let create_result = handler
+        .handle(create_body)
+        .await
+        .expect("CreatePullPointSubscription failed");
     let create_xml = String::from_utf8(create_result.to_vec()).unwrap();
 
     // Extract SubscriptionId from between tags
@@ -84,7 +99,10 @@ async fn events_pull_messages_returns_response_with_times() {
     let pull_body = Bytes::from(format!(
         r#"<tev:PullMessages xmlns:tev="http://www.onvif.org/ver10/events/wsdl"><tev:SubscriptionId>{sub_id}</tev:SubscriptionId></tev:PullMessages>"#,
     ));
-    let result = handler.handle(pull_body).await.expect("PullMessages failed");
+    let result = handler
+        .handle(pull_body)
+        .await
+        .expect("PullMessages failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("tev:PullMessagesResponse"),
@@ -111,7 +129,10 @@ async fn events_unsubscribe_known_subscription_returns_empty_response() {
     let create_body = Bytes::from(
         r#"<tev:CreatePullPointSubscription xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#,
     );
-    let create_result = handler.handle(create_body).await.expect("CreatePullPointSubscription failed");
+    let create_result = handler
+        .handle(create_body)
+        .await
+        .expect("CreatePullPointSubscription failed");
     let create_xml = String::from_utf8(create_result.to_vec()).unwrap();
     let sub_id = extract_between(&create_xml, "<tev:SubscriptionId>", "</tev:SubscriptionId>")
         .expect("SubscriptionId not found");
@@ -119,7 +140,10 @@ async fn events_unsubscribe_known_subscription_returns_empty_response() {
     let unsub_body = Bytes::from(format!(
         r#"<tev:Unsubscribe xmlns:tev="http://www.onvif.org/ver10/events/wsdl"><tev:SubscriptionId>{sub_id}</tev:SubscriptionId></tev:Unsubscribe>"#,
     ));
-    let result = handler.handle(unsub_body).await.expect("Unsubscribe failed");
+    let result = handler
+        .handle(unsub_body)
+        .await
+        .expect("Unsubscribe failed");
     let xml = String::from_utf8(result.to_vec()).unwrap();
     assert!(
         xml.contains("tev:UnsubscribeResponse"),
@@ -134,7 +158,10 @@ async fn events_pull_messages_unknown_subscription_returns_fault() {
         r#"<tev:PullMessages xmlns:tev="http://www.onvif.org/ver10/events/wsdl"><tev:SubscriptionId>nonexistent-id</tev:SubscriptionId></tev:PullMessages>"#,
     );
     let result = handler.handle(pull_body).await;
-    assert!(result.is_err(), "unknown subscription must return SoapFault");
+    assert!(
+        result.is_err(),
+        "unknown subscription must return SoapFault"
+    );
 }
 
 #[tokio::test]
@@ -143,7 +170,10 @@ async fn events_unsubscribe_removes_subscription_from_map() {
     let create_body = Bytes::from(
         r#"<tev:CreatePullPointSubscription xmlns:tev="http://www.onvif.org/ver10/events/wsdl"/>"#,
     );
-    let create_result = handler.handle(create_body).await.expect("CreatePullPointSubscription failed");
+    let create_result = handler
+        .handle(create_body)
+        .await
+        .expect("CreatePullPointSubscription failed");
     let create_xml = String::from_utf8(create_result.to_vec()).unwrap();
     let sub_id = extract_between(&create_xml, "<tev:SubscriptionId>", "</tev:SubscriptionId>")
         .expect("SubscriptionId not found");
@@ -152,14 +182,20 @@ async fn events_unsubscribe_removes_subscription_from_map() {
     let unsub_body = Bytes::from(format!(
         r#"<tev:Unsubscribe xmlns:tev="http://www.onvif.org/ver10/events/wsdl"><tev:SubscriptionId>{sub_id}</tev:SubscriptionId></tev:Unsubscribe>"#,
     ));
-    handler.handle(unsub_body).await.expect("Unsubscribe failed");
+    handler
+        .handle(unsub_body)
+        .await
+        .expect("Unsubscribe failed");
 
     // Now PullMessages should fail
     let pull_body = Bytes::from(format!(
         r#"<tev:PullMessages xmlns:tev="http://www.onvif.org/ver10/events/wsdl"><tev:SubscriptionId>{sub_id}</tev:SubscriptionId></tev:PullMessages>"#,
     ));
     let result = handler.handle(pull_body).await;
-    assert!(result.is_err(), "pull after unsubscribe must return SoapFault (subscription removed)");
+    assert!(
+        result.is_err(),
+        "pull after unsubscribe must return SoapFault (subscription removed)"
+    );
 }
 
 /// Simple string extraction helper — not using regex to keep deps minimal.

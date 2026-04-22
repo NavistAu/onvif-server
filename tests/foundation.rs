@@ -1,19 +1,14 @@
 use onvif_server::{
-    OnvifError,
-    PROFILE_TOKEN,
-    VIDEO_SOURCE_TOKEN,
-    PTZ_NODE_TOKEN,
-    PTZ_CONFIG_TOKEN,
-    TRANSLATION_SPACE_FOV,
-    EmbeddedWsdlLoader,
-    WsdlLoader,
-    OnvifServer,
+    EmbeddedWsdlLoader, OnvifError, OnvifServer, WsdlLoader, PROFILE_TOKEN, PTZ_CONFIG_TOKEN,
+    PTZ_NODE_TOKEN, TRANSLATION_SPACE_FOV, VIDEO_SOURCE_TOKEN,
 };
 
 #[test]
 fn test_not_implemented_fault_has_ter_namespace() {
     let fault = OnvifError::NotImplemented.into_soap_fault();
-    let detail = fault.detail.expect("detail must be present for ONVIF faults");
+    let detail = fault
+        .detail
+        .expect("detail must be present for ONVIF faults");
     assert!(
         detail.contains(r#"xmlns:ter="http://www.onvif.org/ver10/error""#),
         "detail must contain ONVIF ter namespace declaration, got: {detail}"
@@ -23,10 +18,22 @@ fn test_not_implemented_fault_has_ter_namespace() {
 #[test]
 fn test_token_constants_defined() {
     assert!(!PROFILE_TOKEN.is_empty(), "PROFILE_TOKEN must not be empty");
-    assert!(!VIDEO_SOURCE_TOKEN.is_empty(), "VIDEO_SOURCE_TOKEN must not be empty");
-    assert!(!PTZ_NODE_TOKEN.is_empty(), "PTZ_NODE_TOKEN must not be empty");
-    assert!(!PTZ_CONFIG_TOKEN.is_empty(), "PTZ_CONFIG_TOKEN must not be empty");
-    assert!(!TRANSLATION_SPACE_FOV.is_empty(), "TRANSLATION_SPACE_FOV must not be empty");
+    assert!(
+        !VIDEO_SOURCE_TOKEN.is_empty(),
+        "VIDEO_SOURCE_TOKEN must not be empty"
+    );
+    assert!(
+        !PTZ_NODE_TOKEN.is_empty(),
+        "PTZ_NODE_TOKEN must not be empty"
+    );
+    assert!(
+        !PTZ_CONFIG_TOKEN.is_empty(),
+        "PTZ_CONFIG_TOKEN must not be empty"
+    );
+    assert!(
+        !TRANSLATION_SPACE_FOV.is_empty(),
+        "TRANSLATION_SPACE_FOV must not be empty"
+    );
     assert!(
         TRANSLATION_SPACE_FOV.contains("TranslationSpaceFov"),
         "TRANSLATION_SPACE_FOV must contain 'TranslationSpaceFov', got: {TRANSLATION_SPACE_FOV}"
@@ -38,7 +45,9 @@ fn test_token_constants_defined() {
 #[test]
 fn test_embedded_wsdl_loader() {
     let loader = EmbeddedWsdlLoader;
-    let bytes = loader.load("devicemgmt.wsdl").expect("devicemgmt.wsdl must load");
+    let bytes = loader
+        .load("devicemgmt.wsdl")
+        .expect("devicemgmt.wsdl must load");
     assert!(!bytes.is_empty());
     let bytes = loader.load("media.wsdl").expect("media.wsdl must load");
     assert!(!bytes.is_empty());
@@ -58,7 +67,10 @@ async fn test_not_implemented_returns_error() {
     assert!(matches!(result, Err(OnvifError::NotImplemented)));
     // get_system_date_and_time defaults to Ok(Utc::now()) — not an error
     let dt_result = svc.get_system_date_and_time().await;
-    assert!(dt_result.is_ok(), "get_system_date_and_time default must return Ok");
+    assert!(
+        dt_result.is_ok(),
+        "get_system_date_and_time default must return Ok"
+    );
 }
 
 #[test]
