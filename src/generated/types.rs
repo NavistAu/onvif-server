@@ -38,13 +38,28 @@ pub struct NetworkInterface {
     pub mtu: u32,
 }
 
+/// A media profile as advertised by the ONVIF Media Service.
+///
+/// Implementations override [`crate::traits::MediaService::profiles`] to return
+/// their actual profiles. The default returns a single 1920×1080 H264 profile.
 #[derive(Debug, Clone)]
 pub struct MediaProfile {
+    /// Profile token referenced by GetStreamUri, GetSnapshotUri, and PTZ operations.
     pub token: String,
+    /// Human-readable profile name.
     pub name: String,
-    pub video_source_cfg_token: String,
-    pub video_encoder_cfg_token: String,
-    pub ptz_cfg_token: String,
+    /// Source token for the VideoSourceConfiguration element.
+    pub video_source_token: String,
+    /// Frame width in pixels.
+    pub width: u32,
+    /// Frame height in pixels.
+    pub height: u32,
+    /// Encoder codec, e.g. `"H264"`, `"H265"`, `"JPEG"`.
+    pub encoding: String,
+    /// Target frame rate in frames per second.
+    pub framerate: u32,
+    /// Target bitrate in kbps.
+    pub bitrate: u32,
 }
 
 #[derive(Debug, Clone)]

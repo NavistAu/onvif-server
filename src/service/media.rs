@@ -2,11 +2,11 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use quick_xml::events::Event;
 use quick_xml::NsReader;
-use soap_server::{escape_text, SoapFault, SoapHandler};
+use soap_server::{escape_attr, escape_text, SoapFault, SoapHandler};
 use std::sync::Arc;
 
 use crate::constants::{
-    PROFILE_TOKEN, PTZ_CONFIG_TOKEN, PTZ_NODE_TOKEN, TRANSLATION_SPACE_FOV, VIDEO_ENCODER_TOKEN,
+    PTZ_CONFIG_TOKEN, PTZ_NODE_TOKEN, TRANSLATION_SPACE_FOV, VIDEO_ENCODER_TOKEN,
     VIDEO_SOURCE_TOKEN,
 };
 use crate::error::OnvifError;
@@ -74,26 +74,28 @@ fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, Soap
 
 impl MediaServiceHandler {
     async fn handle_get_profiles(&self) -> Result<Bytes, SoapFault> {
-        let xml = format!(
-            r#"<trt:GetProfilesResponse xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
-  <trt:Profiles token="{profile_token}" fixed="true">
-    <tt:Name>MainProfile</tt:Name>
+        let profiles = self.svc.profiles();
+        let mut profile_blocks = String::new();
+        for p in &profiles {
+            profile_blocks.push_str(&format!(
+                r#"  <trt:Profiles token="{profile_token}" fixed="true">
+    <tt:Name>{name}</tt:Name>
     <tt:VideoSourceConfiguration token="{vs_cfg_token}">
       <tt:Name>VideoSourceConfig</tt:Name>
       <tt:UseCount>1</tt:UseCount>
       <tt:SourceToken>{vs_token}</tt:SourceToken>
-      <tt:Bounds x="0" y="0" width="1920" height="1080"/>
+      <tt:Bounds x="0" y="0" width="{width}" height="{height}"/>
     </tt:VideoSourceConfiguration>
     <tt:VideoEncoderConfiguration token="{ve_cfg_token}">
       <tt:Name>VideoEncoderConfig</tt:Name>
       <tt:UseCount>1</tt:UseCount>
-      <tt:Encoding>H264</tt:Encoding>
-      <tt:Resolution><tt:Width>1920</tt:Width><tt:Height>1080</tt:Height></tt:Resolution>
+      <tt:Encoding>{encoding}</tt:Encoding>
+      <tt:Resolution><tt:Width>{width}</tt:Width><tt:Height>{height}</tt:Height></tt:Resolution>
       <tt:Quality>5</tt:Quality>
       <tt:RateControl>
-        <tt:FrameRateLimit>30</tt:FrameRateLimit>
+        <tt:FrameRateLimit>{framerate}</tt:FrameRateLimit>
         <tt:EncodingInterval>1</tt:EncodingInterval>
-        <tt:BitrateLimit>4096</tt:BitrateLimit>
+        <tt:BitrateLimit>{bitrate}</tt:BitrateLimit>
       </tt:RateControl>
       <tt:Multicast>
         <tt:Address><tt:Type>IPv4</tt:Type><tt:IPv4Address>0.0.0.0</tt:IPv4Address></tt:Address>
@@ -110,14 +112,25 @@ impl MediaServiceHandler {
       <tt:DefaultContinuousPanTiltVelocitySpace>{translation_space_fov}</tt:DefaultContinuousPanTiltVelocitySpace>
     </tt:PTZConfiguration>
   </trt:Profiles>
-</trt:GetProfilesResponse>"#,
-            profile_token = PROFILE_TOKEN,
-            vs_cfg_token = VIDEO_SOURCE_TOKEN,
-            vs_token = VIDEO_SOURCE_TOKEN,
-            ve_cfg_token = VIDEO_ENCODER_TOKEN,
-            ptz_cfg_token = PTZ_CONFIG_TOKEN,
-            ptz_node_token = PTZ_NODE_TOKEN,
-            translation_space_fov = TRANSLATION_SPACE_FOV,
+"#,
+                profile_token = escape_attr(&p.token),
+                name = escape_text(&p.name),
+                vs_cfg_token = escape_attr(&p.video_source_token),
+                vs_token = escape_text(&p.video_source_token),
+                ve_cfg_token = VIDEO_ENCODER_TOKEN,
+                width = p.width,
+                height = p.height,
+                encoding = escape_text(&p.encoding),
+                framerate = p.framerate,
+                bitrate = p.bitrate,
+                ptz_cfg_token = PTZ_CONFIG_TOKEN,
+                ptz_node_token = PTZ_NODE_TOKEN,
+                translation_space_fov = TRANSLATION_SPACE_FOV,
+            ));
+        }
+        let xml = format!(
+            r#"<trt:GetProfilesResponse xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
+{profile_blocks}</trt:GetProfilesResponse>"#,
         );
         Ok(Bytes::from(xml))
     }

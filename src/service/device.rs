@@ -105,63 +105,74 @@ impl DeviceServiceHandler {
     }
 
     async fn handle_get_capabilities(&self) -> Result<Bytes, SoapFault> {
+        let mut caps = String::new();
+        caps.push_str(&format!(
+            "    <tt:Device><tt:XAddr>{}</tt:XAddr></tt:Device>\n",
+            escape_text(&self.xaddr)
+        ));
+        if !self.media_xaddr.is_empty() {
+            caps.push_str(&format!(
+                "    <tt:Media><tt:XAddr>{}</tt:XAddr></tt:Media>\n",
+                escape_text(&self.media_xaddr)
+            ));
+        }
+        if !self.ptz_xaddr.is_empty() {
+            caps.push_str(&format!(
+                "    <tt:PTZ><tt:XAddr>{}</tt:XAddr></tt:PTZ>\n",
+                escape_text(&self.ptz_xaddr)
+            ));
+        }
+        if !self.imaging_xaddr.is_empty() {
+            caps.push_str(&format!(
+                "    <tt:Imaging><tt:XAddr>{}</tt:XAddr></tt:Imaging>\n",
+                escape_text(&self.imaging_xaddr)
+            ));
+        }
+        if !self.events_xaddr.is_empty() {
+            caps.push_str(&format!(
+                "    <tt:Events>\n      <tt:XAddr>{}</tt:XAddr>\n      <tt:WSSubscriptionPolicySupport>false</tt:WSSubscriptionPolicySupport>\n      <tt:WSPullPointSupport>true</tt:WSPullPointSupport>\n    </tt:Events>\n",
+                escape_text(&self.events_xaddr)
+            ));
+        }
         let xml = format!(
-            r#"<tds:GetCapabilitiesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
-  <tds:Capabilities>
-    <tt:Device><tt:XAddr>{xaddr}</tt:XAddr></tt:Device>
-    <tt:Media><tt:XAddr>{media_xaddr}</tt:XAddr></tt:Media>
-    <tt:PTZ><tt:XAddr>{ptz_xaddr}</tt:XAddr></tt:PTZ>
-    <tt:Imaging><tt:XAddr>{imaging_xaddr}</tt:XAddr></tt:Imaging>
-    <tt:Events>
-      <tt:XAddr>{events_xaddr}</tt:XAddr>
-      <tt:WSSubscriptionPolicySupport>false</tt:WSSubscriptionPolicySupport>
-      <tt:WSPullPointSupport>true</tt:WSPullPointSupport>
-    </tt:Events>
-  </tds:Capabilities>
-</tds:GetCapabilitiesResponse>"#,
-            xaddr = escape_text(&self.xaddr),
-            media_xaddr = escape_text(&self.media_xaddr),
-            ptz_xaddr = escape_text(&self.ptz_xaddr),
-            imaging_xaddr = escape_text(&self.imaging_xaddr),
-            events_xaddr = escape_text(&self.events_xaddr),
+            "<tds:GetCapabilitiesResponse xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\" xmlns:tt=\"http://www.onvif.org/ver10/schema\">\n  <tds:Capabilities>\n{caps}  </tds:Capabilities>\n</tds:GetCapabilitiesResponse>",
         );
         Ok(Bytes::from(xml))
     }
 
     async fn handle_get_services(&self) -> Result<Bytes, SoapFault> {
+        let mut services = String::new();
+        // Device service is always present.
+        services.push_str(&format!(
+            "  <tds:Service>\n    <tds:Namespace>http://www.onvif.org/ver10/device/wsdl</tds:Namespace>\n    <tds:XAddr>{}</tds:XAddr>\n    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>\n  </tds:Service>\n",
+            escape_text(&self.xaddr)
+        ));
+        if !self.media_xaddr.is_empty() {
+            services.push_str(&format!(
+                "  <tds:Service>\n    <tds:Namespace>http://www.onvif.org/ver10/media/wsdl</tds:Namespace>\n    <tds:XAddr>{}</tds:XAddr>\n    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>\n  </tds:Service>\n",
+                escape_text(&self.media_xaddr)
+            ));
+        }
+        if !self.ptz_xaddr.is_empty() {
+            services.push_str(&format!(
+                "  <tds:Service>\n    <tds:Namespace>http://www.onvif.org/ver10/ptz/wsdl</tds:Namespace>\n    <tds:XAddr>{}</tds:XAddr>\n    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>\n  </tds:Service>\n",
+                escape_text(&self.ptz_xaddr)
+            ));
+        }
+        if !self.imaging_xaddr.is_empty() {
+            services.push_str(&format!(
+                "  <tds:Service>\n    <tds:Namespace>http://www.onvif.org/ver20/imaging/wsdl</tds:Namespace>\n    <tds:XAddr>{}</tds:XAddr>\n    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>\n  </tds:Service>\n",
+                escape_text(&self.imaging_xaddr)
+            ));
+        }
+        if !self.events_xaddr.is_empty() {
+            services.push_str(&format!(
+                "  <tds:Service>\n    <tds:Namespace>http://www.onvif.org/ver10/events/wsdl</tds:Namespace>\n    <tds:XAddr>{}</tds:XAddr>\n    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>\n  </tds:Service>\n",
+                escape_text(&self.events_xaddr)
+            ));
+        }
         let xml = format!(
-            r#"<tds:GetServicesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
-  <tds:Service>
-    <tds:Namespace>http://www.onvif.org/ver10/device/wsdl</tds:Namespace>
-    <tds:XAddr>{xaddr}</tds:XAddr>
-    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
-  </tds:Service>
-  <tds:Service>
-    <tds:Namespace>http://www.onvif.org/ver10/media/wsdl</tds:Namespace>
-    <tds:XAddr>{media_xaddr}</tds:XAddr>
-    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
-  </tds:Service>
-  <tds:Service>
-    <tds:Namespace>http://www.onvif.org/ver10/ptz/wsdl</tds:Namespace>
-    <tds:XAddr>{ptz_xaddr}</tds:XAddr>
-    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
-  </tds:Service>
-  <tds:Service>
-    <tds:Namespace>http://www.onvif.org/ver20/imaging/wsdl</tds:Namespace>
-    <tds:XAddr>{imaging_xaddr}</tds:XAddr>
-    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
-  </tds:Service>
-  <tds:Service>
-    <tds:Namespace>http://www.onvif.org/ver10/events/wsdl</tds:Namespace>
-    <tds:XAddr>{events_xaddr}</tds:XAddr>
-    <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
-  </tds:Service>
-</tds:GetServicesResponse>"#,
-            xaddr = escape_text(&self.xaddr),
-            media_xaddr = escape_text(&self.media_xaddr),
-            ptz_xaddr = escape_text(&self.ptz_xaddr),
-            imaging_xaddr = escape_text(&self.imaging_xaddr),
-            events_xaddr = escape_text(&self.events_xaddr),
+            "<tds:GetServicesResponse xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\" xmlns:tt=\"http://www.onvif.org/ver10/schema\">\n{services}</tds:GetServicesResponse>",
         );
         Ok(Bytes::from(xml))
     }
