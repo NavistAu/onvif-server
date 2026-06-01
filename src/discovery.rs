@@ -6,7 +6,7 @@ pub async fn run_discovery(xaddr: String) -> Result<(), Box<dyn std::error::Erro
     use socket2::{Domain, Protocol, Socket, Type};
     use std::net::{Ipv4Addr, SocketAddr};
 
-    let multicast_addr: Ipv4Addr = "239.255.255.250".parse().unwrap();
+    let multicast_addr: Ipv4Addr = Ipv4Addr::new(239, 255, 255, 250);
     let bind_addr: Ipv4Addr = {
         #[cfg(unix)]
         {

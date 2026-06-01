@@ -17,24 +17,57 @@ pub enum BuildError {
     MissingRequiredService(String),
 }
 
+/// Error returned by [`OnvifServer::run`].
+///
+/// Distinguishes between startup/configuration failures and I/O failures at bind time.
+#[derive(Debug, thiserror::Error)]
+pub enum RunError {
+    /// The server failed to bind or serve on the configured port (I/O error).
+    #[error("I/O error: {0}")]
+    Io(#[from] std::io::Error),
+    /// A required service was not registered (validated again at run time for services
+    /// beyond `device_service`, which is checked at build time).
+    #[error("Startup error: {0}")]
+    Startup(String),
+}
+
 /// A built, configured ONVIF server handle.
 ///
 /// Phase 1 stores all builder fields for Phase 2 to use when actually binding a port
 /// and starting the soap-server. No network activity occurs in Phase 1.
+///
+/// Fields are intentionally `pub(crate)` to prevent consumers from bypassing the
+/// builder API or accessing credentials directly. Use the provided accessor methods
+/// for fields that consumers legitimately need.
 pub struct OnvifServer {
-    pub port: u16,
-    pub username: Option<String>,
-    pub password: Option<String>,
-    pub device_service: Option<Arc<dyn DeviceService>>,
-    pub media_service: Option<Arc<dyn MediaService>>,
-    pub ptz_service: Option<Arc<dyn PTZService>>,
-    pub imaging_service: Option<Arc<dyn ImagingService>>,
-    pub event_service: Option<Arc<dyn EventService>>,
-    pub auth_bypass: HashSet<String>,
-    pub advertised_host: String,
+    pub(crate) port: u16,
+    pub(crate) username: Option<String>,
+    pub(crate) password: Option<String>,
+    pub(crate) device_service: Option<Arc<dyn DeviceService>>,
+    pub(crate) media_service: Option<Arc<dyn MediaService>>,
+    pub(crate) ptz_service: Option<Arc<dyn PTZService>>,
+    pub(crate) imaging_service: Option<Arc<dyn ImagingService>>,
+    pub(crate) event_service: Option<Arc<dyn EventService>>,
+    pub(crate) auth_bypass: HashSet<String>,
+    pub(crate) advertised_host: String,
 }
 
 impl OnvifServer {
+    /// Returns the port this server is configured to listen on.
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    /// Returns the advertised host used in XAddrs for WS-Discovery and capabilities.
+    pub fn advertised_host(&self) -> &str {
+        &self.advertised_host
+    }
+
+    /// Returns the configured username, if any.
+    pub fn username(&self) -> Option<&str> {
+        self.username.as_deref()
+    }
+
     /// Create a new builder with default settings.
     ///
     /// Defaults: port 8080, `GetSystemDateAndTime` pre-registered as an auth bypass
@@ -47,26 +80,32 @@ impl OnvifServer {
     ///
     /// This method does not return until the server is shut down.
     /// Requires a tokio async runtime (`#[tokio::main]` or `tokio::runtime::Runtime`).
-    pub async fn run(self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RunError::Startup`] if a required service (beyond `device_service`,
+    /// which is checked at [`OnvifServerBuilder::build`] time) is not registered.
+    /// Returns [`RunError::Io`] if the TCP listener fails to bind or serve.
+    pub async fn run(self) -> Result<(), RunError> {
         let device_svc = self
             .device_service
-            .ok_or("device_service is required to call run()")?;
+            .ok_or_else(|| RunError::Startup("device_service is required to call run()".into()))?;
 
         let media_svc = self
             .media_service
-            .ok_or("media_service is required to call run()")?;
+            .ok_or_else(|| RunError::Startup("media_service is required to call run()".into()))?;
 
         let ptz_svc = self
             .ptz_service
-            .ok_or("ptz_service is required to call run()")?;
+            .ok_or_else(|| RunError::Startup("ptz_service is required to call run()".into()))?;
 
         let imaging_svc = self
             .imaging_service
-            .ok_or("imaging_service is required to call run()")?;
+            .ok_or_else(|| RunError::Startup("imaging_service is required to call run()".into()))?;
 
         let event_svc = self
             .event_service
-            .ok_or("event_service is required to call run()")?;
+            .ok_or_else(|| RunError::Startup("event_service is required to call run()".into()))?;
 
         let xaddr = format!(
             "http://{}:{}/onvif/device_service",
@@ -130,7 +169,7 @@ impl OnvifServer {
         })
         .auth_bypass(auth_bypass.into_iter())
         .build()
-        .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
 
         let media_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
             include_bytes!("../wsdl/media.wsdl").to_vec(),
@@ -147,7 +186,7 @@ impl OnvifServer {
         })
         .auth_bypass(std::iter::empty::<String>())
         .build()
-        .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
 
         let ptz_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
             include_bytes!("../wsdl/ptz.wsdl").to_vec(),
@@ -164,7 +203,7 @@ impl OnvifServer {
         })
         .auth_bypass(std::iter::empty::<String>())
         .build()
-        .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
 
         let imaging_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
             include_bytes!("../wsdl/imaging.wsdl").to_vec(),
@@ -181,7 +220,7 @@ impl OnvifServer {
         })
         .auth_bypass(std::iter::empty::<String>())
         .build()
-        .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
 
         let events_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
             include_bytes!("../wsdl/events.wsdl").to_vec(),
@@ -198,7 +237,7 @@ impl OnvifServer {
         })
         .auth_bypass(std::iter::empty::<String>())
         .build()
-        .map_err(|e| format!("ServerBuilder::build failed: {e}"))?;
+        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
 
         let router = soap_svc
             .into_router()
@@ -229,19 +268,19 @@ impl OnvifServer {
 /// Builder for configuring and constructing an [`OnvifServer`].
 ///
 /// Service registration, auth credentials, port, and auth bypass operations are
-/// all set here. Phase 2 will call `build()` and then wire these fields into
-/// `soap_server::ServerBuilder` to start the actual HTTP listener.
+/// all set here. Fields are `pub(crate)` — use the builder methods to configure
+/// the server.
 pub struct OnvifServerBuilder {
-    pub port: u16,
-    pub username: Option<String>,
-    pub password: Option<String>,
-    pub device_service: Option<Arc<dyn DeviceService>>,
-    pub media_service: Option<Arc<dyn MediaService>>,
-    pub ptz_service: Option<Arc<dyn PTZService>>,
-    pub imaging_service: Option<Arc<dyn ImagingService>>,
-    pub event_service: Option<Arc<dyn EventService>>,
-    pub auth_bypass: HashSet<String>,
-    pub advertised_host: String,
+    pub(crate) port: u16,
+    pub(crate) username: Option<String>,
+    pub(crate) password: Option<String>,
+    pub(crate) device_service: Option<Arc<dyn DeviceService>>,
+    pub(crate) media_service: Option<Arc<dyn MediaService>>,
+    pub(crate) ptz_service: Option<Arc<dyn PTZService>>,
+    pub(crate) imaging_service: Option<Arc<dyn ImagingService>>,
+    pub(crate) event_service: Option<Arc<dyn EventService>>,
+    pub(crate) auth_bypass: HashSet<String>,
+    pub(crate) advertised_host: String,
 }
 
 impl OnvifServerBuilder {
@@ -326,9 +365,18 @@ impl OnvifServerBuilder {
 
     /// Build the configured [`OnvifServer`].
     ///
-    /// Phase 1: validates configuration and returns a server handle with all fields stored.
-    /// Phase 2 will extend this to call `soap_server::ServerBuilder` and bind the port.
+    /// Returns `Err(BuildError::MissingRequiredService("device_service"))` if no
+    /// device service has been registered. `device_service` is required by the ONVIF
+    /// spec — it provides `GetSystemDateAndTime` and core device management operations.
+    ///
+    /// All other services (media, PTZ, imaging, events) are optional at build time
+    /// and validated at `run()` when actually needed.
     pub fn build(self) -> Result<OnvifServer, BuildError> {
+        if self.device_service.is_none() {
+            return Err(BuildError::MissingRequiredService(
+                "device_service".to_string(),
+            ));
+        }
         Ok(OnvifServer {
             port: self.port,
             username: self.username,

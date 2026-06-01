@@ -128,6 +128,27 @@ Fix: Add `//!` block with: crate description, ONVIF Profile S coverage (Device, 
 
 3. **`build.rs` removal (NB-OS-C01):** Remove now (trivial) or leave with comments? Recommended: remove it — the comment says future codegen but there is no such plan at 0.1.0.
 
+## Plan 05-05 Status
+
+**Blockers fixed:** All 9 (BLOCK-OS-C01 through BLOCK-OS-C09).
+
+**Decisions made:**
+- BLOCK-OS-C03: Only `device_service` is REQUIRED at `build()`; other services validated at `run()`.
+- BLOCK-OS-C05: Defined `RunError` enum with `Io(std::io::Error)` and `Startup(String)` variants. Updated all callers. Example updated with `Ok(server.run().await?)`.
+- NB-OS-C01: `build.rs` removed — it was a pure stub with no codegen.
+
+**Known limitations for v0.2+ (not fixed in 05-05):**
+
+- NB-OS-C02: `extract_local_name` duplicated in 5 service files — known limitation for v0.2+ (DRY concern)
+- NB-OS-C03: `OnvifError` limited variants — known limitation for v0.2+
+- NB-OS-C04: `not_implemented()` function undocumented — plan 05-07
+- NB-OS-C05: Constants in constants.rs are pub — known limitation for v0.2+
+- NB-OS-C06: Single-profile/single-video-source hardcoded — document in README (plan 05-07)
+- NB-OS-C07: Auth-optional behavior undocumented — plan 05-07
+- NB-OS-C08: `advertised_host` defaults to "0.0.0.0" — document prominently in README (plan 05-07)
+- NB-OS-C09: events.wsdl references external OASIS/W3C URLs — document EmbeddedWsdlLoader coverage (plan 05-07)
+- NB-OS-C10: WSDL files should be confirmed as verbatim upstream ONVIF — manual verification before publish (plan 05-10)
+
 ## Already Planned (skip — do not list as blockers)
 
 - No README → plan 05-07

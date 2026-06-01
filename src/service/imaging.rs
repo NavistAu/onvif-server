@@ -106,17 +106,19 @@ impl ImagingServiceHandler {
                 v as i32
             ));
         }
-        if let Some(v) = settings.white_balance_cr_gain {
-            inner.push_str(&format!(
-                "<tt:WhiteBalance><tt:CrGain>{}</tt:CrGain></tt:WhiteBalance>",
-                v
-            ));
-        }
-        if let Some(v) = settings.white_balance_cb_gain {
-            inner.push_str(&format!(
-                "<tt:WhiteBalance><tt:CbGain>{}</tt:CbGain></tt:WhiteBalance>",
-                v
-            ));
+        // Emit a single <tt:WhiteBalance> with both gain children when either is present.
+        // ONVIF schema requires one element with CrGain and CbGain as children,
+        // not two separate <tt:WhiteBalance> elements (BLOCK-OS-C06 fix).
+        if settings.white_balance_cr_gain.is_some() || settings.white_balance_cb_gain.is_some() {
+            let cr = settings
+                .white_balance_cr_gain
+                .map(|v| format!("<tt:CrGain>{v}</tt:CrGain>"))
+                .unwrap_or_default();
+            let cb = settings
+                .white_balance_cb_gain
+                .map(|v| format!("<tt:CbGain>{v}</tt:CbGain>"))
+                .unwrap_or_default();
+            inner.push_str(&format!("<tt:WhiteBalance>{cr}{cb}</tt:WhiteBalance>"));
         }
 
         let xml = format!(

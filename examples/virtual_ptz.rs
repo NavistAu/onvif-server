@@ -257,5 +257,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("  Events service:  http://0.0.0.0:8080/onvif/events_service");
     println!("  Credentials:     admin / admin");
 
-    server.run().await
+    Ok(server.run().await?)
 }

@@ -10,6 +10,22 @@ use crate::error::OnvifError;
 use crate::generated::{PTZPreset, PTZStatusResult};
 use crate::traits::PTZService;
 
+/// Parse a PTZ coordinate attribute value as `f32`.
+///
+/// If the attribute is absent (`None`), returns `0.0` as the ONVIF default.
+/// If the attribute is present but not a valid float, returns a SOAP `Sender`
+/// fault with `OnvifError::InvalidArgument` — preventing silent coercion that
+/// could trigger unintended physical camera movement (BLOCK-OS-C02).
+fn parse_ptz_coord(val: Option<String>, field: &str) -> Result<f32, SoapFault> {
+    match val {
+        None => Ok(0.0),
+        Some(s) => s.parse::<f32>().map_err(|_| {
+            OnvifError::InvalidArgument(format!("malformed PTZ coordinate: {field}=\"{s}\""))
+                .into_soap_fault()
+        }),
+    }
+}
+
 pub struct PTZServiceHandler {
     pub(crate) svc: Arc<dyn PTZService>,
 }
@@ -294,18 +310,15 @@ impl PTZServiceHandler {
 
     async fn handle_relative_move(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
-        let pan = extract_element_attribute(body, "PanTilt", "x")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
-        let tilt = extract_element_attribute(body, "PanTilt", "y")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
-        let zoom = extract_element_attribute(body, "Zoom", "x")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
+        let pan = parse_ptz_coord(
+            extract_element_attribute(body, "PanTilt", "x")?,
+            "PanTilt.x",
+        )?;
+        let tilt = parse_ptz_coord(
+            extract_element_attribute(body, "PanTilt", "y")?,
+            "PanTilt.y",
+        )?;
+        let zoom = parse_ptz_coord(extract_element_attribute(body, "Zoom", "x")?, "Zoom.x")?;
         self.svc
             .relative_move(&profile_token, pan, tilt, zoom)
             .await
@@ -317,18 +330,15 @@ impl PTZServiceHandler {
 
     async fn handle_absolute_move(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
-        let pan = extract_element_attribute(body, "PanTilt", "x")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
-        let tilt = extract_element_attribute(body, "PanTilt", "y")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
-        let zoom = extract_element_attribute(body, "Zoom", "x")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
+        let pan = parse_ptz_coord(
+            extract_element_attribute(body, "PanTilt", "x")?,
+            "PanTilt.x",
+        )?;
+        let tilt = parse_ptz_coord(
+            extract_element_attribute(body, "PanTilt", "y")?,
+            "PanTilt.y",
+        )?;
+        let zoom = parse_ptz_coord(extract_element_attribute(body, "Zoom", "x")?, "Zoom.x")?;
         self.svc
             .absolute_move(&profile_token, pan, tilt, zoom)
             .await
@@ -340,18 +350,15 @@ impl PTZServiceHandler {
 
     async fn handle_continuous_move(&self, body: &Bytes) -> Result<Bytes, SoapFault> {
         let profile_token = extract_text_element(body, "ProfileToken")?;
-        let pan = extract_element_attribute(body, "PanTilt", "x")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
-        let tilt = extract_element_attribute(body, "PanTilt", "y")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
-        let zoom = extract_element_attribute(body, "Zoom", "x")?
-            .unwrap_or_else(|| "0.0".to_string())
-            .parse::<f32>()
-            .unwrap_or(0.0);
+        let pan = parse_ptz_coord(
+            extract_element_attribute(body, "PanTilt", "x")?,
+            "PanTilt.x",
+        )?;
+        let tilt = parse_ptz_coord(
+            extract_element_attribute(body, "PanTilt", "y")?,
+            "PanTilt.y",
+        )?;
+        let zoom = parse_ptz_coord(extract_element_attribute(body, "Zoom", "x")?, "Zoom.x")?;
         self.svc
             .continuous_move(&profile_token, pan, tilt, zoom)
             .await
