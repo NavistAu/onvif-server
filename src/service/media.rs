@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use quick_xml::events::Event;
 use quick_xml::NsReader;
-use soap_server::{SoapFault, SoapHandler};
+use soap_server::{escape_text, SoapFault, SoapHandler};
 use std::sync::Arc;
 
 use crate::constants::{
@@ -10,7 +10,12 @@ use crate::constants::{
     VIDEO_SOURCE_TOKEN,
 };
 use crate::error::OnvifError;
+use crate::service::xml_util::extract_text_ns;
 use crate::traits::MediaService;
+
+/// ONVIF namespaces accepted for media/device request elements.
+const ONVIF_MEDIA_NS: &[u8] = b"http://www.onvif.org/ver10/media/wsdl";
+const ONVIF_SCHEMA_NS: &[u8] = b"http://www.onvif.org/ver10/schema";
 
 #[allow(dead_code)]
 pub struct MediaServiceHandler {
@@ -64,35 +69,7 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
 }
 
 fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, SoapFault> {
-    let mut reader = NsReader::from_reader(body.as_ref());
-    reader.config_mut().trim_text(true);
-    let mut inside_target = false;
-    loop {
-        match reader
-            .read_resolved_event()
-            .map_err(|e| SoapFault::sender(format!("{e}")))?
-        {
-            (_, Event::Start(e)) => {
-                let local_name = e.local_name();
-                let local = std::str::from_utf8(local_name.as_ref())
-                    .map_err(|e| SoapFault::sender(format!("{e}")))?;
-                if local == element_name {
-                    inside_target = true;
-                }
-            }
-            (_, Event::Text(t)) if inside_target => {
-                return std::str::from_utf8(t.as_ref())
-                    .map(|s| s.to_owned())
-                    .map_err(|e| SoapFault::sender(format!("{e}")));
-            }
-            (_, Event::Eof) => {
-                return Err(SoapFault::sender(format!(
-                    "Element {element_name} not found in body"
-                )))
-            }
-            _ => {}
-        }
-    }
+    extract_text_ns(body, element_name, &[ONVIF_MEDIA_NS, ONVIF_SCHEMA_NS])
 }
 
 impl MediaServiceHandler {
@@ -161,7 +138,7 @@ impl MediaServiceHandler {
     <tt:Timeout>PT0S</tt:Timeout>
   </trt:MediaUri>
 </trt:GetStreamUriResponse>"#,
-            uri = uri
+            uri = escape_text(&uri)
         );
         Ok(Bytes::from(xml))
     }
@@ -182,7 +159,7 @@ impl MediaServiceHandler {
     <tt:Timeout>PT0S</tt:Timeout>
   </trt:MediaUri>
 </trt:GetSnapshotUriResponse>"#,
-            uri = uri
+            uri = escape_text(&uri)
         );
         Ok(Bytes::from(xml))
     }

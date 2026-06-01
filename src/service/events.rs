@@ -3,13 +3,18 @@ use bytes::Bytes;
 use chrono::{DateTime, Utc};
 use quick_xml::events::Event;
 use quick_xml::NsReader;
-use soap_server::{SoapFault, SoapHandler};
+use soap_server::{escape_text, SoapFault, SoapHandler};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 use crate::error::OnvifError;
+use crate::service::xml_util::extract_text_ns;
 use crate::traits::EventService;
+
+/// ONVIF namespaces accepted for event request elements.
+const ONVIF_EVENTS_NS: &[u8] = b"http://www.onvif.org/ver10/events/wsdl";
+const ONVIF_SCHEMA_NS: &[u8] = b"http://www.onvif.org/ver10/schema";
 
 struct SubscriptionInfo {
     termination_time: DateTime<Utc>,
@@ -67,35 +72,7 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
 }
 
 fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, SoapFault> {
-    let mut reader = NsReader::from_reader(body.as_ref());
-    reader.config_mut().trim_text(true);
-    let mut inside_target = false;
-    loop {
-        match reader
-            .read_resolved_event()
-            .map_err(|e| SoapFault::sender(format!("{e}")))?
-        {
-            (_, Event::Start(e)) => {
-                let local_name = e.local_name();
-                let local = std::str::from_utf8(local_name.as_ref())
-                    .map_err(|e| SoapFault::sender(format!("{e}")))?;
-                if local == element_name {
-                    inside_target = true;
-                }
-            }
-            (_, Event::Text(t)) if inside_target => {
-                return std::str::from_utf8(t.as_ref())
-                    .map(|s| s.to_owned())
-                    .map_err(|e| SoapFault::sender(format!("{e}")));
-            }
-            (_, Event::Eof) => {
-                return Err(SoapFault::sender(format!(
-                    "Element {element_name} not found in body"
-                )))
-            }
-            _ => {}
-        }
-    }
+    extract_text_ns(body, element_name, &[ONVIF_EVENTS_NS, ONVIF_SCHEMA_NS])
 }
 
 impl EventServiceHandler {
@@ -124,8 +101,8 @@ impl EventServiceHandler {
 
         let xml = format!(
             r#"<tev:CreatePullPointSubscriptionResponse xmlns:tev="http://www.onvif.org/ver10/events/wsdl" xmlns:wsa5="http://www.w3.org/2005/08/addressing" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"><tev:SubscriptionReference><wsa5:Address>{xaddr}</wsa5:Address><wsa5:ReferenceParameters><tev:SubscriptionId>{sub_id}</tev:SubscriptionId></wsa5:ReferenceParameters></tev:SubscriptionReference><wsnt:CurrentTime>{current}</wsnt:CurrentTime><wsnt:TerminationTime>{termination}</wsnt:TerminationTime></tev:CreatePullPointSubscriptionResponse>"#,
-            xaddr = self.xaddr,
-            sub_id = sub_id,
+            xaddr = escape_text(&self.xaddr),
+            sub_id = escape_text(&sub_id),
             current = now.to_rfc3339(),
             termination = termination.to_rfc3339(),
         );
@@ -142,7 +119,11 @@ impl EventServiceHandler {
                 .map_err(|e| SoapFault::sender(format!("lock poisoned: {e}")))?;
             match subs.get(&sub_id) {
                 Some(info) => info.termination_time,
-                None => return Err(SoapFault::sender(format!("Unknown subscription: {sub_id}"))),
+                None => {
+                    // Log detail server-side; return generic fault reason to client (#12).
+                    eprintln!("[onvif-events] PullMessages: unknown subscription (id not echoed to client)");
+                    return Err(SoapFault::sender("Subscription not found".to_string()));
+                }
             }
         };
 

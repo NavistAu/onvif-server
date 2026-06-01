@@ -2,13 +2,21 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use quick_xml::events::Event;
 use quick_xml::NsReader;
-use soap_server::{SoapFault, SoapHandler};
+use soap_server::{escape_attr, escape_text, SoapFault, SoapHandler};
 use std::sync::Arc;
 
 use crate::constants::{PTZ_CONFIG_TOKEN, PTZ_NODE_TOKEN, TRANSLATION_SPACE_FOV};
 use crate::error::OnvifError;
 use crate::generated::{PTZPreset, PTZStatusResult};
+use crate::service::xml_util::extract_text_ns;
 use crate::traits::PTZService;
+
+/// ONVIF namespaces accepted for PTZ request elements. Both the ver20 (current)
+/// and ver10 (legacy) PTZ WSDL namespaces are accepted, since real clients use
+/// either; the common schema namespace covers shared element types.
+const ONVIF_PTZ_NS_V20: &[u8] = b"http://www.onvif.org/ver20/ptz/wsdl";
+const ONVIF_PTZ_NS_V10: &[u8] = b"http://www.onvif.org/ver10/ptz/wsdl";
+const ONVIF_SCHEMA_NS: &[u8] = b"http://www.onvif.org/ver10/schema";
 
 /// Parse a PTZ coordinate attribute value as `f32`.
 ///
@@ -82,35 +90,11 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
 }
 
 fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, SoapFault> {
-    let mut reader = NsReader::from_reader(body.as_ref());
-    reader.config_mut().trim_text(true);
-    let mut inside_target = false;
-    loop {
-        match reader
-            .read_resolved_event()
-            .map_err(|e| SoapFault::sender(format!("{e}")))?
-        {
-            (_, Event::Start(e)) => {
-                let local_name = e.local_name();
-                let local = std::str::from_utf8(local_name.as_ref())
-                    .map_err(|e| SoapFault::sender(format!("{e}")))?;
-                if local == element_name {
-                    inside_target = true;
-                }
-            }
-            (_, Event::Text(t)) if inside_target => {
-                return std::str::from_utf8(t.as_ref())
-                    .map(|s| s.to_owned())
-                    .map_err(|e| SoapFault::sender(format!("{e}")));
-            }
-            (_, Event::Eof) => {
-                return Err(SoapFault::sender(format!(
-                    "Element {element_name} not found in body"
-                )))
-            }
-            _ => {}
-        }
-    }
+    extract_text_ns(
+        body,
+        element_name,
+        &[ONVIF_PTZ_NS_V20, ONVIF_PTZ_NS_V10, ONVIF_SCHEMA_NS],
+    )
 }
 
 /// Find the first occurrence of `element_name` in the body and return the value of
@@ -399,8 +383,8 @@ impl PTZServiceHandler {
             preset_xml.push_str(&format!(
                 r#"  <tptz:Preset token="{token}"><tt:Name>{name}</tt:Name></tptz:Preset>
 "#,
-                token = p.token,
-                name = p.name,
+                token = escape_attr(&p.token),
+                name = escape_text(&p.name),
             ));
         }
         let xml = format!(
@@ -439,7 +423,7 @@ impl PTZServiceHandler {
             r#"<tptz:SetPresetResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
   <tptz:PresetToken>{token}</tptz:PresetToken>
 </tptz:SetPresetResponse>"#,
-            token = token,
+            token = escape_text(&token),
         );
         Ok(Bytes::from(xml))
     }

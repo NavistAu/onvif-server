@@ -3,7 +3,7 @@ use bytes::Bytes;
 use chrono::{Datelike, Timelike};
 use quick_xml::events::Event;
 use quick_xml::NsReader;
-use soap_server::{SoapFault, SoapHandler};
+use soap_server::{escape_attr, escape_text, SoapFault, SoapHandler};
 use std::sync::Arc;
 
 use crate::error::OnvifError;
@@ -119,11 +119,11 @@ impl DeviceServiceHandler {
     </tt:Events>
   </tds:Capabilities>
 </tds:GetCapabilitiesResponse>"#,
-            xaddr = self.xaddr,
-            media_xaddr = self.media_xaddr,
-            ptz_xaddr = self.ptz_xaddr,
-            imaging_xaddr = self.imaging_xaddr,
-            events_xaddr = self.events_xaddr,
+            xaddr = escape_text(&self.xaddr),
+            media_xaddr = escape_text(&self.media_xaddr),
+            ptz_xaddr = escape_text(&self.ptz_xaddr),
+            imaging_xaddr = escape_text(&self.imaging_xaddr),
+            events_xaddr = escape_text(&self.events_xaddr),
         );
         Ok(Bytes::from(xml))
     }
@@ -157,11 +157,11 @@ impl DeviceServiceHandler {
     <tds:Version><tt:Major>2</tt:Major><tt:Minor>42</tt:Minor></tds:Version>
   </tds:Service>
 </tds:GetServicesResponse>"#,
-            xaddr = self.xaddr,
-            media_xaddr = self.media_xaddr,
-            ptz_xaddr = self.ptz_xaddr,
-            imaging_xaddr = self.imaging_xaddr,
-            events_xaddr = self.events_xaddr,
+            xaddr = escape_text(&self.xaddr),
+            media_xaddr = escape_text(&self.media_xaddr),
+            ptz_xaddr = escape_text(&self.ptz_xaddr),
+            imaging_xaddr = escape_text(&self.imaging_xaddr),
+            events_xaddr = escape_text(&self.events_xaddr),
         );
         Ok(Bytes::from(xml))
     }
@@ -180,11 +180,11 @@ impl DeviceServiceHandler {
   <tds:SerialNumber>{}</tds:SerialNumber>
   <tds:HardwareId>{}</tds:HardwareId>
 </tds:GetDeviceInformationResponse>"#,
-            info.manufacturer,
-            info.model,
-            info.firmware_version,
-            info.serial_number,
-            info.hardware_id
+            escape_text(&info.manufacturer),
+            escape_text(&info.model),
+            escape_text(&info.firmware_version),
+            escape_text(&info.serial_number),
+            escape_text(&info.hardware_id)
         );
         Ok(Bytes::from(xml))
     }
@@ -203,7 +203,7 @@ impl DeviceServiceHandler {
             };
             items.push_str(&format!(
                 "  <tds:Scopes>\n    <tt:ScopeDef>{}</tt:ScopeDef>\n    <tt:ScopeItem>{}</tt:ScopeItem>\n  </tds:Scopes>\n",
-                def, s.scope_item
+                def, escape_text(&s.scope_item)
             ));
         }
         let xml = format!(
@@ -220,7 +220,7 @@ impl DeviceServiceHandler {
             .await
             .map_err(|e| e.into_soap_fault())?;
         let name_el = match &info.name {
-            Some(n) => format!("    <tt:Name>{}</tt:Name>\n", n),
+            Some(n) => format!("    <tt:Name>{}</tt:Name>\n", escape_text(n)),
             None => String::new(),
         };
         let xml = format!(
@@ -252,10 +252,10 @@ impl DeviceServiceHandler {
     </tt:Info>
   </tds:NetworkInterfaces>
 "#,
-                token = iface.token,
+                token = escape_attr(&iface.token),
                 enabled = iface.enabled,
-                name = iface.name,
-                hw = iface.hw_address,
+                name = escape_text(&iface.name),
+                hw = escape_text(&iface.hw_address),
                 mtu = iface.mtu,
             ));
         }

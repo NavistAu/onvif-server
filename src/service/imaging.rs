@@ -6,7 +6,12 @@ use soap_server::{SoapFault, SoapHandler};
 use std::sync::Arc;
 
 use crate::error::OnvifError;
+use crate::service::xml_util::extract_text_ns;
 use crate::traits::ImagingService;
+
+/// ONVIF namespaces accepted for imaging request elements.
+const ONVIF_IMAGING_NS: &[u8] = b"http://www.onvif.org/ver20/imaging/wsdl";
+const ONVIF_SCHEMA_NS: &[u8] = b"http://www.onvif.org/ver10/schema";
 
 pub struct ImagingServiceHandler {
     pub(crate) svc: Arc<dyn ImagingService>,
@@ -50,35 +55,7 @@ fn extract_local_name(body: &Bytes) -> Result<String, SoapFault> {
 }
 
 fn extract_text_element(body: &Bytes, element_name: &str) -> Result<String, SoapFault> {
-    let mut reader = NsReader::from_reader(body.as_ref());
-    reader.config_mut().trim_text(true);
-    let mut inside_target = false;
-    loop {
-        match reader
-            .read_resolved_event()
-            .map_err(|e| SoapFault::sender(format!("{e}")))?
-        {
-            (_, Event::Start(e)) => {
-                let local_name = e.local_name();
-                let local = std::str::from_utf8(local_name.as_ref())
-                    .map_err(|e| SoapFault::sender(format!("{e}")))?;
-                if local == element_name {
-                    inside_target = true;
-                }
-            }
-            (_, Event::Text(t)) if inside_target => {
-                return std::str::from_utf8(t.as_ref())
-                    .map(|s| s.to_owned())
-                    .map_err(|e| SoapFault::sender(format!("{e}")));
-            }
-            (_, Event::Eof) => {
-                return Err(SoapFault::sender(format!(
-                    "Element {element_name} not found in body"
-                )))
-            }
-            _ => {}
-        }
-    }
+    extract_text_ns(body, element_name, &[ONVIF_IMAGING_NS, ONVIF_SCHEMA_NS])
 }
 
 impl ImagingServiceHandler {

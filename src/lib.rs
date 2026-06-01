@@ -62,8 +62,7 @@
 //! ```
 
 mod constants;
-#[cfg(feature = "discovery")]
-pub(crate) mod discovery;
+pub mod discovery;
 mod error;
 pub mod generated;
 mod server;
@@ -88,3 +87,26 @@ pub use soap_server::WsdlError;
 pub use soap_server::WsdlLoader;
 pub use traits::{DeviceService, EventService, ImagingService, MediaService, PTZService};
 pub use wsdl_loader::EmbeddedWsdlLoader;
+
+// ─── Discovery helpers ────────────────────────────────────────────────────────
+//
+// Thin wrappers exposing the WS-Discovery probe-parsing and probe-response
+// building functions. These are always available (the underlying logic is pure
+// XML); only the UDP listener requires the `discovery` feature.
+
+/// Returns `true` when `msg` is a well-formed WS-Discovery `Probe` message
+/// (SOAP body first child = `Probe` in namespace
+/// `http://schemas.xmlsoap.org/ws/2005/04/discovery`).
+pub fn discovery_is_probe(msg: &[u8]) -> bool {
+    discovery::is_probe_message(msg)
+}
+
+/// Build a WS-Discovery `ProbeMatches` response XML with a stable
+/// `device_uuid` embedded in `EndpointReference/Address`.
+pub fn discovery_build_probe_match(
+    relates_to: &str,
+    xaddr: &str,
+    device_uuid: uuid::Uuid,
+) -> String {
+    discovery::build_probe_match(relates_to, xaddr, device_uuid)
+}

@@ -384,21 +384,26 @@ async fn device_auth_valid_credential() {
     });
     tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
 
-    let soap_body = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let created = chrono::Utc::now().to_rfc3339();
+    let soap_body = format!(
+        r#"<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"
-            xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+            xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
+            xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
   <s:Header>
     <wsse:Security>
       <wsse:UsernameToken>
         <wsse:Username>admin</wsse:Username>
         <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">secret</wsse:Password>
+        <wsu:Created>{created}</wsu:Created>
       </wsse:UsernameToken>
     </wsse:Security>
   </s:Header>
   <s:Body>
     <tds:GetDeviceInformation xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
   </s:Body>
-</s:Envelope>"#;
+</s:Envelope>"#
+    );
 
     let request = format!(
         "POST /onvif/device_service HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/soap+xml; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
@@ -462,14 +467,18 @@ async fn ptz_dispatch_get_configuration_options_over_http() {
 
     // Use ver10 namespace — matches what GetServices advertises and what the dispatch
     // table is keyed on. A regression to ver20 in GetServices would cause this to fail.
-    let soap_body = r#"<?xml version="1.0" encoding="UTF-8"?>
+    let created = chrono::Utc::now().to_rfc3339();
+    let soap_body = format!(
+        r#"<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"
-            xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+            xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
+            xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
   <s:Header>
     <wsse:Security>
       <wsse:UsernameToken>
         <wsse:Username>admin</wsse:Username>
         <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">secret</wsse:Password>
+        <wsu:Created>{created}</wsu:Created>
       </wsse:UsernameToken>
     </wsse:Security>
   </s:Header>
@@ -478,7 +487,8 @@ async fn ptz_dispatch_get_configuration_options_over_http() {
       <tptz:ConfigurationToken>ptz_cfg_0</tptz:ConfigurationToken>
     </tptz:GetConfigurationOptions>
   </s:Body>
-</s:Envelope>"#;
+</s:Envelope>"#
+    );
 
     let request = format!(
         "POST /onvif/ptz_service HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/soap+xml; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",

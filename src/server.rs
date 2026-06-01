@@ -81,177 +81,163 @@ impl OnvifServer {
     /// This method does not return until the server is shut down.
     /// Requires a tokio async runtime (`#[tokio::main]` or `tokio::runtime::Runtime`).
     ///
+    /// # Auth behaviour
+    ///
+    /// If the builder was configured with `.auth(username, password)`, WS-Security
+    /// UsernameToken authentication is enforced on all non-bypassed operations.
+    /// If `.auth()` was NOT called, the server runs **unauthenticated** — all
+    /// operations are accessible without credentials.
+    ///
+    /// # Service optionality
+    ///
+    /// Only `device_service` is required (checked at [`OnvifServerBuilder::build`] time).
+    /// Media, PTZ, Imaging, and Events services are optional; their routes are only
+    /// mounted and their capabilities only advertised when they are registered.
+    ///
     /// # Errors
     ///
-    /// Returns [`RunError::Startup`] if a required service (beyond `device_service`,
-    /// which is checked at [`OnvifServerBuilder::build`] time) is not registered.
+    /// Returns [`RunError::Startup`] if `device_service` is somehow absent at run time.
     /// Returns [`RunError::Io`] if the TCP listener fails to bind or serve.
     pub async fn run(self) -> Result<(), RunError> {
         let device_svc = self
             .device_service
             .ok_or_else(|| RunError::Startup("device_service is required to call run()".into()))?;
 
-        let media_svc = self
-            .media_service
-            .ok_or_else(|| RunError::Startup("media_service is required to call run()".into()))?;
-
-        let ptz_svc = self
-            .ptz_service
-            .ok_or_else(|| RunError::Startup("ptz_service is required to call run()".into()))?;
-
-        let imaging_svc = self
-            .imaging_service
-            .ok_or_else(|| RunError::Startup("imaging_service is required to call run()".into()))?;
-
-        let event_svc = self
-            .event_service
-            .ok_or_else(|| RunError::Startup("event_service is required to call run()".into()))?;
-
         let xaddr = format!(
             "http://{}:{}/onvif/device_service",
             self.advertised_host, self.port
         );
-        let media_xaddr = format!(
-            "http://{}:{}/onvif/media_service",
-            self.advertised_host, self.port
-        );
-        let ptz_xaddr = format!(
-            "http://{}:{}/onvif/ptz_service",
-            self.advertised_host, self.port
-        );
-        let imaging_xaddr = format!(
-            "http://{}:{}/onvif/imaging_service",
-            self.advertised_host, self.port
-        );
-        let events_xaddr = format!(
-            "http://{}:{}/onvif/events_service",
-            self.advertised_host, self.port
-        );
+
+        // Build optional XAddrs — only Some when the corresponding service is registered.
+        let media_xaddr = self.media_service.as_ref().map(|_| {
+            format!(
+                "http://{}:{}/onvif/media_service",
+                self.advertised_host, self.port
+            )
+        });
+        let ptz_xaddr = self.ptz_service.as_ref().map(|_| {
+            format!(
+                "http://{}:{}/onvif/ptz_service",
+                self.advertised_host, self.port
+            )
+        });
+        let imaging_xaddr = self.imaging_service.as_ref().map(|_| {
+            format!(
+                "http://{}:{}/onvif/imaging_service",
+                self.advertised_host, self.port
+            )
+        });
+        let events_xaddr = self.event_service.as_ref().map(|_| {
+            format!(
+                "http://{}:{}/onvif/events_service",
+                self.advertised_host, self.port
+            )
+        });
 
         let handler = DeviceServiceHandler::new(
             device_svc,
-            xaddr,
-            media_xaddr.clone(),
-            ptz_xaddr,
-            imaging_xaddr.clone(),
-            events_xaddr.clone(),
+            xaddr.clone(),
+            media_xaddr.clone().unwrap_or_default(),
+            ptz_xaddr.clone().unwrap_or_default(),
+            imaging_xaddr.clone().unwrap_or_default(),
+            events_xaddr.clone().unwrap_or_default(),
         );
 
-        let media_handler = MediaServiceHandler::new(media_svc, media_xaddr);
-        let ptz_handler = PTZServiceHandler::new(ptz_svc);
-        let imaging_handler = ImagingServiceHandler::new(imaging_svc);
-        let events_handler = EventServiceHandler::new(event_svc, events_xaddr.clone());
-
-        let username = self.username.clone();
-        let password = self.password.clone();
-        let username2 = self.username.clone();
-        let password2 = self.password.clone();
-        let username3 = self.username.clone();
-        let password3 = self.password.clone();
-        let username4 = self.username.clone();
-        let password4 = self.password.clone();
-        let username5 = self.username.clone();
-        let password5 = self.password.clone();
         let auth_bypass = self.auth_bypass;
+        let credentials = self
+            .username
+            .as_ref()
+            .zip(self.password.as_ref())
+            .map(|(u, p)| (u.clone(), p.clone()));
 
-        let soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
-            include_bytes!("../wsdl/devicemgmt.wsdl").to_vec(),
-            EmbeddedWsdlLoader,
-        )
-        .path("/onvif/device_service")
-        .default_handler(handler)
-        .auth(move |user: &str| -> Option<String> {
-            if Some(user) == username.as_deref() {
-                password.clone()
-            } else {
-                None
-            }
-        })
-        .auth_bypass(auth_bypass.into_iter())
-        .build()
-        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
+        // Helper macro: builds a soap_server::ServerBuilder for a given WSDL/path,
+        // attaches auth only when credentials are configured, then calls .build().
+        macro_rules! build_service {
+            ($wsdl_bytes:expr, $path:expr, $handler:expr, $bypass_iter:expr) => {{
+                let mut b = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
+                    $wsdl_bytes.to_vec(),
+                    EmbeddedWsdlLoader,
+                )
+                .path($path)
+                .default_handler($handler)
+                .auth_bypass($bypass_iter);
 
-        let media_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
-            include_bytes!("../wsdl/media.wsdl").to_vec(),
-            EmbeddedWsdlLoader,
-        )
-        .path("/onvif/media_service")
-        .default_handler(media_handler)
-        .auth(move |user: &str| -> Option<String> {
-            if Some(user) == username2.as_deref() {
-                password2.clone()
-            } else {
-                None
-            }
-        })
-        .auth_bypass(std::iter::empty::<String>())
-        .build()
-        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
+                if let Some((ref u, ref p)) = credentials {
+                    let u = u.clone();
+                    let p = p.clone();
+                    b = b.auth(move |user: &str| -> Option<String> {
+                        if user == u {
+                            Some(p.clone())
+                        } else {
+                            None
+                        }
+                    });
+                }
 
-        let ptz_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
-            include_bytes!("../wsdl/ptz.wsdl").to_vec(),
-            EmbeddedWsdlLoader,
-        )
-        .path("/onvif/ptz_service")
-        .default_handler(ptz_handler)
-        .auth(move |user: &str| -> Option<String> {
-            if Some(user) == username3.as_deref() {
-                password3.clone()
-            } else {
-                None
-            }
-        })
-        .auth_bypass(std::iter::empty::<String>())
-        .build()
-        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
+                b.build()
+                    .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?
+            }};
+        }
 
-        let imaging_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
-            include_bytes!("../wsdl/imaging.wsdl").to_vec(),
-            EmbeddedWsdlLoader,
-        )
-        .path("/onvif/imaging_service")
-        .default_handler(imaging_handler)
-        .auth(move |user: &str| -> Option<String> {
-            if Some(user) == username4.as_deref() {
-                password4.clone()
-            } else {
-                None
-            }
-        })
-        .auth_bypass(std::iter::empty::<String>())
-        .build()
-        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
+        let soap_svc = build_service!(
+            include_bytes!("../wsdl/devicemgmt.wsdl"),
+            "/onvif/device_service",
+            handler,
+            auth_bypass.into_iter()
+        );
 
-        let events_soap_svc = soap_server::ServerBuilder::from_wsdl_bytes_with_loader(
-            include_bytes!("../wsdl/events.wsdl").to_vec(),
-            EmbeddedWsdlLoader,
-        )
-        .path("/onvif/events_service")
-        .default_handler(events_handler)
-        .auth(move |user: &str| -> Option<String> {
-            if Some(user) == username5.as_deref() {
-                password5.clone()
-            } else {
-                None
-            }
-        })
-        .auth_bypass(std::iter::empty::<String>())
-        .build()
-        .map_err(|e| RunError::Startup(format!("ServerBuilder::build failed: {e}")))?;
+        let mut router = soap_svc.into_router();
 
-        let router = soap_svc
-            .into_router()
-            .merge(media_soap_svc.into_router())
-            .merge(ptz_soap_svc.into_router())
-            .merge(imaging_soap_svc.into_router())
-            .merge(events_soap_svc.into_router());
+        // Mount optional services — only when registered.
+        if let Some(media_svc) = self.media_service {
+            let media_handler =
+                MediaServiceHandler::new(media_svc, media_xaddr.as_deref().unwrap_or_default());
+            let media_soap_svc = build_service!(
+                include_bytes!("../wsdl/media.wsdl"),
+                "/onvif/media_service",
+                media_handler,
+                std::iter::empty::<String>()
+            );
+            router = router.merge(media_soap_svc.into_router());
+        }
+
+        if let Some(ptz_svc) = self.ptz_service {
+            let ptz_handler = PTZServiceHandler::new(ptz_svc);
+            let ptz_soap_svc = build_service!(
+                include_bytes!("../wsdl/ptz.wsdl"),
+                "/onvif/ptz_service",
+                ptz_handler,
+                std::iter::empty::<String>()
+            );
+            router = router.merge(ptz_soap_svc.into_router());
+        }
+
+        if let Some(imaging_svc) = self.imaging_service {
+            let imaging_handler = ImagingServiceHandler::new(imaging_svc);
+            let imaging_soap_svc = build_service!(
+                include_bytes!("../wsdl/imaging.wsdl"),
+                "/onvif/imaging_service",
+                imaging_handler,
+                std::iter::empty::<String>()
+            );
+            router = router.merge(imaging_soap_svc.into_router());
+        }
+
+        if let Some(event_svc) = self.event_service {
+            let events_xaddr_str = events_xaddr.as_deref().unwrap_or_default().to_string();
+            let events_handler = EventServiceHandler::new(event_svc, events_xaddr_str);
+            let events_soap_svc = build_service!(
+                include_bytes!("../wsdl/events.wsdl"),
+                "/onvif/events_service",
+                events_handler,
+                std::iter::empty::<String>()
+            );
+            router = router.merge(events_soap_svc.into_router());
+        }
 
         #[cfg(feature = "discovery")]
         {
-            let disc_xaddr = format!(
-                "http://{}:{}/onvif/device_service",
-                self.advertised_host, self.port
-            );
+            let disc_xaddr = xaddr.clone();
             tokio::spawn(async move {
                 if let Err(e) = crate::discovery::run_discovery(disc_xaddr).await {
                     eprintln!("[discovery] task exited: {e}");
@@ -320,8 +306,10 @@ impl OnvifServerBuilder {
 
     /// Set the credentials used for WS-Security digest auth validation.
     ///
-    /// Phase 2 will pass these to `soap_server::ServerBuilder::auth()` as a closure
-    /// mapping usernames to their expected passwords.
+    /// When called, WS-Security UsernameToken authentication is enforced on all
+    /// non-bypassed operations during [`OnvifServer::run`]. When NOT called, the
+    /// server runs **unauthenticated** — all operations are accessible without
+    /// credentials.
     pub fn auth(mut self, username: &str, password: &str) -> Self {
         self.username = Some(username.to_string());
         self.password = Some(password.to_string());
@@ -335,24 +323,36 @@ impl OnvifServerBuilder {
     }
 
     /// Register a Media Service implementation.
+    ///
+    /// Optional: if not registered, the media route is not mounted and media
+    /// capabilities are not advertised.
     pub fn media_service(mut self, svc: impl MediaService + 'static) -> Self {
         self.media_service = Some(Arc::new(svc));
         self
     }
 
     /// Register a PTZ Service implementation.
+    ///
+    /// Optional: if not registered, the PTZ route is not mounted and PTZ
+    /// capabilities are not advertised.
     pub fn ptz_service(mut self, svc: impl PTZService + 'static) -> Self {
         self.ptz_service = Some(Arc::new(svc));
         self
     }
 
     /// Register an Imaging Service implementation.
+    ///
+    /// Optional: if not registered, the imaging route is not mounted and imaging
+    /// capabilities are not advertised.
     pub fn imaging_service(mut self, svc: impl ImagingService + 'static) -> Self {
         self.imaging_service = Some(Arc::new(svc));
         self
     }
 
     /// Register an Event Service implementation.
+    ///
+    /// Optional: if not registered, the events route is not mounted and events
+    /// capabilities are not advertised.
     pub fn event_service(mut self, svc: impl EventService + 'static) -> Self {
         self.event_service = Some(Arc::new(svc));
         self
@@ -369,8 +369,9 @@ impl OnvifServerBuilder {
     /// device service has been registered. `device_service` is required by the ONVIF
     /// spec — it provides `GetSystemDateAndTime` and core device management operations.
     ///
-    /// All other services (media, PTZ, imaging, events) are optional at build time
-    /// and validated at `run()` when actually needed.
+    /// All other services (media, PTZ, imaging, events) are optional. When omitted,
+    /// their routes are not mounted at run time and their capabilities are not
+    /// advertised in `GetCapabilities` / `GetServices`.
     pub fn build(self) -> Result<OnvifServer, BuildError> {
         if self.device_service.is_none() {
             return Err(BuildError::MissingRequiredService(
