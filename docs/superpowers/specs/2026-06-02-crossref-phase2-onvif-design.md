@@ -62,9 +62,17 @@ crate:
 
 **Two execution layers (mirrors Phase 1):**
 
-- **Layer 1 (Rust, no Docker):** replay `scenarios/*.toml` against the in-process
-  controlled server, normalize (mask + prefix-canon), diff vs frozen `unverified`
-  snapshots. Per-commit CI gate; proves *unchanged*, not *correct*.
+- **Layer 1 (Rust, no Docker):** replay `scenarios/*.toml` against the controlled server
+  **through the full SOAP envelope/auth/routing stack** (NOT handler-only), normalize
+  (mask + prefix-canon), diff vs frozen `unverified` snapshots. Per-commit CI gate;
+  proves *unchanged*, not *correct*.
+  **Transport (required):** `OnvifServer` currently builds its merged axum router
+  *inside* `run()` (server.rs ~189–249) and only exposes a bound-port `run()`. Phase 2a
+  MUST add a `pub fn OnvifServer::into_router(self) -> axum::Router` (extract the existing
+  router-build; `run()` then calls `into_router()` and binds) so Layer-1 can drive it
+  in-process via `axum_test::TestServer` — exactly as soap-server's `SoapService::into_router()`
+  enabled Phase 1. This is an additive, non-breaking product change. Handler-only replay is
+  prohibited (it would bypass envelope parsing, WS-Security auth, and operation routing).
 - **Layer 2 (Docker):** bring up oracle + onvif-srvd + zeep + our controlled server;
   validate every response against the ONVIF schema bundle; apply semantic invariants;
   run the narrow onvif-srvd structural comparison; run zeep interop; assign §5.7
@@ -92,7 +100,13 @@ crate:
   network. DOCTYPEs that Xerces rejects are stripped as in Phase 1.
 - Validation per scenario: the SOAP envelope against `soap12-envelope`; the **body child
   element** (the operation's `…Response`) against its service `*-body` schema. Faults
-  validate against the envelope schema. Header validation (WS-Security / WS-Addressing)
+  validate against the envelope schema. **Namespace preservation (required):** ONVIF
+  responses commonly declare namespaces (`tt:`, `tds:`, `tns1:`, …) on the `Envelope`/
+  `Header`/`Body` ancestors, not on the body child. The body-child extractor MUST copy all
+  in-scope ancestor namespace declarations onto the extracted child element before
+  validation, or schema-valid responses will spuriously fail. (soap-server's
+  `envelope::extract_body_first_child` already re-emits ancestor ns decls — verified by its
+  `parse_envelope_body_bytes_contain_ancestor_ns_declarations` test — and is reused here.) Header validation (WS-Security / WS-Addressing)
   is reported as `unvalidated` unless a scenario declares header schemas (Phase-1 §5.6
   rule carries over).
 
@@ -113,20 +127,71 @@ Source URLs for every vendored schema are recorded in `crossref/comparators/orac
    (triage), never an automatic SUT fail.
 4. **Verdict:** reuse the outcome-aware §5.7 model — `Pass` / `SutFail` /
    `ReferenceDisagreement` / `KnownDivergence` / `HarnessError`. Declared `outcome` +
-   `expected_status` enforced (the Phase-1c hardening). `is_green()` fails on
-   SutFail/HarnessError/ReferenceDisagreement.
+   `expected_status` enforced (the Phase-1c hardening). `is_green()` requires every
+   verdict be `Pass` or `KnownDivergence` (fails on SutFail/HarnessError/ReferenceDisagreement).
+
+**Invariants run BEFORE masks.** Semantic invariants (§5.2) and the §5.7 comparison are
+evaluated on the **raw, pre-mask response**; masking (§8) is applied only when producing
+the normalized snapshot/canonical bytes for diffing. This ordering prevents a mask from
+hiding the very field an invariant asserts (e.g. discovery `RelatesTo`).
+
+**KnownDivergence semantics (single rule):** a `KnownDivergence` **counts as green** — but
+ONLY via an explicit, reviewed, recorded entry (a documented justification committed to the
+repo, e.g. a `known_divergences` table keyed by scenario+path+reason). It is never
+auto-assigned to a failing scenario to force green. Absent an approved recorded entry, a
+divergence is a `ReferenceDisagreement` (non-green). This matches the Phase-1 model
+(is_green accepts KnownDivergence) while requiring human sign-off to reach it.
+
+### 5a. Scenario metadata contract (explicit routing — no name-driven dispatch)
+
+To avoid Phase 1's fragile prefix-based routing (`select_sut` matched scenario names),
+every `scenarios/*.toml` declares its behavior **explicitly**; the orchestrator routes on
+these fields, never on the scenario name:
+
+```toml
+name            = "device_get_device_information_authed"
+service         = "device"          # device | media | imaging | ptz | events | discovery
+operation       = "GetDeviceInformation"
+schema_id       = "device-body"     # which oracle schema validates the body child
+http_method     = "POST"            # POST | GET (none for discovery — see §11)
+expected_status = 200
+outcome         = "success"         # success | fault
+auth_mode       = "usernametoken"   # none | usernametoken
+reference_mode  = "srvd_exact"      # none | srvd_projection | srvd_exact
+invariants      = ["single_white_balance"]   # named structural invariants (may be empty)
+masks           = ["wsa_message_id"]          # named path-scoped masks from §8 (may be empty)
+request_file    = "device_get_device_information_authed.request.xml"
+[fault]                             # present only when outcome = "fault"
+code            = "Sender"
+subcode         = "ter:NotAuthorized"
+```
+
+`reference_mode` selects the §6 comparison (`none` = oracle+invariants only;
+`srvd_projection` = §6 projection compare; `srvd_exact` = near-exact masked compare).
+`invariants` / `masks` reference named registries in Rust (not inline logic), so adding a
+scenario is data, not code. This contract is the single source of truth shared by Layer 1
+and Layer 2.
 
 ## 6. onvif-srvd scope (narrow — avoid false authority)
 
 `onvif-srvd` is compared against ONLY where both devices can be pinned to equivalent,
-stable, read-only output:
+stable, read-only output. Two comparison modes (set per scenario via `reference_mode`):
 
-- **GetDeviceInformation** (pin both to identical manufacturer/model/firmware/serial →
-  near-exact structural match),
-- **GetCapabilities**,
-- **GetServices**,
-- **GetProfiles** — *only if* both can be pinned to identical profile/config tokens;
-  otherwise oracle + invariants only.
+- **`srvd_exact`** — full masked structural equality after prefix-canon + C14N. Used only
+  for **GetDeviceInformation** (pin both to identical manufacturer/model/firmware/serial).
+- **`srvd_projection`** — compare only a defined PROJECTION of each response, not full
+  structural equality (two conformant devices legitimately differ in supported features, so
+  full equality would yield false `ReferenceDisagreement`). Used for:
+  - **GetCapabilities** — projection = the set of advertised service categories + their
+    `XAddr` (path compared, host:port authority masked) + version (Major/Minor) + a defined
+    set of required capability booleans. Optional/extra capabilities are ignored.
+  - **GetServices** — projection = the set of service `Namespace` values + each service's
+    `XAddr` (path; authority masked) + `Version`. Extra services on either side are ignored.
+  - **GetProfiles** — `srvd_projection` *only if* both pin identical profile/config tokens;
+    otherwise `reference_mode = none` (oracle + invariants only).
+
+The projection for each op is a named, documented extractor in Rust (referenced from the
+scenario), so what is being compared is explicit and reviewable.
 
 **Explicitly NOT compared against onvif-srvd** (oracle-validity + invariants only — these
 legitimately differ between devices and srvd would be a false authority): PTZ moves
@@ -162,7 +227,7 @@ else is deterministic and asserted directly.
 | Path (local-name) | Reason |
 |---|---|
 | `Envelope/Header/MessageID` (`wsa:MessageID`) | per-message UUID (events, discovery) |
-| `Envelope/Header/RelatesTo` (`wsa:RelatesTo`) | echoes the request MessageID (volatile) — see §11 note |
+| `Envelope/Header/RelatesTo` (`wsa:RelatesTo`) | **NOT masked.** Our request fixtures use a FIXED `MessageID`, so `RelatesTo` is deterministic and is asserted by invariant (`relates_to == request MessageID`). Masking it would defeat that invariant (per the "invariants before masks" rule, and resolving the §11 conflict). |
 | `…/GetSystemDateAndTimeResponse/SystemDateAndTime/UTCDateTime/…` | live clock |
 | `…/PullMessagesResponse/CurrentTime` and `…/TerminationTime` | live clock |
 | `…/CreatePullPointSubscriptionResponse/…/TerminationTime` | live clock |
@@ -201,9 +266,11 @@ invariants (§5.2); the §6 subset additionally gets onvif-srvd comparison.
 - **Media:** `GetProfiles`*(conditional), `GetStreamUri`, `GetSnapshotUri`,
   `GetVideoSources`, `GetVideoSourceConfigurations`, `GetVideoEncoderConfigurations`.
 - **Imaging:** `GetImagingSettings` (+ invariant: exactly one `tt:WhiteBalance`).
-- **PTZ:** `GetNodes`, `GetConfigurations`, `GetConfigurationOptions`, `GetStatus`,
-  `RelativeMove`, `AbsoluteMove`, `ContinuousMove`, `Stop`, **malformed-coordinate fault**
-  (required negative — regression-locks PTZ coercion fix). Preset lifecycle
+- **PTZ:** `GetServiceCapabilities` (**required**; invariant: `Capabilities/@MoveStatus == true`
+  — regression-locks the MoveStatus-as-attribute compatibility fix), `GetNodes`,
+  `GetConfigurations`, `GetConfigurationOptions`, `GetStatus`, `RelativeMove`, `AbsoluteMove`,
+  `ContinuousMove`, `Stop`, **malformed-coordinate fault** (required negative —
+  regression-locks the PTZ coordinate-coercion fix). Preset lifecycle
   (`GetPresets`/`GotoPreset`) included if deterministic.
 - **Events:** `GetEventProperties`, `CreatePullPointSubscription`, `PullMessages` (assert
   WS-Addressing `SubscriptionId` header), **unknown-subscription fault**.
@@ -213,17 +280,22 @@ invariants (§5.2); the §6 subset additionally gets onvif-srvd comparison.
 
 ## 11. Discovery authority model
 
-WS-Discovery is not normal ONVIF-service SOAP, and a WS-Discovery XSD is not vendored in
-the repo. Discovery is therefore **structural-only with invariants** (no onvif-srvd
-diff), validating the WS-Addressing envelope against the vendored `ws-addr.xsd` where
-feasible, plus asserting:
+WS-Discovery is not normal ONVIF-service SOAP, and **no WS-Discovery XSD is vendored** in
+the repo. `ws-addr.xsd` alone CANNOT validate a `ProbeMatch` (the ProbeMatch body lives in
+the WS-Discovery namespace, not WS-Addressing). Discovery is therefore **strictly
+structural-only with invariants** — no oracle schema validation and no onvif-srvd diff.
+The Probe request fixture uses a **fixed `MessageID`** so `RelatesTo` is deterministic.
+Invariants asserted on the raw response:
 
-- correct `wsa:RelatesTo` == the request Probe's `MessageID`;
+- correct `wsa:RelatesTo` == the request Probe's (fixed) `MessageID`;
 - a **stable endpoint UUID** (pinned by the fixture — NOT masked, so a regression in
   endpoint identity is caught);
 - `Types` present (e.g. `tds:Device`), `Scopes` present and matching the fixture;
 - `XAddrs` properly escaped and pointing at our service;
 - **no response** to a non-Probe payload.
+
+(Vendoring the WS-Discovery + WS-Addressing schemas to enable oracle validation of
+ProbeMatch is an optional future enhancement, explicitly out of scope for Phase 2.)
 
 ## 12. Interop (python-onvif-zeep, Profile-S flow)
 
@@ -257,9 +329,11 @@ Each sub-phase gets its own implementation plan (spec→plan→build), as Phase 
 ## 14. Caveats & risks
 
 - **onvif-srvd pinning:** matching onvif-srvd's device config to our fixture for the §6
-  subset may still leave benign structural differences → recorded as `KnownDivergence`
-  with a documented reason, never force-greened. If onvif-srvd proves unsuitable for an
-  op, drop it from the §6 subset (oracle + invariants still gate that op).
+  subset may still leave benign structural differences. These default to
+  `ReferenceDisagreement` (non-green) and only become `KnownDivergence` (green) via an
+  explicit recorded justification entry per the §5 single rule — never auto/silently. If
+  onvif-srvd proves unsuitable for an op, drop it from the §6 subset (set
+  `reference_mode = none`; oracle + invariants still gate that op).
 - **WSDL→XSD extraction:** the embedded-schema extraction (§4) must preserve imports;
   ONVIF schemas are large and cross-import heavily — the resolver must be exhaustive
   (offline). This is the main 2b implementation risk.
@@ -273,7 +347,8 @@ Each sub-phase gets its own implementation plan (spec→plan→build), as Phase 
 ## 15. Success criteria (Phase 2)
 
 1. `onvif-server/crossref/` exists as a `publish = false` workspace member; onvif-server's
-   `cargo package` is unaffected (crossref excluded; verified == 0 files).
+   `cargo package` is unaffected — `cargo package --list -p onvif-server` contains **zero
+   `crossref/` files**.
 2. Layer 1 runs in per-commit CI (no Docker), diffs every scenario response against the
    snapshot corpus, reports the still-`unverified` count.
 3. Layer 2 brings up the oracle (ONVIF schema bundle) + onvif-srvd + our server, applies
