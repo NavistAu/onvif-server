@@ -98,18 +98,19 @@ pub struct Resp {
 }
 
 // ─── Projection-mode evaluator (spec §6) ─────────────────────────────────────
+//
+// Note: `srvd_exact` mode (not implemented here) reuses `evaluate(&Eval)` for
+// masked-bytes equality — see that function for its semantics.
 
 /// Evaluate a `srvd_projection` comparison (spec §6).
 ///
-/// `srvd_exact` reuses the existing `evaluate(&Eval)` function (masked-bytes
-/// equality) — see that function for full semantics.
+/// Compares three projections using a 3-gate asymmetric rule:
 ///
-/// Decision order (asymmetric rule):
-/// 1. `our != expected_fixture` → `SutFail` — our server advertises something
-///    other than the fixture: extra, missing, or wrong field.
+/// 1. `our != expected_fixture` → `SutFail` — our server's projection diverges
+///    from the expected fixture (extra keys, missing keys, or a field mismatch).
 /// 2. For each entry WE advertise (`our`): `srvd` must contain a matching entry
 ///    (same key AND same projected fields).  If any is missing or differs →
-///    `ReferenceDisagreement`.  (srvd's EXTRA entries are ignored.)
+///    `ReferenceDisagreement`.  (srvd's EXTRA entries are intentionally ignored.)
 /// 3. Else → `Pass`.
 pub fn evaluate_projection(
     expected_fixture: &crate::projection::CanonProjection,
@@ -118,10 +119,33 @@ pub fn evaluate_projection(
 ) -> Verdict {
     // Gate 1: fixture-equality check — our server must match the fixture exactly.
     if our != expected_fixture {
+        let our_extra: Vec<&String> = our
+            .keys()
+            .filter(|k| !expected_fixture.contains_key(*k))
+            .collect();
+        let fixture_extra: Vec<&String> = expected_fixture
+            .keys()
+            .filter(|k| !our.contains_key(*k))
+            .collect();
+        let differing: Vec<&String> = our
+            .iter()
+            .filter(|(k, v)| expected_fixture.get(*k).is_some_and(|fv| fv != *v))
+            .map(|(k, _)| k)
+            .collect();
+
+        let mut parts: Vec<String> = Vec::new();
+        if !our_extra.is_empty() {
+            parts.push(format!("extra keys in our: {:?}", our_extra));
+        }
+        if !fixture_extra.is_empty() {
+            parts.push(format!("keys missing from our: {:?}", fixture_extra));
+        }
+        if !differing.is_empty() {
+            parts.push(format!("field mismatch at keys: {:?}", differing));
+        }
         return Verdict::SutFail(format!(
-            "our projection does not match fixture: our has {} entries, fixture has {}",
-            our.len(),
-            expected_fixture.len(),
+            "our projection does not match fixture — {}",
+            parts.join("; "),
         ));
     }
     // Gate 2: for every entry we advertise, srvd must agree.

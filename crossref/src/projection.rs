@@ -15,7 +15,7 @@ use quick_xml::Reader;
 
 /// A single projected entry.  Holds the fields we care about for the given
 /// operation.  Extra fields in the real response are intentionally not stored.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct ProjEntry {
     /// URL path component of the XAddr (authority stripped).
     pub xaddr_path: Option<String>,
@@ -103,12 +103,7 @@ pub fn get_capabilities(response: &[u8]) -> Result<CanonProjection, String> {
                 let lname = local_name_str(e.name().as_ref());
                 if known_categories.contains(&lname.as_str()) {
                     current_category = Some(lname);
-                    current_entry = Some(ProjEntry {
-                        xaddr_path: None,
-                        version_major: None,
-                        version_minor: None,
-                        fields: BTreeMap::new(),
-                    });
+                    current_entry = Some(ProjEntry::default());
                 } else if current_category.is_some() {
                     match lname.as_str() {
                         "XAddr" => inside_xaddr = true,
@@ -193,12 +188,7 @@ pub fn get_services(response: &[u8]) -> Result<CanonProjection, String> {
                     "Service" => {
                         in_service = true;
                         current_ns = None;
-                        current_entry = Some(ProjEntry {
-                            xaddr_path: None,
-                            version_major: None,
-                            version_minor: None,
-                            fields: BTreeMap::new(),
-                        });
+                        current_entry = Some(ProjEntry::default());
                     }
                     "Namespace" if in_service => inside_namespace = true,
                     "XAddr" if in_service => inside_xaddr = true,
@@ -282,12 +272,7 @@ pub fn get_profiles(response: &[u8]) -> Result<CanonProjection, String> {
                 if lname == "Profiles" && current_token.is_none() {
                     let token = attr_value(e, "token").unwrap_or_default();
                     current_token = Some(token);
-                    current_entry = Some(ProjEntry {
-                        xaddr_path: None,
-                        version_major: None,
-                        version_minor: None,
-                        fields: BTreeMap::new(),
-                    });
+                    current_entry = Some(ProjEntry::default());
                     depth_in_profile = 1;
                     inside_profile_name = false;
                 } else if depth_in_profile > 0 {
@@ -647,5 +632,22 @@ mod tests {
     #[test]
     fn evaluate_none_declared_fault_our_fault_schema_valid_is_pass() {
         assert_eq!(evaluate_none(false, true, false), Verdict::Pass);
+    }
+
+    // ── malformed-XML error propagation ──────────────────────────────────────
+
+    #[test]
+    fn get_capabilities_malformed_xml_returns_err() {
+        assert!(get_capabilities(b"not xml <<").is_err());
+    }
+
+    #[test]
+    fn get_services_malformed_xml_returns_err() {
+        assert!(get_services(b"not xml <<").is_err());
+    }
+
+    #[test]
+    fn get_profiles_malformed_xml_returns_err() {
+        assert!(get_profiles(b"not xml <<").is_err());
     }
 }
