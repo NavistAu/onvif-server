@@ -1,6 +1,6 @@
-<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetHostnameResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
-  <tds:HostnameInformation>
-    <tt:FromDHCP xmlns:tt="http://www.onvif.org/ver10/schema">false</tt:FromDHCP>
-    <tt:Name xmlns:tt="http://www.onvif.org/ver10/schema">controlled-onvif</tt:Name>
-  </tds:HostnameInformation>
-</tds:GetHostnameResponse></env:Body></env:Envelope>
+<n2:Envelope xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetHostnameResponse xmlns:n0="http://www.onvif.org/ver10/device/wsdl">
+  <n0:HostnameInformation>
+    <n1:FromDHCP xmlns:n1="http://www.onvif.org/ver10/schema">false</n1:FromDHCP>
+    <n1:Name xmlns:n1="http://www.onvif.org/ver10/schema">controlled-onvif</n1:Name>
+  </n0:HostnameInformation>
+</n0:GetHostnameResponse></n2:Body></n2:Envelope>

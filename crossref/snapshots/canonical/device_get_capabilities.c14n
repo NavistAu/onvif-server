@@ -1,14 +1,14 @@
-<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetCapabilitiesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
-  <tds:Capabilities>
-    <tt:Device xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/device_service</tt:XAddr></tt:Device>
-    <tt:Events xmlns:tt="http://www.onvif.org/ver10/schema">
-      <tt:XAddr>http://controlled-onvif:8080:8080/onvif/events_service</tt:XAddr>
-      <tt:WSSubscriptionPolicySupport>false</tt:WSSubscriptionPolicySupport>
-      <tt:WSPullPointSupport>true</tt:WSPullPointSupport>
-      <tt:WSPausableSubscriptionManagerInterfaceSupport>false</tt:WSPausableSubscriptionManagerInterfaceSupport>
-    </tt:Events>
-    <tt:Imaging xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/imaging_service</tt:XAddr></tt:Imaging>
-    <tt:Media xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/media_service</tt:XAddr><tt:StreamingCapabilities></tt:StreamingCapabilities></tt:Media>
-    <tt:PTZ xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/ptz_service</tt:XAddr></tt:PTZ>
-  </tds:Capabilities>
-</tds:GetCapabilitiesResponse></env:Body></env:Envelope>
+<n2:Envelope xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetCapabilitiesResponse xmlns:n0="http://www.onvif.org/ver10/device/wsdl">
+  <n0:Capabilities>
+    <n1:Device xmlns:n1="http://www.onvif.org/ver10/schema"><n1:XAddr>http://controlled-onvif:8080:8080/onvif/device_service</n1:XAddr></n1:Device>
+    <n1:Events xmlns:n1="http://www.onvif.org/ver10/schema">
+      <n1:XAddr>http://controlled-onvif:8080:8080/onvif/events_service</n1:XAddr>
+      <n1:WSSubscriptionPolicySupport>false</n1:WSSubscriptionPolicySupport>
+      <n1:WSPullPointSupport>true</n1:WSPullPointSupport>
+      <n1:WSPausableSubscriptionManagerInterfaceSupport>false</n1:WSPausableSubscriptionManagerInterfaceSupport>
+    </n1:Events>
+    <n1:Imaging xmlns:n1="http://www.onvif.org/ver10/schema"><n1:XAddr>http://controlled-onvif:8080:8080/onvif/imaging_service</n1:XAddr></n1:Imaging>
+    <n1:Media xmlns:n1="http://www.onvif.org/ver10/schema"><n1:XAddr>http://controlled-onvif:8080:8080/onvif/media_service</n1:XAddr><n1:StreamingCapabilities></n1:StreamingCapabilities></n1:Media>
+    <n1:PTZ xmlns:n1="http://www.onvif.org/ver10/schema"><n1:XAddr>http://controlled-onvif:8080:8080/onvif/ptz_service</n1:XAddr></n1:PTZ>
+  </n0:Capabilities>
+</n0:GetCapabilitiesResponse></n2:Body></n2:Envelope>

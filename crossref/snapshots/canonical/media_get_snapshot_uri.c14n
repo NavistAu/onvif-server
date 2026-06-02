@@ -1,8 +1,8 @@
-<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><trt:GetSnapshotUriResponse xmlns:trt="http://www.onvif.org/ver10/media/wsdl">
-  <trt:MediaUri>
-    <tt:Uri xmlns:tt="http://www.onvif.org/ver10/schema">http://controlled-onvif:8080/snapshot0</tt:Uri>
-    <tt:InvalidAfterConnect xmlns:tt="http://www.onvif.org/ver10/schema">false</tt:InvalidAfterConnect>
-    <tt:InvalidAfterReboot xmlns:tt="http://www.onvif.org/ver10/schema">false</tt:InvalidAfterReboot>
-    <tt:Timeout xmlns:tt="http://www.onvif.org/ver10/schema">PT0S</tt:Timeout>
-  </trt:MediaUri>
-</trt:GetSnapshotUriResponse></env:Body></env:Envelope>
+<n2:Envelope xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetSnapshotUriResponse xmlns:n0="http://www.onvif.org/ver10/media/wsdl">
+  <n0:MediaUri>
+    <n1:Uri xmlns:n1="http://www.onvif.org/ver10/schema">http://controlled-onvif:8080/snapshot0</n1:Uri>
+    <n1:InvalidAfterConnect xmlns:n1="http://www.onvif.org/ver10/schema">false</n1:InvalidAfterConnect>
+    <n1:InvalidAfterReboot xmlns:n1="http://www.onvif.org/ver10/schema">false</n1:InvalidAfterReboot>
+    <n1:Timeout xmlns:n1="http://www.onvif.org/ver10/schema">PT0S</n1:Timeout>
+  </n0:MediaUri>
+</n0:GetSnapshotUriResponse></n2:Body></n2:Envelope>

@@ -1,10 +1,10 @@
-<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetNetworkInterfacesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
-  <tds:NetworkInterfaces token="eth0">
-    <tt:Enabled xmlns:tt="http://www.onvif.org/ver10/schema">true</tt:Enabled>
-    <tt:Info xmlns:tt="http://www.onvif.org/ver10/schema">
-      <tt:Name>eth0</tt:Name>
-      <tt:HwAddress>00:11:22:33:44:55</tt:HwAddress>
-      <tt:MTU>1500</tt:MTU>
-    </tt:Info>
-  </tds:NetworkInterfaces>
-</tds:GetNetworkInterfacesResponse></env:Body></env:Envelope>
+<n2:Envelope xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetNetworkInterfacesResponse xmlns:n0="http://www.onvif.org/ver10/device/wsdl">
+  <n0:NetworkInterfaces token="eth0">
+    <n1:Enabled xmlns:n1="http://www.onvif.org/ver10/schema">true</n1:Enabled>
+    <n1:Info xmlns:n1="http://www.onvif.org/ver10/schema">
+      <n1:Name>eth0</n1:Name>
+      <n1:HwAddress>00:11:22:33:44:55</n1:HwAddress>
+      <n1:MTU>1500</n1:MTU>
+    </n1:Info>
+  </n0:NetworkInterfaces>
+</n0:GetNetworkInterfacesResponse></n2:Body></n2:Envelope>

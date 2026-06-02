@@ -1,1 +1,1 @@
-<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tptz:ContinuousMoveResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"></tptz:ContinuousMoveResponse></env:Body></env:Envelope>
+<n1:Envelope xmlns:n1="http://www.w3.org/2003/05/soap-envelope"><n1:Body><n0:ContinuousMoveResponse xmlns:n0="http://www.onvif.org/ver20/ptz/wsdl"></n0:ContinuousMoveResponse></n1:Body></n1:Envelope>

@@ -1,0 +1,20 @@
+
+<n2:Envelope xmlns:n0="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:n1="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:n2="http://www.w3.org/2003/05/soap-envelope">
+  <n2:Header>
+    <n0:MessageID>__MASKED__</n0:MessageID>
+    <n0:RelatesTo>urn:uuid:crossref-fixed-probe-message-id-0001</n0:RelatesTo>
+    <n0:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</n0:To>
+    <n0:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/ProbeMatches</n0:Action>
+  </n2:Header>
+  <n2:Body>
+    <n1:ProbeMatches>
+      <n1:ProbeMatch>
+        <n0:EndpointReference><n0:Address>urn:uuid:b5e2d6f0-0000-0000-0000-000000000001</n0:Address></n0:EndpointReference>
+        <n1:Types>dn:NetworkVideoTransmitter tds:Device</n1:Types>
+        <n1:Scopes>onvif://www.onvif.org/type/NetworkVideoTransmitter</n1:Scopes>
+        <n1:XAddrs>http://controlled-onvif:8080/onvif/device_service</n1:XAddrs>
+        <n1:MetadataVersion>1</n1:MetadataVersion>
+      </n1:ProbeMatch>
+    </n1:ProbeMatches>
+  </n2:Body>
+</n2:Envelope>

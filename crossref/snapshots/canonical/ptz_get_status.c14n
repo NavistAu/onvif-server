@@ -1,9 +1,9 @@
-<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tptz:GetStatusResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
-  <tptz:PTZStatus>
-    <tt:MoveStatus xmlns:tt="http://www.onvif.org/ver10/schema">
-      <tt:PanTilt>IDLE</tt:PanTilt>
-      <tt:Zoom>IDLE</tt:Zoom>
-    </tt:MoveStatus>
-    <tt:UtcTime xmlns:tt="http://www.onvif.org/ver10/schema">2026-06-02T18:16:00Z</tt:UtcTime>
-  </tptz:PTZStatus>
-</tptz:GetStatusResponse></env:Body></env:Envelope>
+<n2:Envelope xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n1:GetStatusResponse xmlns:n1="http://www.onvif.org/ver20/ptz/wsdl">
+  <n1:PTZStatus>
+    <n0:MoveStatus xmlns:n0="http://www.onvif.org/ver10/schema">
+      <n0:PanTilt>IDLE</n0:PanTilt>
+      <n0:Zoom>IDLE</n0:Zoom>
+    </n0:MoveStatus>
+    <n0:UtcTime xmlns:n0="http://www.onvif.org/ver10/schema">__MASKED__</n0:UtcTime>
+  </n1:PTZStatus>
+</n1:GetStatusResponse></n2:Body></n2:Envelope>
