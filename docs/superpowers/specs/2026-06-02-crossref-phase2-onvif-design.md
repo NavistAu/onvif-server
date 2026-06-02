@@ -104,9 +104,12 @@ crate:
   responses commonly declare namespaces (`tt:`, `tds:`, `tns1:`, …) on the `Envelope`/
   `Header`/`Body` ancestors, not on the body child. The body-child extractor MUST copy all
   in-scope ancestor namespace declarations onto the extracted child element before
-  validation, or schema-valid responses will spuriously fail. (soap-server's
-  `envelope::extract_body_first_child` already re-emits ancestor ns decls — verified by its
-  `parse_envelope_body_bytes_contain_ancestor_ns_declarations` test — and is reused here.) Header validation (WS-Security / WS-Addressing)
+  validation, or schema-valid responses will spuriously fail. **Port the logic, do NOT
+  depend on soap-server internals:** `soap_server::envelope` is `pub(crate)`, not public
+  API. crossref MUST carry its OWN namespace-preserving body-child extractor in
+  `crossref/src/` (port the proven logic — the Phase-1 crossref orchestrator already did
+  this extraction). Do not reach into soap-server private modules, and do not make an
+  unplanned soap-server public-API change for it. Header validation (WS-Security / WS-Addressing)
   is reported as `unvalidated` unless a scenario declares header schemas (Phase-1 §5.6
   rule carries over).
 
@@ -172,6 +175,59 @@ subcode         = "ter:NotAuthorized"
 scenario is data, not code. This contract is the single source of truth shared by Layer 1
 and Layer 2.
 
+**Stateful (multi-step) scenarios.** Some operations require prior state — `PullMessages`
+needs a `SubscriptionId` from a preceding `CreatePullPointSubscription`; preset
+`GotoPreset` may need a token from `GetPresets`/`SetPreset`. A scenario MAY replace the
+single `request_file` with an ordered `[[steps]]` array, each step a request plus
+**capture/inject** directives so state flows from one step to the next:
+
+```toml
+name = "events_pull_messages"
+service = "events"
+auth_mode = "usernametoken"
+reference_mode = "none"
+  [[steps]]
+  operation = "CreatePullPointSubscription"
+  schema_id = "events-body"
+  request_file = "events_create_pullpoint.request.xml"
+  expected_status = 200
+  outcome = "success"
+  # capture a value from this step's RESPONSE by path-scoped local-name path,
+  # bind it to a name for later injection:
+  capture = [{ name = "subId", path = "Envelope/Body/CreatePullPointSubscriptionResponse/SubscriptionReference/Address" }]
+  [[steps]]
+  operation = "PullMessages"
+  schema_id = "events-body"
+  request_file = "events_pull_messages.request.xml"   # contains a {{subId}} placeholder
+  expected_status = 200
+  outcome = "success"
+  # inject the captured value into this step's request before sending:
+  inject = [{ name = "subId", into = "header:To" }]    # header WS-A To, or "body:<path>"
+  invariants = ["wsa_subscription_id_present"]
+```
+
+Capture/inject are path-scoped (local-name paths), same discipline as masks. The verdict
+is the worst verdict across steps; a step that does not meet its declared `outcome`/
+`expected_status` fails the whole scenario. The unknown-subscription fault scenario injects
+a bogus `subId` and asserts a fault. Single-request scenarios keep the flat `request_file`
+form; the orchestrator treats them as a one-step case.
+
+**Discovery / non-HTTP scenarios.** Discovery is not HTTP and not schema-validated (§11).
+For `service = "discovery"`, the following field values are allowed (and `schema_id`/
+`http_method` are otherwise required only for HTTP service scenarios):
+
+```toml
+service     = "discovery"
+transport   = "udp_discovery"   # vs the default "http"
+schema_id   = "none"            # discovery is structural-only (§11) — oracle skipped
+http_method = "none"
+invariants  = ["wsa_relates_to_matches_probe", "stable_endpoint_uuid", "scopes_match_fixture", "xaddrs_escaped"]
+request_file = "discovery_probe.request.xml"   # a Probe with a FIXED MessageID
+```
+
+The orchestrator routes `transport = "udp_discovery"` / `schema_id = "none"` to the
+discovery driver (structural invariants only), bypassing the HTTP POST + oracle path.
+
 ## 6. onvif-srvd scope (narrow — avoid false authority)
 
 `onvif-srvd` is compared against ONLY where both devices can be pinned to equivalent,
@@ -184,9 +240,14 @@ stable, read-only output. Two comparison modes (set per scenario via `reference_
   full equality would yield false `ReferenceDisagreement`). Used for:
   - **GetCapabilities** — projection = the set of advertised service categories + their
     `XAddr` (path compared, host:port authority masked) + version (Major/Minor) + a defined
-    set of required capability booleans. Optional/extra capabilities are ignored.
+    set of required capability booleans. Asymmetric rule: ignore capabilities/categories
+    present in **srvd** but absent from our fixture; but **assert our server's advertised
+    set EXACTLY matches the fixture** (a separate fixture-equality invariant), so our server
+    advertising an extra/unsupported capability is caught — never silently ignored.
   - **GetServices** — projection = the set of service `Namespace` values + each service's
-    `XAddr` (path; authority masked) + `Version`. Extra services on either side are ignored.
+    `XAddr` (path; authority masked) + `Version`. Same asymmetry: srvd's extra services are
+    ignored, but **our advertised service set MUST exactly match the fixture** (invariant),
+    so our server advertising an unsupported service is caught.
   - **GetProfiles** — `srvd_projection` *only if* both pin identical profile/config tokens;
     otherwise `reference_mode = none` (oracle + invariants only).
 
@@ -318,8 +379,13 @@ normalized + promoted as interop evidence. A client failure to complete is a rea
   zeep interop, promote, per-scenario verdict report (surfacing still-`unverified` count).
 
 **Phasing within Phase 2 (mirrors 1a/1b/1c):**
-- **2a — Rust Layer-1 foundation:** controlled onvif-server binary + deterministic fixture
-  + scenario set + path-scoped masks + replay/diff; `unverified` baselines. No Docker.
+- **2a — Rust Layer-1 foundation:** the `OnvifServer::into_router()` extraction (with
+  acceptance tests: (i) `run()` still binds + serves as before; (ii) `into_router()` serves
+  ALL registered services — device/media/imaging/ptz/events — drivable via
+  `axum_test::TestServer`; (iii) Layer-1 replay exercises the full SOAP envelope + WS-Security
+  auth + operation routing, NOT handlers directly) + controlled onvif-server binary +
+  deterministic fixture + the scenario set (incl. the stateful `[[steps]]` events flow) +
+  named path-scoped masks + replay/diff; `unverified` baselines. No Docker.
 - **2b — Docker Layer-2 conformance:** oracle ONVIF schema bundle + the §6 onvif-srvd
   subset + schema-validity + invariants + promotion.
 - **2c — Interop:** the python-onvif-zeep Profile-S client + promotion of interop traces.
