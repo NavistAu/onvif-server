@@ -59,6 +59,23 @@ const PRESET_NAME: &str = "Home";
 // Shared fixture constants used by both the Layer-1 and Layer-2 harnesses
 // ---------------------------------------------------------------------------
 
+/// Stable WS-Discovery EndpointReference UUID for the controlled fixture (F-7).
+///
+/// The controlled server binary pins `discovery_uuid` to this value via
+/// `OnvifServerBuilder::discovery_uuid(CONTROLLED_DISCOVERY_UUID)` so every
+/// discovery cycle advertises the same endpoint identity.  The Layer-1 harness
+/// sources its `expected_endpoint` from this constant so the assertion is
+/// deterministic and non-vacuous.
+///
+/// Value: `b5e2d6f0-0000-0000-0000-000000000001`
+pub const CONTROLLED_DISCOVERY_UUID: uuid::Uuid = uuid::Uuid::from_bytes([
+    0xb5, 0xe2, 0xd6, 0xf0, // time_low
+    0x00, 0x00, // time_mid
+    0x00, 0x00, // time_hi_and_version
+    0x00, 0x00, // clock_seq
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // node
+]);
+
 /// The four §7 fixture scopes emitted by `ControlledCamera::get_scopes` and
 /// validated by the `scopes_match_fixture` invariant.  Both `InvariantCtx`
 /// construction sites (`layer1_replay::default_ctx` and

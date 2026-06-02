@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Minimal stub for http://www.w3.org/2005/08/addressing/ws-addr.xsd -->
+<!-- Stub for http://www.w3.org/2005/08/addressing/ws-addr.xsd -->
 <!-- Bundled to satisfy events.wsdl xs:import without network access. -->
+<!-- EndpointReferenceType models the real WS-Addressing 1.0 schema so that -->
+<!-- EPR children (Address, ReferenceParameters, Metadata) validate correctly. -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:wsa="http://www.w3.org/2005/08/addressing"
            targetNamespace="http://www.w3.org/2005/08/addressing"
@@ -8,17 +10,36 @@
 
   <xs:complexType name="EndpointReferenceType">
     <xs:sequence>
-      <xs:element name="Address" type="xs:anyURI"/>
-      <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      <xs:element name="Address" type="wsa:AttributedURIType"/>
+      <xs:element name="ReferenceParameters" type="wsa:ReferenceParametersType" minOccurs="0"/>
+      <xs:element name="Metadata" type="wsa:MetadataType" minOccurs="0"/>
+      <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
   </xs:complexType>
-
-  <xs:element name="EndpointReference" type="wsa:EndpointReferenceType"/>
 
   <xs:complexType name="ReferenceParametersType">
     <xs:sequence>
-      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
   </xs:complexType>
+
+  <xs:complexType name="MetadataType">
+    <xs:sequence>
+      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="AttributedURIType">
+    <xs:simpleContent>
+      <xs:extension base="xs:anyURI">
+        <xs:anyAttribute namespace="##other" processContents="lax"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:element name="EndpointReference" type="wsa:EndpointReferenceType"/>
 
 </xs:schema>

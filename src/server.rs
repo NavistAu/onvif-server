@@ -50,6 +50,14 @@ pub struct OnvifServer {
     pub(crate) event_service: Option<Arc<dyn EventService>>,
     pub(crate) auth_bypass: HashSet<String>,
     pub(crate) advertised_host: String,
+    /// Stable WS-Discovery EndpointReference UUID for this device (F-7).
+    ///
+    /// ONVIF WS-Discovery requires the EndpointReference Address to be a stable
+    /// per-device identity across all discovery cycles.  When explicitly set via
+    /// [`OnvifServerBuilder::discovery_uuid`], that UUID is used verbatim.  When
+    /// unset, the server derives a stable UUID-v5 from the advertised host so the
+    /// same device always produces the same endpoint identity.
+    pub(crate) discovery_uuid: uuid::Uuid,
 }
 
 impl OnvifServer {
@@ -61,6 +69,15 @@ impl OnvifServer {
     /// Returns the advertised host used in XAddrs for WS-Discovery and capabilities.
     pub fn advertised_host(&self) -> &str {
         &self.advertised_host
+    }
+
+    /// Returns the stable WS-Discovery EndpointReference UUID for this device.
+    ///
+    /// ONVIF conformance (F-7) requires this to be identical across all discovery
+    /// cycles.  Set it explicitly via [`OnvifServerBuilder::discovery_uuid`], or let
+    /// the builder derive a stable UUID-v5 from the advertised host.
+    pub fn discovery_uuid(&self) -> uuid::Uuid {
+        self.discovery_uuid
     }
 
     /// Returns the configured username, if any.
@@ -285,6 +302,7 @@ pub struct OnvifServerBuilder {
     pub(crate) event_service: Option<Arc<dyn EventService>>,
     pub(crate) auth_bypass: HashSet<String>,
     pub(crate) advertised_host: String,
+    pub(crate) discovery_uuid: uuid::Uuid,
 }
 
 impl OnvifServerBuilder {
@@ -305,6 +323,7 @@ impl OnvifServerBuilder {
             event_service: None,
             auth_bypass,
             advertised_host: "0.0.0.0".to_string(),
+            discovery_uuid: uuid::Uuid::new_v4(),
         }
     }
 
@@ -376,6 +395,16 @@ impl OnvifServerBuilder {
         self
     }
 
+    /// Override the stable WS-Discovery EndpointReference UUID for this device.
+    ///
+    /// When not called, the builder defaults to a random UUID-v4.  Callers that
+    /// need a deterministic identity across restarts should supply a stable UUID
+    /// here (e.g. derived from hardware ID or stored configuration).
+    pub fn discovery_uuid(mut self, uuid: uuid::Uuid) -> Self {
+        self.discovery_uuid = uuid;
+        self
+    }
+
     /// Accessor for the auth bypass operation set. Used in tests and Phase 2 wiring.
     pub fn auth_bypass_set(&self) -> &HashSet<String> {
         &self.auth_bypass
@@ -407,6 +436,7 @@ impl OnvifServerBuilder {
             event_service: self.event_service,
             auth_bypass: self.auth_bypass,
             advertised_host: self.advertised_host,
+            discovery_uuid: self.discovery_uuid,
         })
     }
 }

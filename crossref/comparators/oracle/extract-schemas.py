@@ -618,14 +618,25 @@ def copy_shared_xsd(src_path, dst_path, onvif_names=None):
     # Replace with '##other' so wildcards only match elements NOT in the schema's own
     # namespace (all elements in the schema's namespace are declared explicitly anyway).
     # This fix applies to both onvif.xsd and common.xsd shared schemas.
-    content = content.replace(
-        'namespace="##targetNamespace"',
-        'namespace="##other"'
-    )
-    content = content.replace(
-        'namespace="##any"',
-        'namespace="##other"'
-    )
+    #
+    # EXCEPTION: ws-addr.xsd is excluded from the ##any→##other rewrite.
+    # WS-Addressing ReferenceParametersType and MetadataType use ##any wildcards
+    # legitimately — reference parameters may come from any namespace including the
+    # addressing namespace itself.  The EndpointReferenceType content model uses named
+    # optional elements (Address, ReferenceParameters, Metadata) followed by a ##other
+    # trailing wildcard, which is already UPA-clean without any rewrite.  Rewriting
+    # ##any→##other in ReferenceParametersType/MetadataType would cause Xerces to reject
+    # addressing-namespace children (e.g. wsa:ReferenceParameters carrying a
+    # wsa:SubscriptionId), which is the root cause of conformance finding A-1.
+    if basename != 'ws-addr.xsd':
+        content = content.replace(
+            'namespace="##targetNamespace"',
+            'namespace="##other"'
+        )
+        content = content.replace(
+            'namespace="##any"',
+            'namespace="##other"'
+        )
 
     # Dedup common.xsd against onvif.xsd to satisfy Xerces' sch-props-correct.2 rule:
     # within one targetNamespace, every global component name must appear exactly once
