@@ -12,9 +12,11 @@ serde = { version = "1", features = ["derive"] }
 toml = "0.8"
 bytes = "1"
 async-trait = "0.1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
 axum-test = "20"
 axum = "0.8"
 similar-asserts = "1"
+base64 = "0.22"
+chrono = "0.4"
