@@ -1,0 +1,12 @@
+name            = "imaging_get_imaging_settings"
+service         = "imaging"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetImagingSettings"
+schema_id       = "imaging-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "imaging_get_imaging_settings.request.xml"
+invariants      = ["single_white_balance"]
+masks           = []

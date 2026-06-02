@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  <s:Header><!--WSSE--></s:Header>
+  <s:Body>
+    <timg:GetImagingSettings xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl">
+      <timg:VideoSourceToken>video_src_0</timg:VideoSourceToken>
+    </timg:GetImagingSettings>
+  </s:Body>
+</s:Envelope>

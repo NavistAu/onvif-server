@@ -941,6 +941,7 @@ dependencies = [
  "soap-server",
  "tokio",
  "toml",
+ "uuid",
 ]
 
 [[package]]

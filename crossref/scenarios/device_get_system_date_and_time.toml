@@ -1,0 +1,12 @@
+name            = "device_get_system_date_and_time"
+service         = "device"
+transport       = "http"
+auth_mode       = "none"
+operation       = "GetSystemDateAndTime"
+schema_id       = "device-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "device_get_system_date_and_time.request.xml"
+invariants      = []
+masks           = ["system_datetime"]
