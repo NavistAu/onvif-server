@@ -26,6 +26,8 @@ socket2 = { version = "0.5", features = ["all"], optional = true }
 [dev-dependencies]
 tokio = { version = "1", features = ["full", "test-util"] }
 soap-server = { path = "../soap-server" }
+axum-test = "20"
+async-trait = "0.1"
 
 [workspace]
 members = ["crossref"]

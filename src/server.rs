@@ -76,32 +76,13 @@ impl OnvifServer {
         OnvifServerBuilder::new()
     }
 
-    /// Bind the configured port and start serving SOAP requests.
-    ///
-    /// This method does not return until the server is shut down.
-    /// Requires a tokio async runtime (`#[tokio::main]` or `tokio::runtime::Runtime`).
-    ///
-    /// # Auth behaviour
-    ///
-    /// If the builder was configured with `.auth(username, password)`, WS-Security
-    /// UsernameToken authentication is enforced on all non-bypassed operations.
-    /// If `.auth()` was NOT called, the server runs **unauthenticated** — all
-    /// operations are accessible without credentials.
-    ///
-    /// # Service optionality
-    ///
-    /// Only `device_service` is required (checked at [`OnvifServerBuilder::build`] time).
-    /// Media, PTZ, Imaging, and Events services are optional; their routes are only
-    /// mounted and their capabilities only advertised when they are registered.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`RunError::Startup`] if `device_service` is somehow absent at run time.
-    /// Returns [`RunError::Io`] if the TCP listener fails to bind or serve.
-    pub async fn run(self) -> Result<(), RunError> {
+    /// Build the merged axum `Router` for all registered services (device + any registered
+    /// media/ptz/imaging/events), WITHOUT binding a port or starting the WS-Discovery UDP task.
+    /// Used by `run()` and by in-process harnesses/tests (axum_test).
+    pub fn into_router(self) -> Result<axum::Router, RunError> {
         let device_svc = self
             .device_service
-            .ok_or_else(|| RunError::Startup("device_service is required to call run()".into()))?;
+            .ok_or_else(|| RunError::Startup("device_service is required".into()))?;
 
         let xaddr = format!(
             "http://{}:{}/onvif/device_service",
@@ -136,7 +117,7 @@ impl OnvifServer {
 
         let handler = DeviceServiceHandler::new(
             device_svc,
-            xaddr.clone(),
+            xaddr,
             media_xaddr.clone().unwrap_or_default(),
             ptz_xaddr.clone().unwrap_or_default(),
             imaging_xaddr.clone().unwrap_or_default(),
@@ -235,17 +216,54 @@ impl OnvifServer {
             router = router.merge(events_soap_svc.into_router());
         }
 
+        Ok(router)
+    }
+
+    /// Bind the configured port and start serving SOAP requests.
+    ///
+    /// This method does not return until the server is shut down.
+    /// Requires a tokio async runtime (`#[tokio::main]` or `tokio::runtime::Runtime`).
+    ///
+    /// # Auth behaviour
+    ///
+    /// If the builder was configured with `.auth(username, password)`, WS-Security
+    /// UsernameToken authentication is enforced on all non-bypassed operations.
+    /// If `.auth()` was NOT called, the server runs **unauthenticated** — all
+    /// operations are accessible without credentials.
+    ///
+    /// # Service optionality
+    ///
+    /// Only `device_service` is required (checked at [`OnvifServerBuilder::build`] time).
+    /// Media, PTZ, Imaging, and Events services are optional; their routes are only
+    /// mounted and their capabilities only advertised when they are registered.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RunError::Startup`] if `device_service` is somehow absent at run time.
+    /// Returns [`RunError::Io`] if the TCP listener fails to bind or serve.
+    pub async fn run(self) -> Result<(), RunError> {
+        // Capture port and xaddr BEFORE consuming self via into_router().
+        let port = self.port;
+        let disc_xaddr = format!(
+            "http://{}:{}/onvif/device_service",
+            self.advertised_host, self.port
+        );
+
         #[cfg(feature = "discovery")]
         {
-            let disc_xaddr = xaddr.clone();
+            let xaddr_for_disc = disc_xaddr.clone();
             tokio::spawn(async move {
-                if let Err(e) = crate::discovery::run_discovery(disc_xaddr).await {
+                if let Err(e) = crate::discovery::run_discovery(xaddr_for_disc).await {
                     eprintln!("[discovery] task exited: {e}");
                 }
             });
         }
+        // Suppress unused-variable warning when discovery feature is off.
+        let _ = disc_xaddr;
 
-        let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", self.port)).await?;
+        let router = self.into_router()?;
+
+        let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await?;
         axum::serve(listener, router).await?;
         Ok(())
     }
