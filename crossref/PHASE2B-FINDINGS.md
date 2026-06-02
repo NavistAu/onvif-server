@@ -1,40 +1,92 @@
 # crossref Phase 2b — conformance findings
 
 Real conformance findings surfaced by the Layer-2 oracle / Docker pipeline. These are
-NOT forced green; affected scenarios will report `SutFail` in the Task 6 run and are not
-promoted to `verified` until resolved (or explicitly accepted as a recorded
-`KnownDivergence`).
+NOT forced green; affected scenarios report `SutFail` in the Task 6 run and are not
+promoted to `verified` until resolved.
+
+**Context:** Phase 2a (Layer-1) only byte-diffed responses against self-captured
+baselines — it never schema-validated. The Layer-2 ONVIF schema oracle (Xerces, validating
+against the real `onvif.xsd`/`common.xsd`) is the first time onvif-server responses have been
+checked against the ONVIF XSDs. It revealed **six pre-existing product conformance bugs**
+(schema-invalid responses). The server is mid-publish; these are the kind of gaps a
+conformance suite exists to catch.
 
 ## Resolved
 
-- **PTZ `Stop` unreachable over SOAP.** `wsdl/ptz.wsdl` named the Stop request element
-  `StopRequest` (vs the ONVIF-standard `Stop`), so the dispatch table registered
-  `{ns}StopRequest` and `<tptz:Stop>` requests returned a Sender fault "Action not
-  supported". **Fixed** in commit `ba5480a` (element renamed `StopRequest` → `Stop`); the
-  `ptz_stop` scenario flipped fault→success and its baseline regenerated.
+- **PTZ `Stop` unreachable over SOAP** — `wsdl/ptz.wsdl` named the Stop request element
+  `StopRequest` (vs ONVIF-standard `Stop`). **Fixed** `ba5480a` (this session, authorized).
 
-## Open
+## Open — real product conformance bugs (schema-invalid responses)
 
-### F-1: `GetStatus` response omits required `PTZStatus/UtcTime` (schema-invalid)
+All confirmed by the live oracle (Xerces) in the Task 6 run. NOT auto-fixed (only the PTZ
+Stop fix was authorized this session). Each leaves its scenario `SutFail` (red) until fixed.
 
-- **Discovered:** Task 3, via the ONVIF schema oracle (offline `xmllint` against
-  `ptz-body.xsd` + `common.xsd`).
-- **Severity:** real onvif-server conformance bug — response is **schema-invalid**.
-- **Detail:** `tt:PTZStatus` (defined in `common.xsd`, `xs:complexType name="PTZStatus"`)
-  requires a `tt:UtcTime` (`xs:dateTime`) child element (no `minOccurs` → `minOccurs="1"`).
-  Our handler `src/service/ptz.rs::handle_get_status` (~line 281) emits only
-  `<tptz:PTZStatus><tt:MoveStatus>…</tt:MoveStatus></tptz:PTZStatus>` — no `UtcTime`.
-  xmllint verdict: `Element '{…schema}PTZStatus': Missing child element(s). Expected is
-  one of ( {…schema}Error, {…schema}UtcTime ).`
-- **Why not auto-fixed:** only the PTZ `Stop` product fix was authorized this session.
-  `UtcTime` is a non-deterministic timestamp, so a fix also requires the controlled
-  fixture to emit a fixed time and the crossref harness to add a `UtcTime` mask for
-  `ptz_get_status` (timestamps are masked). That is a product + harness design decision
-  for the operator.
-- **Effect on Task 6:** `ptz_get_status` (scenario `reference_mode = "none"`) will be a
-  `SutFail` (oracle schema-invalid) and will NOT be promoted to `verified`.
-- **Suggested fix (when authorized):** emit `<tt:UtcTime>` in `handle_get_status` (fixture
-  supplies a deterministic value), add a `ptz_get_status` UtcTime mask, regenerate the
-  baseline. Check other operations whose ONVIF type requires a timestamp/`UtcTime`
-  (e.g. `GetSystemDateAndTime`, events `CurrentTime`) for the same class of issue — Task 6
-  will surface any others comprehensively.
+### F-1: `GetStatus` — `PTZStatus` missing required `UtcTime`
+- Scenario `ptz_get_status`. Oracle: `cvc-complex-type.2.4.b: content of 'tptz:PTZStatus'
+  not complete. One of {tt:Error, tt:UtcTime} expected.`
+- `tt:PTZStatus` (common.xsd) requires `UtcTime` (`xs:dateTime`, minOccurs=1). Handler
+  `src/service/ptz.rs::handle_get_status` (~L281) emits only `MoveStatus`.
+- Fix needs: emit `tt:UtcTime` (fixture supplies a deterministic value) + add a `UtcTime`
+  mask for `ptz_get_status` + regen baseline.
+
+### F-2: `GetImagingSettings` — `WhiteBalance` missing required `Mode`
+- Scenario `imaging_get_imaging_settings`. Oracle: `Invalid content starting with 'CrGain'.
+  One of {tt:Mode} expected.`
+- `tt:WhiteBalance20` sequence requires `Mode` before `CrGain`/`CbGain`. The imaging handler
+  emits `WhiteBalance` without `Mode` (or wrong order).
+
+### F-3: malformed-coord fault — `env:Detail` has character children
+- Scenario `ptz_absolute_move_malformed_coord`. Oracle (soap12-envelope, authoritative):
+  `cvc-complex-type.2.3: Element 'env:Detail' cannot have character [children], type's
+  content is element-only.`
+- SOAP 1.2 `env:Detail` is element-only; the fault renderer puts text directly in `Detail`.
+  Likely in `soap-server`'s `SoapFault` detail rendering. Affects ALL faults that carry a
+  text detail (not just PTZ) — worth a broad check.
+
+### F-4: `GetConfigurations` — `PTZConfiguration` vs schema's `PTZConfigurations`
+- Scenario `ptz_get_configurations`. Oracle: `Invalid content starting with
+  'tptz:PTZConfiguration'. One of {tptz:PTZConfigurations} expected.`
+- Element-name mismatch between the handler output and `wsdl/ptz.wsdl`'s
+  `GetConfigurationsResponse` (same CLASS of bug as PTZ Stop: WSDL vs handler disagreement).
+  Determine which is ONVIF-correct (standard is `PTZConfiguration`, repeatable) and reconcile
+  the WSDL or the handler.
+
+### F-5: `GetCapabilities` — `Capabilities` children out of sequence + missing required
+- Scenario `device_get_capabilities`. Oracle: `tt:Media` incomplete (StreamingCapabilities
+  expected); `Imaging` found where `Extension` expected; `tt:Events` incomplete
+  (WSPausableSubscriptionManagerInterfaceSupport expected).
+- `tt:Capabilities` is an ordered `xs:sequence` (Analytics, Device, Events, Imaging, Media,
+  PTZ, Extension). Our response orders Device, Media, PTZ, Imaging, Events — a sequence-order
+  violation — and omits required sub-elements (e.g. `tt:MediaCapabilities/StreamingCapabilities`).
+
+### F-6: `GetEventProperties` — response missing required `tev:` dialect elements
+- Scenario `events_get_event_properties`. Oracle: `GetEventPropertiesResponse` not complete;
+  one of {tev:MessageContentFilterDialect, tev:ProducerPropertiesFilterDialect,
+  tev:MessageContentSchemaLocation} expected.
+- These are `events/wsdl`-namespace elements defined in the events embedded schema
+  (authoritative — NOT the wsn-b2 stub). The handler omits required response fields.
+
+## Open — harness/bundle limitations (NOT confirmed product bugs)
+
+### A-1: `events_pull_messages` — ws-addressing `ReferenceParameters` rejected
+- Oracle: `Invalid content 'wsa:ReferenceParameters'. One of {WC[##other:addressing]}
+  expected.` Caused by the harness `##any`→`##other` UPA rewrite applied to the minimal
+  `ws-addr.xsd` stub's EPR model, which then rejects an addressing-namespace child. This is a
+  schema-bundle limitation (ws-addr is a minimal stub; events-body is non-authoritative per
+  SCHEMAS.md), not a confirmed onvif-server bug. Needs a targeted rewrite exclusion or a fuller
+  ws-addr.xsd to confirm/deny.
+
+## Reference-server (onvif-srvd) triage — legitimate device differences
+
+Per spec §6 ("avoid false authority"), onvif-srvd is only an authority where both devices can
+be pinned to equivalent output. The Task 6 run confirmed onvif-srvd legitimately diverges from
+our fixture for most ops, so those scenarios are downgraded `reference_mode = "none"`
+(oracle + invariants + our-vs-baseline remain in force):
+
+- `device_get_services` (srvd emits bare-authority XAddrs, no `/onvif/...` path) → `none`.
+- `media_get_profiles` (srvd has different profile tokens/structure) → `none`.
+- `device_get_capabilities` (srvd capability set differs) → `none` (also independently F-5).
+- `device_get_device_information_authed` — **kept** `srvd_exact`: device-info VALUES match
+  onvif-srvd exactly; the comparison is fixed to compare the oracle-C14N body child (dropping
+  the SOAP Header, where srvd emits an empty `<Header/>` and we omit it — a SOAP-optional,
+  non-conformance-relevant difference). This is onvif-srvd's one genuine authority op.
