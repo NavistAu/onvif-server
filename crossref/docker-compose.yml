@@ -35,7 +35,11 @@ services:
 
   oracle:
     build:
-      context: ./comparators/oracle
+      # Context is the repo root so the build can read the CANONICAL top-level
+      # wsdl/ (single source of truth; the extraction script regenerates the
+      # schema bundle at build time). See the oracle Dockerfile header.
+      context: ..
+      dockerfile: crossref/comparators/oracle/Dockerfile
     expose:
       - "8081"
     networks:
