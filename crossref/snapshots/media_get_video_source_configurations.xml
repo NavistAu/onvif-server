@@ -1,0 +1,8 @@
+<n2:Envelope xmlns:n0="http://www.onvif.org/ver10/media/wsdl" xmlns:n1="http://www.onvif.org/ver10/schema" xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetVideoSourceConfigurationsResponse>
+  <n0:Configurations token="video_src_0">
+    <n1:Name>VideoSourceConfig</n1:Name>
+    <n1:UseCount>1</n1:UseCount>
+    <n1:SourceToken>video_src_0</n1:SourceToken>
+    <n1:Bounds height="1080" width="1920" x="0" y="0"/>
+  </n0:Configurations>
+</n0:GetVideoSourceConfigurationsResponse></n2:Body></n2:Envelope>

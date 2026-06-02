@@ -1,0 +1,13 @@
+name            = "ptz_absolute_move"
+service         = "ptz"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "AbsoluteMove"
+schema_id       = "ptz-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "ptz_absolute_move.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

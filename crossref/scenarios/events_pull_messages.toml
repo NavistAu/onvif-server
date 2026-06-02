@@ -1,0 +1,24 @@
+name      = "events_pull_messages"
+service   = "events"
+auth_mode = "usernametoken"
+reference_mode = "none"
+
+  [[steps]]
+  operation      = "CreatePullPointSubscription"
+  schema_id      = "events-body"
+  request_file   = "events_create_pullpoint.request.xml"
+  expected_status = 200
+  outcome        = "success"
+  capture        = [{ name = "subId", path = "SubscriptionId" }]
+  masks          = ["current_time", "termination_time", "subscription_id"]
+  invariants     = ["wsa_subscription_id_present"]
+
+  [[steps]]
+  operation      = "PullMessages"
+  schema_id      = "events-body"
+  request_file   = "events_pull_messages_step.request.xml"
+  expected_status = 200
+  outcome        = "success"
+  inject         = [{ name = "subId", into = "body:SubscriptionId" }]
+  masks          = ["current_time", "termination_time"]
+  invariants     = []

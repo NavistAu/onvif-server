@@ -1,0 +1,13 @@
+name            = "media_get_video_sources"
+service         = "media"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetVideoSources"
+schema_id       = "media-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "media_get_video_sources.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

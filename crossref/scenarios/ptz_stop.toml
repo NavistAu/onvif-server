@@ -1,0 +1,13 @@
+name            = "ptz_stop"
+service         = "ptz"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "Stop"
+schema_id       = "ptz-body"
+http_method     = "POST"
+expected_status = 500
+outcome         = "fault"
+request_file    = "ptz_stop.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

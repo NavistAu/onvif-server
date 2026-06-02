@@ -1,0 +1,13 @@
+name            = "device_get_device_information_bad_auth"
+service         = "device"
+transport       = "http"
+auth_mode       = "none"
+operation       = "GetDeviceInformation"
+schema_id       = "device-body"
+http_method     = "POST"
+expected_status = 500
+outcome         = "fault"
+request_file    = "device_get_device_information_bad_auth.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

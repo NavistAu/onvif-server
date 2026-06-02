@@ -1,0 +1,13 @@
+name            = "ptz_absolute_move_malformed_coord"
+service         = "ptz"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "AbsoluteMove"
+schema_id       = "ptz-body"
+http_method     = "POST"
+expected_status = 500
+outcome         = "fault"
+request_file    = "ptz_absolute_move_malformed_coord.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

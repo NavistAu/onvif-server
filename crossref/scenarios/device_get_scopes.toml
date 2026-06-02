@@ -1,0 +1,13 @@
+name            = "device_get_scopes"
+service         = "device"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetScopes"
+schema_id       = "device-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "device_get_scopes.request.xml"
+invariants      = ["scopes_match_fixture"]
+masks           = []
+reference_mode  = "none"

@@ -1,0 +1,13 @@
+name            = "media_get_stream_uri"
+service         = "media"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetStreamUri"
+schema_id       = "media-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "media_get_stream_uri.request.xml"
+invariants      = []
+masks           = ["host_authority"]
+reference_mode  = "none"

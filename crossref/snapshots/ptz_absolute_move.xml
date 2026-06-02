@@ -1,0 +1,1 @@
+<n1:Envelope xmlns:n0="http://www.onvif.org/ver20/ptz/wsdl" xmlns:n1="http://www.w3.org/2003/05/soap-envelope"><n1:Body><n0:AbsoluteMoveResponse/></n1:Body></n1:Envelope>

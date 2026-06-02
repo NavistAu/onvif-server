@@ -1,0 +1,6 @@
+<n2:Envelope xmlns:n0="http://www.onvif.org/ver10/device/wsdl" xmlns:n1="http://www.onvif.org/ver10/schema" xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetHostnameResponse>
+  <n0:HostnameInformation>
+    <n1:FromDHCP>false</n1:FromDHCP>
+    <n1:Name>controlled-onvif</n1:Name>
+  </n0:HostnameInformation>
+</n0:GetHostnameResponse></n2:Body></n2:Envelope>

@@ -1,0 +1,13 @@
+<n2:Envelope xmlns:n0="http://www.onvif.org/ver10/device/wsdl" xmlns:n1="http://www.onvif.org/ver10/schema" xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetCapabilitiesResponse>
+  <n0:Capabilities>
+    <n1:Device><n1:XAddr>http://controlled-onvif:8080:0/onvif/device_service</n1:XAddr></n1:Device>
+    <n1:Media><n1:XAddr>http://controlled-onvif:8080:0/onvif/media_service</n1:XAddr></n1:Media>
+    <n1:PTZ><n1:XAddr>http://controlled-onvif:8080:0/onvif/ptz_service</n1:XAddr></n1:PTZ>
+    <n1:Imaging><n1:XAddr>http://controlled-onvif:8080:0/onvif/imaging_service</n1:XAddr></n1:Imaging>
+    <n1:Events>
+      <n1:XAddr>http://controlled-onvif:8080:0/onvif/events_service</n1:XAddr>
+      <n1:WSSubscriptionPolicySupport>false</n1:WSSubscriptionPolicySupport>
+      <n1:WSPullPointSupport>true</n1:WSPullPointSupport>
+    </n1:Events>
+  </n0:Capabilities>
+</n0:GetCapabilitiesResponse></n2:Body></n2:Envelope>

@@ -1,0 +1,18 @@
+<n2:Envelope xmlns:n0="http://www.onvif.org/ver10/device/wsdl" xmlns:n1="http://www.onvif.org/ver10/schema" xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetScopesResponse>
+  <n0:Scopes>
+    <n1:ScopeDef>Fixed</n1:ScopeDef>
+    <n1:ScopeItem>onvif://www.onvif.org/Profile/Streaming</n1:ScopeItem>
+  </n0:Scopes>
+  <n0:Scopes>
+    <n1:ScopeDef>Fixed</n1:ScopeDef>
+    <n1:ScopeItem>onvif://www.onvif.org/type/video_encoder</n1:ScopeItem>
+  </n0:Scopes>
+  <n0:Scopes>
+    <n1:ScopeDef>Fixed</n1:ScopeDef>
+    <n1:ScopeItem>onvif://www.onvif.org/name/Controlled</n1:ScopeItem>
+  </n0:Scopes>
+  <n0:Scopes>
+    <n1:ScopeDef>Fixed</n1:ScopeDef>
+    <n1:ScopeItem>onvif://www.onvif.org/location/lab</n1:ScopeItem>
+  </n0:Scopes>
+</n0:GetScopesResponse></n2:Body></n2:Envelope>

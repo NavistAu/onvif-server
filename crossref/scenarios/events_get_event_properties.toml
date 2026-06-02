@@ -1,0 +1,13 @@
+name            = "events_get_event_properties"
+service         = "events"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetEventProperties"
+schema_id       = "events-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "events_get_event_properties.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

@@ -1,0 +1,13 @@
+name            = "ptz_get_nodes"
+service         = "ptz"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetNodes"
+schema_id       = "ptz-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "ptz_get_nodes.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

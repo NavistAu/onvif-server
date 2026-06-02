@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsd="http://schemas.xmlsoap.org/ws/2005/04/discovery">
+  <s:Header>
+    <wsa:MessageID>urn:uuid:crossref-fixed-probe-message-id-0001</wsa:MessageID>
+    <wsa:To>urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To>
+    <wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action>
+  </s:Header>
+  <s:Body>
+    <wsd:Probe>
+      <wsd:Types>tds:Device</wsd:Types>
+    </wsd:Probe>
+  </s:Body>
+</s:Envelope>

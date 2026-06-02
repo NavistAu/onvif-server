@@ -1,0 +1,27 @@
+<n2:Envelope xmlns:n0="http://www.onvif.org/ver10/device/wsdl" xmlns:n1="http://www.onvif.org/ver10/schema" xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetServicesResponse>
+  <n0:Service>
+    <n0:Namespace>http://www.onvif.org/ver10/device/wsdl</n0:Namespace>
+    <n0:XAddr>http://controlled-onvif:8080:0/onvif/device_service</n0:XAddr>
+    <n0:Version><n1:Major>2</n1:Major><n1:Minor>42</n1:Minor></n0:Version>
+  </n0:Service>
+  <n0:Service>
+    <n0:Namespace>http://www.onvif.org/ver10/media/wsdl</n0:Namespace>
+    <n0:XAddr>http://controlled-onvif:8080:0/onvif/media_service</n0:XAddr>
+    <n0:Version><n1:Major>2</n1:Major><n1:Minor>42</n1:Minor></n0:Version>
+  </n0:Service>
+  <n0:Service>
+    <n0:Namespace>http://www.onvif.org/ver10/ptz/wsdl</n0:Namespace>
+    <n0:XAddr>http://controlled-onvif:8080:0/onvif/ptz_service</n0:XAddr>
+    <n0:Version><n1:Major>2</n1:Major><n1:Minor>42</n1:Minor></n0:Version>
+  </n0:Service>
+  <n0:Service>
+    <n0:Namespace>http://www.onvif.org/ver20/imaging/wsdl</n0:Namespace>
+    <n0:XAddr>http://controlled-onvif:8080:0/onvif/imaging_service</n0:XAddr>
+    <n0:Version><n1:Major>2</n1:Major><n1:Minor>42</n1:Minor></n0:Version>
+  </n0:Service>
+  <n0:Service>
+    <n0:Namespace>http://www.onvif.org/ver10/events/wsdl</n0:Namespace>
+    <n0:XAddr>http://controlled-onvif:8080:0/onvif/events_service</n0:XAddr>
+    <n0:Version><n1:Major>2</n1:Major><n1:Minor>42</n1:Minor></n0:Version>
+  </n0:Service>
+</n0:GetServicesResponse></n2:Body></n2:Envelope>

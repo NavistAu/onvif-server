@@ -1,0 +1,13 @@
+name            = "device_get_capabilities"
+service         = "device"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetCapabilities"
+schema_id       = "device-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "device_get_capabilities.request.xml"
+invariants      = []
+masks           = ["host_authority"]
+reference_mode  = "srvd_projection"

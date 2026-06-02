@@ -1,0 +1,13 @@
+name            = "events_unknown_subscription"
+service         = "events"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "PullMessages"
+schema_id       = "events-body"
+http_method     = "POST"
+expected_status = 500
+outcome         = "fault"
+request_file    = "events_unknown_subscription.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "none"

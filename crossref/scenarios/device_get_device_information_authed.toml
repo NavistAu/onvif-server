@@ -1,0 +1,13 @@
+name            = "device_get_device_information_authed"
+service         = "device"
+transport       = "http"
+auth_mode       = "usernametoken"
+operation       = "GetDeviceInformation"
+schema_id       = "device-body"
+http_method     = "POST"
+expected_status = 200
+outcome         = "success"
+request_file    = "device_get_device_information_authed.request.xml"
+invariants      = []
+masks           = []
+reference_mode  = "srvd_exact"

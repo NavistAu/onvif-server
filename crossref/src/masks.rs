@@ -118,6 +118,19 @@ pub fn resolve(name: &str) -> (Vec<MaskRule>, Vec<AttrMaskRule>) {
             vec![],
         ),
 
+        // ── Discovery ProbeMatch endpoint address UUID ───────────────────────
+        // The harness generates a UUID for the ProbeMatch; the parse of the
+        // fixed literal fails (non-hex chars) so new_v4() is used each run.
+        // Mask the Address element so the snapshot is stable.
+        // Real path (local names):
+        //   Envelope/Body/ProbeMatches/ProbeMatch/EndpointReference/Address
+        "discovery_endpoint" => (
+            vec![MaskRule::new(
+                "Envelope/Body/ProbeMatches/ProbeMatch/EndpointReference/Address",
+            )],
+            vec![],
+        ),
+
         unknown => {
             debug_assert!(
                 false,
@@ -206,6 +219,15 @@ mod tests {
         assert!(
             !t.is_empty(),
             "host_authority must have at least one text rule"
+        );
+    }
+
+    #[test]
+    fn discovery_endpoint_non_empty() {
+        let (t, _a) = resolve("discovery_endpoint");
+        assert!(
+            !t.is_empty(),
+            "discovery_endpoint must have at least one text rule"
         );
     }
 
