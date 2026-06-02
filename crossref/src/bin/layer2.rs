@@ -116,12 +116,60 @@ fn main() {
         0
     };
 
+    // ── Release-green gate ───────────────────────────────────────────────────────
+    // The strict RELEASE conformance gate (distinct from --check-drift, which tolerates
+    // a known-failure baseline). Passes ONLY if: every scenario is Pass/KnownDivergence,
+    // nothing is unverified, AND the expected-failures baseline is empty.
+    let release_green_exit_code: i32 = if flags.release_green {
+        use onvif_crossref::layer2::verdict::Verdict;
+        let mut reasons: Vec<String> = Vec::new();
+        let red: Vec<&str> = report
+            .rows
+            .iter()
+            .filter(|(_, v)| !matches!(v, Verdict::Pass | Verdict::KnownDivergence(_)))
+            .map(|(n, _)| n.as_str())
+            .collect();
+        if !red.is_empty() {
+            reasons.push(format!("{} scenario(s) not Pass: {red:?}", red.len()));
+        }
+        if report.unverified_remaining != 0 {
+            reasons.push(format!(
+                "{} snapshot(s) still unverified",
+                report.unverified_remaining
+            ));
+        }
+        match drift::load(&repo_root.join("crossref")) {
+            Ok(b) if !b.is_empty() => reasons.push(format!(
+                "expected-failures.toml has {} entry(ies) — a release must not rely on a known-failure baseline",
+                b.len()
+            )),
+            Err(e) => reasons.push(format!("cannot load expected-failures.toml: {e}")),
+            _ => {}
+        }
+        if reasons.is_empty() {
+            println!("[release-green] PASS — all scenarios verified, 0 unverified, empty baseline");
+            0
+        } else {
+            println!("[release-green] FAIL: {}", reasons.join("; "));
+            1
+        }
+    } else {
+        0
+    };
+
     // Determine exit code before dropping topology.
     //
-    // With --check-drift: gate solely on drift (clean baseline = exit 0, even if
-    // known findings are red).  Without --check-drift: gate on absolute green
-    // (any fail/error = exit 1).
-    let exit_code = if flags.check_drift {
+    // --release-green: strict release gate (the union of all checks).
+    // --check-drift (without --release-green): gate solely on drift (clean baseline =
+    //   exit 0, even if known findings are red).
+    // neither: gate on absolute green (any fail/error = exit 1).
+    let exit_code = if flags.release_green {
+        release_green_exit_code.max(if flags.check_drift {
+            drift_exit_code
+        } else {
+            0
+        })
+    } else if flags.check_drift {
         drift_exit_code
     } else if report.is_green() {
         0i32
@@ -145,12 +193,14 @@ struct Flags {
     keep_up: bool,
     scenarios: Option<String>,
     check_drift: bool,
+    release_green: bool,
 }
 
 fn parse_flags(args: &[String]) -> Flags {
     let mut promote = false;
     let mut keep_up = false;
     let mut scenarios: Option<String> = None;
+    let mut release_green = false;
     let mut check_drift = false;
 
     let mut i = 0;
@@ -159,6 +209,7 @@ fn parse_flags(args: &[String]) -> Flags {
             "--promote" => promote = true,
             "--keep-up" => keep_up = true,
             "--check-drift" => check_drift = true,
+            "--release-green" => release_green = true,
             "--scenarios" => {
                 i += 1;
                 if i < args.len() {
@@ -181,6 +232,7 @@ fn parse_flags(args: &[String]) -> Flags {
         keep_up,
         scenarios,
         check_drift,
+        release_green,
     }
 }
 

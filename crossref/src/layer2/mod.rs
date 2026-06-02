@@ -14,7 +14,7 @@ pub use verdict::{Eval, Resp};
 
 use crate::{
     body_extract::extract_body_child,
-    fixture::FIXTURE_SCOPES,
+    fixture::{CONTROLLED_DISCOVERY_UUID, FIXTURE_SCOPES},
     invariants::{check as check_invariant, InvariantCtx},
     masks::resolve_all,
     normalize::{mask_only, strip_ws_text_nodes},
@@ -105,8 +105,11 @@ pub fn run(
             }
         }
 
-        // Skip discovery and UDP scenarios — Layer-2 covers HTTP services only.
+        // Discovery (non-HTTP): structural-only verification, no oracle, no srvd.
         if scenario.is_discovery() || scenario.transport == Transport::UdpDiscovery {
+            let verdict =
+                run_discovery_scenario(&scenario, &name, &scenarios_dir, &store, promote_on_pass);
+            rows.push((name, verdict));
             continue;
         }
 
@@ -223,7 +226,15 @@ fn run_single_scenario(
         store,
     );
 
-    maybe_promote(&final_verdict, name, &body, oracle, store, promote_on_pass);
+    maybe_promote(
+        &final_verdict,
+        name,
+        &body,
+        &scenario.masks,
+        oracle,
+        store,
+        promote_on_pass,
+    );
     final_verdict
 }
 
@@ -244,12 +255,26 @@ fn run_multistep_scenario(
 ) -> Verdict {
     let mut captures: HashMap<String, String> = HashMap::new();
     let mut worst = Verdict::Pass;
+    // Per-step (status_name, masked-able body, masks) retained so a PASSING multistep
+    // scenario promotes each step to `verified` (R6).
+    let mut step_promotions: Vec<(String, Vec<u8>, Vec<String>)> = Vec::new();
     let reference_mode = scenario
         .reference_mode
         .as_ref()
         .unwrap_or(&ReferenceMode::None);
 
     for (step_idx, step) in scenario.steps.iter().enumerate() {
+        // Enforce inject directives (R7): a wrong inject would otherwise be silently
+        // ignored (the value reaches the request via {{name}} substitution). Validate the
+        // captured name exists and the `into` form is recognized.
+        if let Some(err) = validate_injects(&step.inject, &captures) {
+            worst = worst_verdict(
+                worst,
+                Verdict::HarnessError(format!("step {step_idx} inject: {err}")),
+            );
+            break;
+        }
+
         let raw_request = match std::fs::read(scenarios_dir.join(&step.request_file)) {
             Ok(b) => b,
             Err(e) => {
@@ -324,6 +349,9 @@ fn run_multistep_scenario(
 
         worst = worst_verdict(worst, step_final);
 
+        // Retain this step's response for per-step promotion if the whole scenario passes.
+        step_promotions.push((step_name.clone(), body.clone(), step.masks.clone()));
+
         // Capture declared values even if we had an error (best effort).
         for cap in &step.capture {
             if let Some(val) = capture_value(&body, &cap.path) {
@@ -332,8 +360,128 @@ fn run_multistep_scenario(
         }
     }
 
-    maybe_promote(&worst, name, &[], oracle, store, promote_on_pass);
+    // Promote each step (R6): a multistep scenario writes per-step status
+    // (`name.stepN`); on overall Pass each step flips to `verified` with its own
+    // masked-C14N canonical evidence, so the unverified count can reach zero.
+    for (step_name, step_body, step_masks) in &step_promotions {
+        maybe_promote(
+            &worst,
+            step_name,
+            step_body,
+            step_masks,
+            oracle,
+            store,
+            promote_on_pass,
+        );
+    }
     worst
+}
+
+/// Validate `inject` directives for a step (R7). Returns `Some(reason)` if any inject
+/// is unsatisfiable: the captured value is missing, or `into` is not a recognized form
+/// (`header:<name>` or `body:<local-name-path>`).
+fn validate_injects(
+    injects: &[crate::scenario::Inject],
+    captures: &HashMap<String, String>,
+) -> Option<String> {
+    for inj in injects {
+        if !captures.contains_key(&inj.name) {
+            return Some(format!(
+                "directive '{}' references a value never captured by a prior step",
+                inj.name
+            ));
+        }
+        if !(inj.into.starts_with("header:") || inj.into.starts_with("body:")) {
+            return Some(format!(
+                "directive '{}' has unrecognized target '{}' (expected 'header:<name>' or 'body:<path>')",
+                inj.name, inj.into
+            ));
+        }
+    }
+    None
+}
+
+// ---------------------------------------------------------------------------
+// Discovery scenario (structural-only, no oracle, no srvd — spec §11)
+// ---------------------------------------------------------------------------
+
+fn run_discovery_scenario(
+    scenario: &Scenario,
+    name: &str,
+    scenarios_dir: &std::path::Path,
+    store: &SnapshotStore,
+    promote_on_pass: bool,
+) -> Verdict {
+    use onvif_server::{discovery_build_probe_match, discovery_is_probe};
+
+    let request_file = match scenario.request_file.as_deref() {
+        Some(f) => f,
+        None => return Verdict::HarnessError("discovery scenario missing request_file".into()),
+    };
+
+    let probe_bytes = match std::fs::read(scenarios_dir.join(request_file)) {
+        Ok(b) => b,
+        Err(e) => return Verdict::HarnessError(format!("read discovery request: {e}")),
+    };
+
+    // Verify this is actually a probe.
+    if !discovery_is_probe(&probe_bytes) {
+        return Verdict::HarnessError(
+            "discovery request fixture is not a WS-Discovery Probe".into(),
+        );
+    }
+
+    // Extract MessageID from the probe for RelatesTo / invariants.
+    let message_id = extract_text(&probe_bytes, "MessageID").unwrap_or_default();
+
+    // Build ProbeMatch in-process using the pinned controlled UUID.
+    let xaddr = "http://controlled-onvif:8080/onvif/device_service";
+    let probe_match_xml =
+        discovery_build_probe_match(&message_id, xaddr, CONTROLLED_DISCOVERY_UUID);
+    let probe_match_bytes = probe_match_xml.as_bytes();
+
+    // Run declared invariants.
+    let ctx = InvariantCtx {
+        request_message_id: message_id.clone(),
+        expected_endpoint: format!("urn:uuid:{CONTROLLED_DISCOVERY_UUID}"),
+        // ProbeMatch advertises the device discovery type-scope (FIXTURE_DISCOVERY_SCOPES),
+        // NOT the GetScopes list (FIXTURE_SCOPES).
+        expected_scopes: crate::fixture::FIXTURE_DISCOVERY_SCOPES
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
+    };
+    for inv in &scenario.invariants {
+        if let Err(e) = check_invariant(inv, probe_match_bytes, &ctx) {
+            return Verdict::SutFail(format!("invariant '{inv}' failed: {e}"));
+        }
+    }
+
+    // All invariants passed → promote if requested.
+    // Canonical evidence = oracle-C14N of the MASKED ProbeMatch (wsa_message_id masked
+    // so evidence is deterministic across runs — spec §11).
+    if promote_on_pass {
+        let snap_masks: Vec<String> = if scenario.masks.is_empty() {
+            vec!["wsa_message_id".to_string()]
+        } else {
+            scenario.masks.clone()
+        };
+        let (text_rules, attr_rules) = resolve_all(&snap_masks);
+        let canonical_bytes = mask_only(probe_match_bytes, &text_rules, &attr_rules)
+            .map_err(|e| format!("mask_only discovery: {e}"));
+        match canonical_bytes {
+            Ok(masked) => {
+                if let Err(e) = promote::promote(store, name, &masked) {
+                    eprintln!("[layer2] promote {name}: {e}");
+                }
+            }
+            Err(e) => {
+                eprintln!("[layer2] discovery promote mask {name}: {e}");
+            }
+        }
+    }
+
+    Verdict::Pass
 }
 
 // ---------------------------------------------------------------------------
@@ -582,6 +730,7 @@ fn maybe_promote(
     verdict: &Verdict,
     name: &str,
     body: &[u8],
+    masks: &[String],
     oracle: &Oracle,
     store: &SnapshotStore,
     promote_on_pass: bool,
@@ -593,13 +742,20 @@ fn maybe_promote(
         return;
     }
     if body.is_empty() {
-        // Multi-step: called with an empty body slice (see run_multistep_scenario).
-        // combine_with_reference does not write canonical evidence; maybe_promote
-        // early-returns here instead. No multistep scenario currently reaches Pass,
-        // so no canonical evidence is written for multi-step paths.
         return;
     }
-    match oracle.c14n(body) {
+    // Apply the scenario's path-scoped masks BEFORE oracle-C14N so the canonical
+    // evidence is DETERMINISTIC across runs (e.g. GetSystemDateAndTime's live
+    // UTCDateTime is masked). Without this the evidence churns every run.
+    let (text_rules, attr_rules) = resolve_all(masks);
+    let masked = match mask_only(body, &text_rules, &attr_rules) {
+        Ok(m) => m,
+        Err(e) => {
+            eprintln!("[layer2] mask for promote {name}: {e}");
+            return;
+        }
+    };
+    match oracle.c14n(&masked) {
         Ok(canonical) => {
             if let Err(e) = promote::promote(store, name, &canonical) {
                 eprintln!("[layer2] promote {name}: {e}");
@@ -782,6 +938,41 @@ pub fn post(url: &str, body: &[u8], content_type: &str) -> Result<(u16, Vec<u8>)
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::scenario::Inject;
+
+    // ── validate_injects (R7) ─────────────────────────────────────────────────
+
+    #[test]
+    fn validate_injects_ok_when_captured_and_recognized() {
+        let mut caps = HashMap::new();
+        caps.insert("subId".to_string(), "urn:x".to_string());
+        let injects = vec![Inject {
+            name: "subId".into(),
+            into: "header:To".into(),
+        }];
+        assert!(validate_injects(&injects, &caps).is_none());
+    }
+
+    #[test]
+    fn validate_injects_fails_on_uncaptured_name() {
+        let caps = HashMap::new();
+        let injects = vec![Inject {
+            name: "subId".into(),
+            into: "header:To".into(),
+        }];
+        assert!(validate_injects(&injects, &caps).is_some());
+    }
+
+    #[test]
+    fn validate_injects_fails_on_unrecognized_target() {
+        let mut caps = HashMap::new();
+        caps.insert("subId".to_string(), "urn:x".to_string());
+        let injects = vec![Inject {
+            name: "subId".into(),
+            into: "footer:Whoops".into(),
+        }];
+        assert!(validate_injects(&injects, &caps).is_some());
+    }
 
     // ── worst_verdict precedence ──────────────────────────────────────────────
 

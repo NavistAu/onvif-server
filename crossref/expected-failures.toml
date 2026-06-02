@@ -1,12 +1,4 @@
-# Scenarios known to fail the Layer-2 conformance run, with the finding that tracks each.
-# CI fails on DRIFT from this set (a new failure = regression; an expected-fail now passing
-# = a finding was fixed, update this file). See crossref/PHASE2B-FINDINGS.md.
-#
-# F-1..F-6 (six real product conformance bugs) were FIXED — they now pass and are promoted
-# to verified, so they were removed from this baseline. The sole remaining entry is a
-# harness/bundle limitation, not a product bug.
-
-[[expected_failure]]
-scenario = "events_pull_messages"
-finding  = "A-1"
-reason   = "ws-addr.xsd is a minimal stub; with the ##any->##other UPA rewrite its EPR model rejects the addressing-ns ReferenceParameters in the PullMessages SubscriptionReference. events-body is non-authoritative (SCHEMAS.md); real events conformance is carried by the Rust structural invariants. Not a confirmed onvif-server bug."
+# Scenarios known to fail the Layer-2 conformance run, tracked by finding id.
+# CI fails on DRIFT from this set. The release gate (--release-green) additionally
+# requires this file to be EMPTY (no reliance on a known-failure baseline).
+# All Phase 2b findings (F-1..F-6, F-7, A-1) are resolved — baseline intentionally empty.

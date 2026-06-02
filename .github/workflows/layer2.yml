@@ -56,11 +56,10 @@ jobs:
           # Check status.toml (promotion state should not change in CI).
           git diff --exit-code crossref/snapshots/status.toml || \
             (echo "::error::Layer-2 status.toml drift — promotion state changed unexpectedly"; exit 1)
-          # Check canonical files, excluding device_get_system_date_and_time.c14n which
-          # contains a live UTCDateTime and legitimately changes on every run.
-          git diff --exit-code \
-            -- 'crossref/snapshots/canonical/*.c14n' \
-            ':!crossref/snapshots/canonical/device_get_system_date_and_time.c14n' || \
+          # Canonical evidence is now deterministic: promotion masks volatile fields
+          # (e.g. UTCDateTime) BEFORE oracle-C14N, so every canonical .c14n is stable
+          # across runs and NONE is excluded.
+          git diff --exit-code -- 'crossref/snapshots/canonical/*.c14n' || \
             (echo "::error::Layer-2 canonical drift — a verified scenario changed"; exit 1)
 
       - name: Tear down Docker topology

@@ -266,6 +266,22 @@ async fn run_steps_scenario(
     let mut captures: HashMap<String, String> = HashMap::new();
 
     for (step_idx, step) in scenario.steps.iter().enumerate() {
+        // Enforce inject directives (R7): a wrong/unsatisfiable inject must fail loudly
+        // rather than be silently ignored by the {{name}} substitution.
+        for inj in &step.inject {
+            assert!(
+                captures.contains_key(&inj.name),
+                "scenario {name} step {step_idx}: inject '{}' references a value never captured",
+                inj.name
+            );
+            assert!(
+                inj.into.starts_with("header:") || inj.into.starts_with("body:"),
+                "scenario {name} step {step_idx}: inject '{}' has unrecognized target '{}'",
+                inj.name,
+                inj.into
+            );
+        }
+
         let raw_request = read_request_file(&step.request_file);
 
         // Apply captures from prior steps.
@@ -348,7 +364,11 @@ fn run_discovery_scenario(store: &SnapshotStore, scenario: &Scenario, name: &str
     let ctx = InvariantCtx {
         request_message_id: message_id.clone(),
         expected_endpoint: format!("urn:uuid:{device_uuid}"),
-        expected_scopes: vec![],
+        // ProbeMatch advertises the discovery type-scope, not the GetScopes list.
+        expected_scopes: onvif_crossref::fixture::FIXTURE_DISCOVERY_SCOPES
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
     };
     assert_invariants(name, &scenario.invariants, probe_match_bytes, &ctx);
 

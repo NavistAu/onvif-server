@@ -88,6 +88,13 @@ pub const FIXTURE_SCOPES: &[&str] = &[
     "onvif://www.onvif.org/location/lab",
 ];
 
+/// Scopes advertised in the WS-Discovery `ProbeMatch` (the device's discovery
+/// type-scope). This is a distinct concern from `GetScopes` (`FIXTURE_SCOPES`): the
+/// ProbeMatch advertises the device TYPE for discovery filtering, not the full
+/// configured scope list. The `discovery_probe_match` scenario asserts this set.
+pub const FIXTURE_DISCOVERY_SCOPES: &[&str] =
+    &["onvif://www.onvif.org/type/NetworkVideoTransmitter"];
+
 // ---------------------------------------------------------------------------
 // ControlledCamera
 // ---------------------------------------------------------------------------

@@ -261,11 +261,19 @@ fn collect_element_texts(xml: &[u8], target_local: &str) -> Result<Vec<String>, 
 /// Assert every scope in `expected` appears in the response `ScopeItem` elements,
 /// and the total count matches.
 ///
-/// The real ONVIF `GetScopesResponse` wraps each scope as:
-/// `<tt:Scopes><tt:ScopeDef>Fixed</tt:ScopeDef><tt:ScopeItem>onvif://…</tt:ScopeItem></tt:Scopes>`
-/// so we collect `ScopeItem` texts (the actual scope URI values), not `Scope`.
+/// Handles BOTH ONVIF scope encodings:
+/// - `GetScopesResponse`: `<tt:Scopes><tt:ScopeDef>Fixed</tt:ScopeDef><tt:ScopeItem>onvif://…</tt:ScopeItem></tt:Scopes>`
+///   → collect `ScopeItem` texts (the scope URI values).
+/// - WS-Discovery `ProbeMatch`: `<d:Scopes>onvif://… onvif://…</d:Scopes>` (one element,
+///   space-separated URIs, no children) → split the `Scopes` element text on whitespace.
 fn scopes_match(xml: &[u8], expected: &[String]) -> Result<(), String> {
-    let actual = collect_element_texts(xml, "ScopeItem")?;
+    let mut actual = collect_element_texts(xml, "ScopeItem")?;
+    if actual.is_empty() {
+        // Discovery form: scopes are a whitespace-separated list inside <Scopes>.
+        for s in collect_element_texts(xml, "Scopes")? {
+            actual.extend(s.split_whitespace().map(|x| x.to_string()));
+        }
+    }
     if actual.len() != expected.len() {
         return Err(format!(
             "scope count mismatch: expected {}, got {} (actual: {:?})",
