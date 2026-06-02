@@ -4,3 +4,4 @@ target/
 # Populated by the Task-6 orchestrator via:
 #   rsync -a --exclude=target/ ../soap-server/ crossref/.build/soap-server/
 crossref/.build/
+__pycache__/
