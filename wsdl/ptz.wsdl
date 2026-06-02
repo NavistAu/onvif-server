@@ -46,7 +46,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
       <xs:element name="GetConfigurationsResponse">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="PTZConfigurations" type="tt:PTZConfiguration" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="PTZConfiguration" type="tt:PTZConfiguration" minOccurs="0" maxOccurs="unbounded"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>

@@ -95,7 +95,9 @@ impl ImagingServiceHandler {
                 .white_balance_cb_gain
                 .map(|v| format!("<tt:CbGain>{v}</tt:CbGain>"))
                 .unwrap_or_default();
-            inner.push_str(&format!("<tt:WhiteBalance>{cr}{cb}</tt:WhiteBalance>"));
+            inner.push_str(&format!(
+                "<tt:WhiteBalance><tt:Mode>MANUAL</tt:Mode>{cr}{cb}</tt:WhiteBalance>"
+            ));
         }
 
         let xml = format!(

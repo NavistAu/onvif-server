@@ -105,21 +105,16 @@ impl DeviceServiceHandler {
     }
 
     async fn handle_get_capabilities(&self) -> Result<Bytes, SoapFault> {
+        // tt:Capabilities is an ordered xs:sequence: Analytics?, Device?, Events?, Imaging?, Media?, PTZ?, Extension?
         let mut caps = String::new();
         caps.push_str(&format!(
             "    <tt:Device><tt:XAddr>{}</tt:XAddr></tt:Device>\n",
             escape_text(&self.xaddr)
         ));
-        if !self.media_xaddr.is_empty() {
+        if !self.events_xaddr.is_empty() {
             caps.push_str(&format!(
-                "    <tt:Media><tt:XAddr>{}</tt:XAddr></tt:Media>\n",
-                escape_text(&self.media_xaddr)
-            ));
-        }
-        if !self.ptz_xaddr.is_empty() {
-            caps.push_str(&format!(
-                "    <tt:PTZ><tt:XAddr>{}</tt:XAddr></tt:PTZ>\n",
-                escape_text(&self.ptz_xaddr)
+                "    <tt:Events>\n      <tt:XAddr>{}</tt:XAddr>\n      <tt:WSSubscriptionPolicySupport>false</tt:WSSubscriptionPolicySupport>\n      <tt:WSPullPointSupport>true</tt:WSPullPointSupport>\n      <tt:WSPausableSubscriptionManagerInterfaceSupport>false</tt:WSPausableSubscriptionManagerInterfaceSupport>\n    </tt:Events>\n",
+                escape_text(&self.events_xaddr)
             ));
         }
         if !self.imaging_xaddr.is_empty() {
@@ -128,10 +123,17 @@ impl DeviceServiceHandler {
                 escape_text(&self.imaging_xaddr)
             ));
         }
-        if !self.events_xaddr.is_empty() {
+        if !self.media_xaddr.is_empty() {
+            // tt:MediaCapabilities sequence: XAddr, StreamingCapabilities (required), Extension?
             caps.push_str(&format!(
-                "    <tt:Events>\n      <tt:XAddr>{}</tt:XAddr>\n      <tt:WSSubscriptionPolicySupport>false</tt:WSSubscriptionPolicySupport>\n      <tt:WSPullPointSupport>true</tt:WSPullPointSupport>\n    </tt:Events>\n",
-                escape_text(&self.events_xaddr)
+                "    <tt:Media><tt:XAddr>{}</tt:XAddr><tt:StreamingCapabilities/></tt:Media>\n",
+                escape_text(&self.media_xaddr)
+            ));
+        }
+        if !self.ptz_xaddr.is_empty() {
+            caps.push_str(&format!(
+                "    <tt:PTZ><tt:XAddr>{}</tt:XAddr></tt:PTZ>\n",
+                escape_text(&self.ptz_xaddr)
             ));
         }
         let xml = format!(

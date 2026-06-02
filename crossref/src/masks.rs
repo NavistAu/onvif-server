@@ -9,15 +9,16 @@
 //!
 //! | Mask name          | Paths masked                                                  |
 //! |--------------------|---------------------------------------------------------------|
-//! | `wsa_message_id`   | `Envelope/Header/MessageID` (discovery ProbeMatch header)    |
-//! | `system_datetime`  | `…/SystemDateAndTime/UTCDateTime/Time/{Hour,Minute,Second}`  |
-//! |                    | `…/SystemDateAndTime/UTCDateTime/Date/{Year,Month,Day}`      |
-//! | `current_time`     | `…/PullMessagesResponse/CurrentTime`                         |
-//! |                    | `…/CreatePullPointSubscriptionResponse/CurrentTime`          |
-//! | `termination_time` | `…/PullMessagesResponse/TerminationTime`                     |
-//! |                    | `…/CreatePullPointSubscriptionResponse/TerminationTime`      |
-//! | `subscription_id`  | `…/CreatePullPointSubscriptionResponse/SubscriptionReference/ReferenceParameters/SubscriptionId` |
-//! | `host_authority`   | `…/CreatePullPointSubscriptionResponse/SubscriptionReference/Address` |
+//! | `wsa_message_id`         | `Envelope/Header/MessageID` (discovery ProbeMatch header)    |
+//! | `system_datetime`        | `…/SystemDateAndTime/UTCDateTime/Time/{Hour,Minute,Second}`  |
+//! |                          | `…/SystemDateAndTime/UTCDateTime/Date/{Year,Month,Day}`      |
+//! | `current_time`           | `…/PullMessagesResponse/CurrentTime`                         |
+//! |                          | `…/CreatePullPointSubscriptionResponse/CurrentTime`          |
+//! | `termination_time`       | `…/PullMessagesResponse/TerminationTime`                     |
+//! |                          | `…/CreatePullPointSubscriptionResponse/TerminationTime`      |
+//! | `subscription_id`        | `…/CreatePullPointSubscriptionResponse/SubscriptionReference/ReferenceParameters/SubscriptionId` |
+//! | `host_authority`         | `…/CreatePullPointSubscriptionResponse/SubscriptionReference/Address` |
+//! | `ptz_status_utc_time`    | `Envelope/Body/GetStatusResponse/PTZStatus/UtcTime`          |
 //!
 //! `host_authority` is a no-op in Layer-1 (the fixture pins the advertised
 //! host) but is included so Layer-2 can reuse the same scenario metadata.
@@ -114,6 +115,18 @@ pub fn resolve(name: &str) -> (Vec<MaskRule>, Vec<AttrMaskRule>) {
         "host_authority" => (
             vec![MaskRule::new(
                 "Envelope/Body/CreatePullPointSubscriptionResponse/SubscriptionReference/Address",
+            )],
+            vec![],
+        ),
+
+        // ── GetStatus live UTC timestamp ─────────────────────────────────────
+        // Real path (local names):
+        //   Envelope/Body/GetStatusResponse/PTZStatus/UtcTime
+        // tt:PTZStatus requires UtcTime (xs:dateTime, minOccurs=1).  The value
+        // is Utc::now() at response-generation time — mask it for snapshot stability.
+        "ptz_status_utc_time" => (
+            vec![MaskRule::new(
+                "Envelope/Body/GetStatusResponse/PTZStatus/UtcTime",
             )],
             vec![],
         ),
@@ -228,6 +241,30 @@ mod tests {
         assert!(
             !t.is_empty(),
             "discovery_endpoint must have at least one text rule"
+        );
+    }
+
+    #[test]
+    fn ptz_status_utc_time_non_empty() {
+        let (t, _a) = resolve("ptz_status_utc_time");
+        assert!(
+            !t.is_empty(),
+            "ptz_status_utc_time must have at least one text rule"
+        );
+    }
+
+    /// Envelope mirroring the GetStatusResponse structure (with UtcTime).
+    const PTZ_STATUS_XML: &[u8] = br#"<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tptz:GetStatusResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema"><tptz:PTZStatus><tt:MoveStatus><tt:PanTilt>IDLE</tt:PanTilt><tt:Zoom>IDLE</tt:Zoom></tt:MoveStatus><tt:UtcTime>2026-06-03T01:02:03Z</tt:UtcTime></tptz:PTZStatus></tptz:GetStatusResponse></env:Body></env:Envelope>"#;
+
+    #[test]
+    fn ptz_status_utc_time_mask_replaces_timestamp() {
+        let (t, a) = resolve("ptz_status_utc_time");
+        let masked = mask_only(PTZ_STATUS_XML, &t, &a).expect("mask_only must not fail");
+        let s = String::from_utf8(masked).expect("utf8");
+        assert!(s.contains(MASK_SENTINEL), "UtcTime should be masked: {s}");
+        assert!(
+            !s.contains("2026-06-03T01:02:03Z"),
+            "original timestamp must be gone: {s}"
         );
     }
 

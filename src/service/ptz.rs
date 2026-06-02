@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use bytes::Bytes;
+use chrono::{SecondsFormat, Utc};
 use quick_xml::events::Event;
 use quick_xml::NsReader;
 use soap_server::{escape_attr, escape_text, SoapFault, SoapHandler};
@@ -277,6 +278,7 @@ impl PTZServiceHandler {
             "IDLE"
         };
         let zoom = if status.zoom_moving { "MOVING" } else { "IDLE" };
+        let utc_time = Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true);
         let xml = format!(
             r#"<tptz:GetStatusResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema">
   <tptz:PTZStatus>
@@ -284,10 +286,12 @@ impl PTZServiceHandler {
       <tt:PanTilt>{pan_tilt}</tt:PanTilt>
       <tt:Zoom>{zoom}</tt:Zoom>
     </tt:MoveStatus>
+    <tt:UtcTime>{utc_time}</tt:UtcTime>
   </tptz:PTZStatus>
 </tptz:GetStatusResponse>"#,
             pan_tilt = pan_tilt,
             zoom = zoom,
+            utc_time = utc_time,
         );
         Ok(Bytes::from(xml))
     }

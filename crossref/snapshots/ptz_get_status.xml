@@ -4,5 +4,6 @@
       <n0:PanTilt>IDLE</n0:PanTilt>
       <n0:Zoom>IDLE</n0:Zoom>
     </n0:MoveStatus>
+    <n0:UtcTime>__MASKED__</n0:UtcTime>
   </n1:PTZStatus>
 </n1:GetStatusResponse></n2:Body></n2:Envelope>

@@ -9,5 +9,5 @@ expected_status = 200
 outcome         = "success"
 request_file    = "ptz_get_status.request.xml"
 invariants      = []
-masks           = []
+masks           = ["ptz_status_utc_time"]
 reference_mode  = "none"
