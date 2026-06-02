@@ -43,11 +43,11 @@ jobs:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
       - name: Check
-        run: cargo check --all-targets
+        run: cargo check --workspace --all-targets
       - name: Clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Format
-        run: cargo fmt -- --check
+        run: cargo fmt --all -- --check
 
   check-linux:
     name: Check (Linux)
@@ -71,11 +71,11 @@ jobs:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
       - name: Check
-        run: cargo check --all-targets
+        run: cargo check --workspace --all-targets
       - name: Clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Format
-        run: cargo fmt -- --check
+        run: cargo fmt --all -- --check
 
   test:
     name: Test
