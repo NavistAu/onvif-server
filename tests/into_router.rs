@@ -6,7 +6,8 @@
 
 use axum_test::TestServer;
 use onvif_server::{
-    DeviceInfo, DeviceService, EventService, ImagingService, MediaService, OnvifServer, PTZService,
+    DeviceInfo, DeviceService, EventService, ImagingService, MediaService, OnvifError, OnvifServer,
+    PTZService,
 };
 
 // ---------------------------------------------------------------------------
@@ -242,6 +243,76 @@ async fn into_router_full_stack_auth_and_routing() {
     assert!(
         body.contains("Fault") || body.contains("fault"),
         "unknown op must yield a SOAP Fault, got status={status} body={body}"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Test 4: PTZ Stop dispatch — must reach handler through the SOAP router,
+//         NOT return "Action not supported".
+//         Regression test for the StopRequest element-name mismatch.
+// ---------------------------------------------------------------------------
+
+/// PTZ Stop request using the correct on-wire element name.
+const PTZ_STOP_SOAP: &[u8] = br#"<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  <s:Body>
+    <tptz:Stop xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
+      <tptz:ProfileToken>profile_0</tptz:ProfileToken>
+      <tptz:PanTilt>true</tptz:PanTilt>
+      <tptz:Zoom>true</tptz:Zoom>
+    </tptz:Stop>
+  </s:Body>
+</s:Envelope>"#;
+
+/// A PTZ stub that returns Ok(()) for stop() — needed to confirm the handler
+/// runs all the way through (not just that dispatch reached it).
+struct StubPTZStop;
+#[async_trait::async_trait]
+impl PTZService for StubPTZStop {
+    async fn stop(
+        &self,
+        _profile_token: &str,
+        _pan_tilt: bool,
+        _zoom: bool,
+    ) -> Result<(), OnvifError> {
+        Ok(())
+    }
+}
+
+#[tokio::test]
+async fn into_router_ptz_stop_reaches_handler_via_dispatch() {
+    // Build WITHOUT auth so we can send the request without WS-Security.
+    // Uses StubPTZStop (stop returns Ok) to confirm the handler executes successfully.
+    let server = OnvifServer::builder()
+        .port(0)
+        .device_service(StubDevice)
+        .ptz_service(StubPTZStop)
+        .build()
+        .expect("build must succeed");
+
+    let router = server.into_router().expect("into_router must succeed");
+    let ts = TestServer::new(router);
+
+    let resp = ts
+        .post("/onvif/ptz_service")
+        .content_type("application/soap+xml; charset=utf-8")
+        .bytes(bytes::Bytes::copy_from_slice(PTZ_STOP_SOAP))
+        .await;
+
+    let status = resp.status_code().as_u16();
+    let body = resp.text();
+
+    assert_eq!(
+        status, 200,
+        "PTZ Stop must return HTTP 200 (got {status}), body={body}"
+    );
+    assert!(
+        body.contains("StopResponse"),
+        "PTZ Stop must return a StopResponse (not a Fault), body={body}"
+    );
+    assert!(
+        !body.contains("Action not supported"),
+        "PTZ Stop must NOT return 'Action not supported' — dispatch table bug, body={body}"
     );
 }
 

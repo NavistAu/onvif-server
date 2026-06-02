@@ -276,7 +276,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
         </xs:complexType>
       </xs:element>
       <!--===============================-->
-      <xs:element name="StopRequest">
+      <xs:element name="Stop">
         <xs:complexType>
           <xs:sequence>
             <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
@@ -402,7 +402,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
     <wsdl:part name="parameters" element="tptz:AbsoluteMoveResponse"/>
   </wsdl:message>
   <wsdl:message name="StopRequest">
-    <wsdl:part name="parameters" element="tptz:StopRequest"/>
+    <wsdl:part name="parameters" element="tptz:Stop"/>
   </wsdl:message>
   <wsdl:message name="StopResponse">
     <wsdl:part name="parameters" element="tptz:StopResponse"/>
