@@ -9,7 +9,7 @@
   <n2:Body>
     <n1:ProbeMatches>
       <n1:ProbeMatch>
-        <n0:EndpointReference><n0:Address>__MASKED__</n0:Address></n0:EndpointReference>
+        <n0:EndpointReference><n0:Address>urn:uuid:b5e2d6f0-0000-0000-0000-000000000001</n0:Address></n0:EndpointReference>
         <n1:Types>dn:NetworkVideoTransmitter tds:Device</n1:Types>
         <n1:Scopes>onvif://www.onvif.org/type/NetworkVideoTransmitter</n1:Scopes>
         <n1:XAddrs>http://controlled-onvif:8080/onvif/device_service</n1:XAddrs>

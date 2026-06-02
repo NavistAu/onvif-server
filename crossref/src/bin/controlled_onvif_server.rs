@@ -18,7 +18,7 @@
 //! ONVIF_HOST=192.168.1.42:8080 cargo run --bin controlled_onvif_server
 //! ```
 
-use onvif_crossref::fixture::ControlledCamera;
+use onvif_crossref::fixture::{ControlledCamera, CONTROLLED_DISCOVERY_UUID};
 use onvif_server::OnvifServer;
 
 const DEFAULT_HOST: &str = "controlled-onvif:8080";
@@ -34,6 +34,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .port(PORT)
         .advertised_host(&advertised_host)
         .auth("admin", "admin")
+        // Pin the WS-Discovery device endpoint UUID so the ProbeMatch EndpointReference
+        // is deterministic and the crossref `stable_endpoint_uuid` invariant asserts it.
+        .discovery_uuid(CONTROLLED_DISCOVERY_UUID)
         // GetSystemDateAndTime is pre-registered as auth-bypassed in builder::new()
         // per ONVIF spec; no additional call required.
         .device_service(cam.clone())

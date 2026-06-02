@@ -4,6 +4,6 @@ transport    = "udp_discovery"
 schema_id    = "none"
 http_method  = "none"
 invariants   = ["relates_to_matches_probe", "stable_endpoint_uuid", "scopes_match_fixture", "xaddrs_escaped"]
-masks        = ["wsa_message_id", "discovery_endpoint"]
+masks        = ["wsa_message_id"]
 request_file = "discovery_probe.request.xml"
 reference_mode = "none"

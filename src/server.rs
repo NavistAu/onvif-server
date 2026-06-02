@@ -265,16 +265,23 @@ impl OnvifServer {
             "http://{}:{}/onvif/device_service",
             self.advertised_host, self.port
         );
+        // The device's WS-Discovery EndpointReference UUID is a STABLE identity for the
+        // device's lifetime (set via the builder, else a per-build default) — never
+        // regenerated per probe.
+        let disc_uuid = self.discovery_uuid;
 
         #[cfg(feature = "discovery")]
         {
             let xaddr_for_disc = disc_xaddr.clone();
             tokio::spawn(async move {
-                if let Err(e) = crate::discovery::run_discovery(xaddr_for_disc).await {
+                if let Err(e) =
+                    crate::discovery::run_discovery_with_uuid(xaddr_for_disc, disc_uuid).await
+                {
                     eprintln!("[discovery] task exited: {e}");
                 }
             });
         }
+        let _ = disc_uuid;
         // Suppress unused-variable warning when discovery feature is off.
         let _ = disc_xaddr;
 

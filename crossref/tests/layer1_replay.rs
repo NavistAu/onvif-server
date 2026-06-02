@@ -336,10 +336,11 @@ fn run_discovery_scenario(store: &SnapshotStore, scenario: &Scenario, name: &str
         "scenario {name}: discovery_is_probe returned false for the probe fixture"
     );
 
-    // Build ProbeMatch.
+    // Build ProbeMatch using the SAME pinned, stable device UUID the controlled server
+    // advertises (CONTROLLED_DISCOVERY_UUID). This is deterministic and is then ASSERTED by
+    // the `stable_endpoint_uuid` invariant — no per-run random value, no masking.
     let xaddr = "http://controlled-onvif:8080/onvif/device_service";
-    let device_uuid = uuid::Uuid::parse_str("b5e2d6f0-0000-0000-0000-crossref0001")
-        .unwrap_or_else(|_| uuid::Uuid::new_v4());
+    let device_uuid = onvif_crossref::fixture::CONTROLLED_DISCOVERY_UUID;
     let probe_match_xml = discovery_build_probe_match(&message_id, xaddr, device_uuid);
     let probe_match_bytes = probe_match_xml.as_bytes();
 
