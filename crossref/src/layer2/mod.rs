@@ -16,7 +16,7 @@ use crate::{
     body_extract::extract_body_child,
     invariants::{check as check_invariant, InvariantCtx},
     masks::resolve_all,
-    normalize::mask_only,
+    normalize::{mask_only, strip_ws_text_nodes},
     oracle::Oracle,
     projection,
     scenario::{AuthMode, Outcome, ReferenceMode, Scenario, Transport},
@@ -475,20 +475,28 @@ fn combine_with_reference(
             };
 
             // Extract body children from both sides and apply oracle C14N for comparison.
-            // This avoids false failures from Header presence/absence and pretty-print
-            // whitespace differences — neither is conformance-relevant (spec §6).
+            // This avoids false failures from:
+            //   (a) Header presence/absence (srvd emits empty <env:Header/>; we omit it)
+            //   (b) pretty-print whitespace text nodes (our server indents; srvd emits compact)
+            // Neither difference is conformance-relevant (spec §6).
+            // Pipeline: extract body child → apply masks (if any) → strip pure-whitespace
+            // text nodes → oracle exclusive-C14N (normalises namespace prefixes).
             let (text_rules, attr_rules) = resolve_all(masks);
+            let oracle = Oracle::new(&endpoints.oracle);
 
             let our_c14n = extract_body_child(our_body)
                 .ok_or_else(|| "cannot extract our body child".to_string())
                 .and_then(|child| {
-                    // Apply masks on the child bytes before C14N.
                     mask_only(&child, &text_rules, &attr_rules)
                         .map_err(|e| format!("mask_only our body child: {e}"))
                 })
                 .and_then(|masked| {
-                    Oracle::new(&endpoints.oracle)
-                        .c14n(&masked)
+                    strip_ws_text_nodes(&masked)
+                        .map_err(|e| format!("strip_ws our body child: {e}"))
+                })
+                .and_then(|stripped| {
+                    oracle
+                        .c14n(&stripped)
                         .map_err(|e| format!("c14n our body child: {e}"))
                 });
 
@@ -499,8 +507,12 @@ fn combine_with_reference(
                         .map_err(|e| format!("mask_only srvd body child: {e}"))
                 })
                 .and_then(|masked| {
-                    Oracle::new(&endpoints.oracle)
-                        .c14n(&masked)
+                    strip_ws_text_nodes(&masked)
+                        .map_err(|e| format!("strip_ws srvd body child: {e}"))
+                })
+                .and_then(|stripped| {
+                    oracle
+                        .c14n(&stripped)
                         .map_err(|e| format!("c14n srvd body child: {e}"))
                 });
 

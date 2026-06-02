@@ -444,6 +444,49 @@ fn write_attr_value(out: &mut Vec<u8>, v: &[u8]) {
     }
 }
 
+// ─── strip_ws_text_nodes ─────────────────────────────────────────────────────
+
+/// Strip pure-whitespace text nodes from `xml`, returning the compacted bytes.
+///
+/// Servers may pretty-print their responses (inserting `\n  ` between child
+/// elements for readability). Exclusive C14N preserves these insignificant
+/// whitespace text nodes, which causes byte-level differences when comparing
+/// a pretty-printed response against a compact one. This function removes any
+/// text node whose content is entirely ASCII whitespace (space, `\t`, `\n`,
+/// `\r`), so the subsequent oracle C14N produces identical output regardless
+/// of whether a server pretty-prints or emits compact XML.
+pub fn strip_ws_text_nodes(xml: &[u8]) -> Result<Vec<u8>, String> {
+    let mut reader = Reader::from_reader(xml);
+    reader.config_mut().trim_text(false);
+    let mut writer = Writer::new(Cursor::new(Vec::new()));
+    let mut buf = Vec::new();
+
+    loop {
+        match reader
+            .read_event_into(&mut buf)
+            .map_err(|e| e.to_string())?
+        {
+            Event::Text(ref t) => {
+                let s: &[u8] = t.as_ref();
+                if !s.iter().all(|b| b.is_ascii_whitespace()) {
+                    writer
+                        .write_event(Event::Text(t.to_owned()))
+                        .map_err(|e| e.to_string())?;
+                }
+                // Pure-whitespace text nodes are dropped.
+            }
+            Event::Eof => break,
+            other => {
+                writer
+                    .write_event(other.to_owned())
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        buf.clear();
+    }
+    Ok(writer.into_inner().into_inner())
+}
+
 // ─── AttrMaskRule ─────────────────────────────────────────────────────────────
 
 /// Path-scoped attribute mask: at the element whose local-name path matches `path`,
@@ -834,6 +877,56 @@ mod tests {
         assert!(
             !out.contains("xml:lang"),
             "xml:lang should be dropped: {out}"
+        );
+    }
+
+    // ─── Part D: strip_ws_text_nodes ─────────────────────────────────────────
+
+    #[test]
+    fn strip_ws_collapses_pretty_and_compact_to_equal() {
+        // Our server pretty-prints; srvd emits compact. After stripping whitespace-only
+        // text nodes both should round-trip to identical bytes.
+        let pretty = b"<tds:GetDeviceInformationResponse \
+            xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\">\n  \
+            <tds:Manufacturer>Crossref</tds:Manufacturer>\n  \
+            <tds:Model>Controlled-1</tds:Model>\n\
+            </tds:GetDeviceInformationResponse>";
+        let compact = b"<tds:GetDeviceInformationResponse \
+            xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\">\
+            <tds:Manufacturer>Crossref</tds:Manufacturer>\
+            <tds:Model>Controlled-1</tds:Model>\
+            </tds:GetDeviceInformationResponse>";
+        let stripped_pretty = strip_ws_text_nodes(pretty).unwrap();
+        let stripped_compact = strip_ws_text_nodes(compact).unwrap();
+        assert_eq!(
+            stripped_pretty, stripped_compact,
+            "pretty-printed and compact should be equal after ws strip"
+        );
+    }
+
+    #[test]
+    fn strip_ws_preserves_significant_text() {
+        // Text content that is NOT pure whitespace must be preserved.
+        let xml = b"<a:X xmlns:a=\"urn:u\"><a:Name>  hello world  </a:Name></a:X>";
+        let out = strip_ws_text_nodes(xml).unwrap();
+        let s = String::from_utf8(out).unwrap();
+        assert!(
+            s.contains("  hello world  "),
+            "significant text (incl. leading/trailing spaces) must survive: {s}"
+        );
+    }
+
+    #[test]
+    fn strip_ws_drops_pure_whitespace_text_nodes() {
+        let xml = b"<root>\n  <child>val</child>\n</root>";
+        let out = String::from_utf8(strip_ws_text_nodes(xml).unwrap()).unwrap();
+        assert!(
+            !out.contains('\n'),
+            "pure-whitespace newline text nodes must be dropped: {out}"
+        );
+        assert!(
+            out.contains("<child>val</child>"),
+            "element content must survive: {out}"
         );
     }
 
