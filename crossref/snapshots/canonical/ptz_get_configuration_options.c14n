@@ -1,0 +1,12 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tptz:GetConfigurationOptionsResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
+  <tptz:PTZConfigurationOptions>
+    <tt:Spaces xmlns:tt="http://www.onvif.org/ver10/schema">
+      <tt:RelativePanTiltTranslationSpace>
+        <tt:URI>http://www.onvif.org/ver10/tptz/PanTiltSpaces/TranslationSpaceFov</tt:URI>
+        <tt:XRange><tt:Min>-1</tt:Min><tt:Max>1</tt:Max></tt:XRange>
+        <tt:YRange><tt:Min>-1</tt:Min><tt:Max>1</tt:Max></tt:YRange>
+      </tt:RelativePanTiltTranslationSpace>
+    </tt:Spaces>
+    <tt:PTZTimeout xmlns:tt="http://www.onvif.org/ver10/schema"><tt:Min>PT0S</tt:Min><tt:Max>PT60S</tt:Max></tt:PTZTimeout>
+  </tptz:PTZConfigurationOptions>
+</tptz:GetConfigurationOptionsResponse></env:Body></env:Envelope>

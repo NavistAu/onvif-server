@@ -1,0 +1,1 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><env:Fault><env:Code><env:Value>env:Sender</env:Value></env:Code><env:Reason><env:Text xml:lang="en">WS-Security header required but not provided</env:Text></env:Reason></env:Fault></env:Body></env:Envelope>

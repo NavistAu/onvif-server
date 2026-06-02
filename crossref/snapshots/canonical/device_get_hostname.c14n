@@ -1,0 +1,6 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetHostnameResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
+  <tds:HostnameInformation>
+    <tt:FromDHCP xmlns:tt="http://www.onvif.org/ver10/schema">false</tt:FromDHCP>
+    <tt:Name xmlns:tt="http://www.onvif.org/ver10/schema">controlled-onvif</tt:Name>
+  </tds:HostnameInformation>
+</tds:GetHostnameResponse></env:Body></env:Envelope>

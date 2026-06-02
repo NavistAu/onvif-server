@@ -1,0 +1,7 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetDeviceInformationResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
+  <tds:Manufacturer>Crossref</tds:Manufacturer>
+  <tds:Model>Controlled-1</tds:Model>
+  <tds:FirmwareVersion>1.0.0</tds:FirmwareVersion>
+  <tds:SerialNumber>CR-0001</tds:SerialNumber>
+  <tds:HardwareId>CR-HW-1</tds:HardwareId>
+</tds:GetDeviceInformationResponse></env:Body></env:Envelope>

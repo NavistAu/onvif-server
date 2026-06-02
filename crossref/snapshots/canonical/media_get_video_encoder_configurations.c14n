@@ -1,0 +1,21 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><trt:GetVideoEncoderConfigurationsResponse xmlns:trt="http://www.onvif.org/ver10/media/wsdl">
+  <trt:Configurations token="video_enc_0">
+    <tt:Name xmlns:tt="http://www.onvif.org/ver10/schema">VideoEncoderConfig</tt:Name>
+    <tt:UseCount xmlns:tt="http://www.onvif.org/ver10/schema">1</tt:UseCount>
+    <tt:Encoding xmlns:tt="http://www.onvif.org/ver10/schema">H264</tt:Encoding>
+    <tt:Resolution xmlns:tt="http://www.onvif.org/ver10/schema"><tt:Width>1920</tt:Width><tt:Height>1080</tt:Height></tt:Resolution>
+    <tt:Quality xmlns:tt="http://www.onvif.org/ver10/schema">5</tt:Quality>
+    <tt:RateControl xmlns:tt="http://www.onvif.org/ver10/schema">
+      <tt:FrameRateLimit>30</tt:FrameRateLimit>
+      <tt:EncodingInterval>1</tt:EncodingInterval>
+      <tt:BitrateLimit>4096</tt:BitrateLimit>
+    </tt:RateControl>
+    <tt:Multicast xmlns:tt="http://www.onvif.org/ver10/schema">
+      <tt:Address><tt:Type>IPv4</tt:Type><tt:IPv4Address>0.0.0.0</tt:IPv4Address></tt:Address>
+      <tt:Port>0</tt:Port>
+      <tt:TTL>0</tt:TTL>
+      <tt:AutoStart>false</tt:AutoStart>
+    </tt:Multicast>
+    <tt:SessionTimeout xmlns:tt="http://www.onvif.org/ver10/schema">PT10S</tt:SessionTimeout>
+  </trt:Configurations>
+</trt:GetVideoEncoderConfigurationsResponse></env:Body></env:Envelope>

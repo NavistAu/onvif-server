@@ -1,0 +1,10 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetNetworkInterfacesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
+  <tds:NetworkInterfaces token="eth0">
+    <tt:Enabled xmlns:tt="http://www.onvif.org/ver10/schema">true</tt:Enabled>
+    <tt:Info xmlns:tt="http://www.onvif.org/ver10/schema">
+      <tt:Name>eth0</tt:Name>
+      <tt:HwAddress>00:11:22:33:44:55</tt:HwAddress>
+      <tt:MTU>1500</tt:MTU>
+    </tt:Info>
+  </tds:NetworkInterfaces>
+</tds:GetNetworkInterfacesResponse></env:Body></env:Envelope>

@@ -1,0 +1,36 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><trt:GetProfilesResponse xmlns:trt="http://www.onvif.org/ver10/media/wsdl">
+  <trt:Profiles fixed="true" token="profile_0">
+    <tt:Name xmlns:tt="http://www.onvif.org/ver10/schema">ControlledProfile</tt:Name>
+    <tt:VideoSourceConfiguration xmlns:tt="http://www.onvif.org/ver10/schema" token="video_src_0">
+      <tt:Name>VideoSourceConfig</tt:Name>
+      <tt:UseCount>1</tt:UseCount>
+      <tt:SourceToken>video_src_0</tt:SourceToken>
+      <tt:Bounds height="1080" width="1920" x="0" y="0"></tt:Bounds>
+    </tt:VideoSourceConfiguration>
+    <tt:VideoEncoderConfiguration xmlns:tt="http://www.onvif.org/ver10/schema" token="video_enc_0">
+      <tt:Name>VideoEncoderConfig</tt:Name>
+      <tt:UseCount>1</tt:UseCount>
+      <tt:Encoding>H264</tt:Encoding>
+      <tt:Resolution><tt:Width>1920</tt:Width><tt:Height>1080</tt:Height></tt:Resolution>
+      <tt:Quality>5</tt:Quality>
+      <tt:RateControl>
+        <tt:FrameRateLimit>25</tt:FrameRateLimit>
+        <tt:EncodingInterval>1</tt:EncodingInterval>
+        <tt:BitrateLimit>2048</tt:BitrateLimit>
+      </tt:RateControl>
+      <tt:Multicast>
+        <tt:Address><tt:Type>IPv4</tt:Type><tt:IPv4Address>0.0.0.0</tt:IPv4Address></tt:Address>
+        <tt:Port>0</tt:Port>
+        <tt:TTL>0</tt:TTL>
+        <tt:AutoStart>false</tt:AutoStart>
+      </tt:Multicast>
+      <tt:SessionTimeout>PT10S</tt:SessionTimeout>
+    </tt:VideoEncoderConfiguration>
+    <tt:PTZConfiguration xmlns:tt="http://www.onvif.org/ver10/schema" token="ptz_cfg_0">
+      <tt:Name>PTZConfig</tt:Name>
+      <tt:UseCount>1</tt:UseCount>
+      <tt:NodeToken>ptz_node_0</tt:NodeToken>
+      <tt:DefaultContinuousPanTiltVelocitySpace>http://www.onvif.org/ver10/tptz/PanTiltSpaces/TranslationSpaceFov</tt:DefaultContinuousPanTiltVelocitySpace>
+    </tt:PTZConfiguration>
+  </trt:Profiles>
+</trt:GetProfilesResponse></env:Body></env:Envelope>
