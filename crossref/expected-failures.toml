@@ -1,0 +1,38 @@
+# Scenarios known to fail the Layer-2 conformance run, with the finding that tracks each.
+# CI fails on DRIFT from this set (a new failure = regression; an expected-fail now passing
+# = a finding was fixed, update this file). See crossref/PHASE2B-FINDINGS.md.
+
+[[expected_failure]]
+scenario = "ptz_get_status"
+finding  = "F-1"
+reason   = "PTZStatus missing required UtcTime"
+
+[[expected_failure]]
+scenario = "imaging_get_imaging_settings"
+finding  = "F-2"
+reason   = "WhiteBalance missing required Mode element"
+
+[[expected_failure]]
+scenario = "ptz_absolute_move_malformed_coord"
+finding  = "F-3"
+reason   = "env:Detail has character children; SOAP 1.2 Detail is element-only"
+
+[[expected_failure]]
+scenario = "ptz_get_configurations"
+finding  = "F-4"
+reason   = "GetConfigurationsResponse emits PTZConfiguration where schema expects PTZConfigurations"
+
+[[expected_failure]]
+scenario = "device_get_capabilities"
+finding  = "F-5"
+reason   = "Capabilities children out of sequence and missing required sub-elements"
+
+[[expected_failure]]
+scenario = "events_get_event_properties"
+finding  = "F-6"
+reason   = "GetEventPropertiesResponse missing required tev: dialect elements"
+
+[[expected_failure]]
+scenario = "events_pull_messages"
+finding  = "A-1"
+reason   = "ws-addr schema bundle rejects ReferenceParameters; harness/bundle limitation, not confirmed product bug"

@@ -9,11 +9,15 @@
 //! `--promote`              Promote passing scenarios to `verified` status.
 //! `--keep-up`              Leave containers running after the run (default: tear down).
 //! `--scenarios <list>`     Comma-separated list of scenario names to run (default: all).
+//! `--check-drift`          After the run, compare failing scenarios against the expected-failures
+//!                          baseline in `crossref/expected-failures.toml`.  Exits non-zero if
+//!                          there are regressions or stale entries.
 //!
 //! # Staging
 //! Before `Topology::up`, the soap-server source tree is staged into
 //! `crossref/.build/soap-server/` so the controlled-server Docker image can build it.
 
+use onvif_crossref::drift;
 use onvif_crossref::layer2::{compose::Topology, run, Endpoints};
 
 fn main() {
@@ -42,8 +46,8 @@ fn main() {
 
     println!("[layer2] repo root: {}", repo_root.display());
     println!(
-        "[layer2] promote={} keep_up={} scenarios={:?}",
-        flags.promote, flags.keep_up, flags.scenarios
+        "[layer2] promote={} keep_up={} check_drift={} scenarios={:?}",
+        flags.promote, flags.keep_up, flags.check_drift, flags.scenarios
     );
 
     // Stage soap-server BEFORE Topology::up.
@@ -74,8 +78,56 @@ fn main() {
 
     report.print();
 
+    // ── Drift gate ──────────────────────────────────────────────────────────────
+    let drift_exit_code: i32 = if flags.check_drift {
+        let crossref_dir = repo_root.join("crossref");
+        match drift::load(&crossref_dir) {
+            Err(e) => {
+                eprintln!("[drift] ERROR loading expected-failures.toml: {e}");
+                1
+            }
+            Ok(baseline) => {
+                let expected: std::collections::HashSet<String> =
+                    baseline.into_iter().map(|ef| ef.scenario).collect();
+                // Collect scenario names whose verdict is NOT Pass/KnownDivergence.
+                let actual_failing: std::collections::HashSet<String> = report
+                    .rows
+                    .iter()
+                    .filter(|(_, v)| {
+                        !matches!(
+                            v,
+                            onvif_crossref::layer2::verdict::Verdict::Pass
+                                | onvif_crossref::layer2::verdict::Verdict::KnownDivergence(_)
+                        )
+                    })
+                    .map(|(name, _)| name.clone())
+                    .collect();
+
+                let result = drift::compute_drift(&actual_failing, &expected);
+                result.print_summary();
+                if result.is_clean() {
+                    0
+                } else {
+                    1
+                }
+            }
+        }
+    } else {
+        0
+    };
+
     // Determine exit code before dropping topology.
-    let exit_code = if report.is_green() { 0i32 } else { 1i32 };
+    //
+    // With --check-drift: gate solely on drift (clean baseline = exit 0, even if
+    // known findings are red).  Without --check-drift: gate on absolute green
+    // (any fail/error = exit 1).
+    let exit_code = if flags.check_drift {
+        drift_exit_code
+    } else if report.is_green() {
+        0i32
+    } else {
+        1i32
+    };
 
     // Ensure topology is dropped (containers torn down) BEFORE exit.
     // Unless --keep-up was passed (Topology::up sets down_on_drop accordingly).
@@ -92,18 +144,21 @@ struct Flags {
     promote: bool,
     keep_up: bool,
     scenarios: Option<String>,
+    check_drift: bool,
 }
 
 fn parse_flags(args: &[String]) -> Flags {
     let mut promote = false;
     let mut keep_up = false;
     let mut scenarios: Option<String> = None;
+    let mut check_drift = false;
 
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--promote" => promote = true,
             "--keep-up" => keep_up = true,
+            "--check-drift" => check_drift = true,
             "--scenarios" => {
                 i += 1;
                 if i < args.len() {
@@ -125,6 +180,7 @@ fn parse_flags(args: &[String]) -> Flags {
         promote,
         keep_up,
         scenarios,
+        check_drift,
     }
 }
 
@@ -205,6 +261,7 @@ mod tests {
         let f = parse_flags(&[]);
         assert!(!f.promote);
         assert!(!f.keep_up);
+        assert!(!f.check_drift);
         assert!(f.scenarios.is_none());
     }
 
@@ -235,10 +292,24 @@ mod tests {
     }
 
     #[test]
+    fn parse_flags_check_drift() {
+        let f = parse_flags(&[s("--check-drift")]);
+        assert!(f.check_drift);
+        assert!(!f.promote);
+    }
+
+    #[test]
     fn parse_flags_all_combined() {
-        let f = parse_flags(&[s("--promote"), s("--keep-up"), s("--scenarios"), s("foo")]);
+        let f = parse_flags(&[
+            s("--promote"),
+            s("--keep-up"),
+            s("--check-drift"),
+            s("--scenarios"),
+            s("foo"),
+        ]);
         assert!(f.promote);
         assert!(f.keep_up);
+        assert!(f.check_drift);
         assert_eq!(f.scenarios.as_deref(), Some("foo"));
     }
 }

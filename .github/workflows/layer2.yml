@@ -1,0 +1,78 @@
+# Layer-2 ONVIF conformance workflow — Docker-based oracle/schema validation.
+#
+# PREREQUISITE — this workflow requires `origin` soap-server (NavistAu/soap-server)
+# to contain the Phase-1 crossref changes (the local soap-server is ahead of origin
+# by the envelope fix + `SoapFault::with_detail_xml`).  Until soap-server is pushed,
+# the controlled-server build here uses a stale soap-server and may fail or misbehave.
+# The soap-server push is a deliberate operator decision gate, not a CI bug.
+#
+# Triggers: workflow_dispatch (manual) + nightly schedule.
+# NOT on push/PR — Docker builds are too heavy for every commit.
+
+name: Layer-2 conformance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  layer2:
+    name: Layer-2 conformance run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout onvif-server
+        uses: actions/checkout@v4
+
+      - name: Checkout soap-server (path dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: NavistAu/soap-server
+          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
+          path: soap-server-dep
+
+      - name: Make soap-server available at ../soap-server
+        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.85.1
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run Layer-2 conformance suite
+        run: cargo run -p onvif-crossref --bin layer2 -- --promote --check-drift
+
+      - name: Check for snapshot/status drift
+        if: always()
+        run: |
+          # Check status.toml (promotion state should not change in CI).
+          git diff --exit-code crossref/snapshots/status.toml || \
+            (echo "::error::Layer-2 status.toml drift — promotion state changed unexpectedly"; exit 1)
+          # Check canonical files, excluding device_get_system_date_and_time.c14n which
+          # contains a live UTCDateTime and legitimately changes on every run.
+          git diff --exit-code \
+            -- 'crossref/snapshots/canonical/*.c14n' \
+            ':!crossref/snapshots/canonical/device_get_system_date_and_time.c14n' || \
+            (echo "::error::Layer-2 canonical drift — a verified scenario changed"; exit 1)
+
+      - name: Tear down Docker topology
+        if: always()
+        run: docker compose -f crossref/docker-compose.yml -f crossref/docker-compose.local.yml down -v
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: layer2-run-${{ github.run_id }}
+          path: |
+            crossref/snapshots/status.toml
+            crossref/snapshots/canonical/
+          retention-days: 30
