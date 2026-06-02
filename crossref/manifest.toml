@@ -1,0 +1,63 @@
+# Comparator registry (spec §5.4).
+#
+# Digest-pinning: base_images below use tags only.  Operator should finalize
+# by replacing each tag with an @sha256:<digest> pin (run
+# `docker manifest inspect <image>` in a live environment to obtain digests),
+# mirroring the oracle Dockerfile's pinning approach.
+#
+# STAGING REQUIREMENT: before any build/up, the host must populate
+# crossref/.build/soap-server/ from the local soap-server workspace:
+#   rsync -a --exclude=target/ ../soap-server/ crossref/.build/soap-server/
+# See the comment at the top of crossref/docker-compose.yml.
+
+[[comparator]]
+name = "java-xml-oracle"
+role = "schema-oracle"
+build = "comparators/oracle"
+base_images = [
+  "maven:3.9-eclipse-temurin-21",
+  "eclipse-temurin:21-jre",
+]
+# Validates/canonicalizes every conformance scenario.
+# Endpoints: /validate (POST), /c14n (POST), /healthz (GET) — all on port 8081.
+[comparator.versions]
+jdk = "21"
+scenarios = ["*"]
+
+[[comparator]]
+name = "onvif-srvd"
+role = "reference-server"
+build = "comparators/onvif-srvd"
+base_images = [
+  "debian:bookworm-slim",
+]
+# §6 subset of scenarios for srvd comparison.
+#
+# GetDeviceInformation: srvd_exact — all 5 fields set from CLI flags; HIGH confidence pass.
+# GetCapabilities/GetServices: srvd_projection — XAddr path divergence (bare authority vs
+#   /onvif/... paths) and GetServices service-count mismatch (2 vs 5 due to upstream PTZ
+#   bug in ServiceContext.cpp) are expected to yield ReferenceDisagreement.
+#   NOTE: Task 6 should downgrade device_get_capabilities and device_get_services to
+#   reference_mode = "none" if projection fails (see comparators/onvif-srvd/NOTES.md).
+# GetProfiles: srvd_projection — moderate mismatch risk (token naming, missing Multicast,
+#   session timeout PT60S vs PT10S).
+#   NOTE: Task 6 may need to downgrade media_get_profiles to reference_mode = "none".
+scenarios = [
+  "device_get_device_information_authed",   # srvd_exact
+  "device_get_capabilities",                # srvd_projection (likely needs downgrade in Task 6)
+  "device_get_services",                    # srvd_projection (likely needs downgrade in Task 6)
+  "media_get_profiles",                     # srvd_projection (moderate mismatch risk)
+]
+[comparator.versions]
+onvif_srvd_sha = "df09d0ac77b1f6540a32a5fab92e1226ad2a2f9d"
+
+[[comparator]]
+name = "controlled-server"
+role = "sut"
+build = "comparators/controlled-server.Dockerfile"
+base_images = [
+  "rust:1.85",
+  "debian:bookworm-slim",
+]
+[comparator.versions]
+rust = "1.85"

@@ -1,0 +1,62 @@
+name: crossref-layer2
+
+# STAGING REQUIREMENT (Task 6 must do this before `docker compose ... up --build`):
+#   From the repo root:
+#     rsync -a --exclude=target/ ../soap-server/ crossref/.build/soap-server/
+#   This populates the staged soap-server that controlled-server.Dockerfile COPYs.
+#   crossref/.build/ is git-ignored; it must be present on every fresh checkout
+#   before any build/up invocation.
+
+networks:
+  crossref-net:
+
+services:
+  controlled-server:
+    build:
+      # Context is the repo root (one level up from this crossref/ directory).
+      context: ..
+      dockerfile: crossref/comparators/controlled-server.Dockerfile
+    # Environment: advertise the container's intra-network alias so XAddr
+    # authority is stable across container restarts.
+    environment:
+      ONVIF_HOST: controlled-onvif:8080
+    expose:
+      - "8080"
+    networks:
+      crossref-net:
+        aliases:
+          - controlled-onvif
+    healthcheck:
+      # debian:bookworm-slim has bash but no curl/wget — use bash TCP probe.
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  oracle:
+    build:
+      context: ./comparators/oracle
+    expose:
+      - "8081"
+    networks:
+      - crossref-net
+    healthcheck:
+      # eclipse-temurin:21-jre has wget — hit the healthz endpoint.
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/healthz"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  onvif-srvd:
+    build:
+      context: ./comparators/onvif-srvd
+    expose:
+      - "1000"
+    networks:
+      - crossref-net
+    healthcheck:
+      # netcat-openbsd is installed in the onvif-srvd runtime image; -z = connect probe.
+      test: ["CMD", "nc", "-z", "localhost", "1000"]
+      interval: 2s
+      timeout: 2s
+      retries: 30

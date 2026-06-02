@@ -1,1 +1,6 @@
 target/
+
+# Staged soap-server copy used by controlled-server.Dockerfile at build time.
+# Populated by the Task-6 orchestrator via:
+#   rsync -a --exclude=target/ ../soap-server/ crossref/.build/soap-server/
+crossref/.build/

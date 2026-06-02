@@ -1,0 +1,16 @@
+name: crossref-layer2
+
+# Local override: publish ports to the host so the host orchestrator can POST
+# to each service directly.  Merge with:
+#   docker compose -f crossref/docker-compose.yml -f crossref/docker-compose.local.yml ...
+
+services:
+  controlled-server:
+    ports:
+      - "8080:8080"
+  oracle:
+    ports:
+      - "8081:8081"
+  onvif-srvd:
+    ports:
+      - "1000:1000"

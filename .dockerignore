@@ -1,0 +1,20 @@
+# Keep the build context lean for controlled-server.Dockerfile.
+# The staged soap-server lives at crossref/.build/soap-server/ and MUST NOT be
+# excluded — the Dockerfile COPYs it.  Its own target/ is excluded below.
+
+# Rust build artifacts
+target/
+**/target/
+
+# crossref/.build/soap-server/target/ is covered by **/target/ above.
+# crossref/.build/ itself is NOT excluded (the build needs crossref/.build/soap-server/).
+
+# Git metadata (large, never needed in build context)
+.git/
+.github/
+
+# Developer notes and review artefacts (not needed for the build)
+*.md
+code-review*.md
+.planning/
+docs/
