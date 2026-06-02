@@ -132,10 +132,15 @@ fn parse_flags(args: &[String]) -> Flags {
 // Soap-server staging
 // ---------------------------------------------------------------------------
 
-/// Stage `<repo>/soap-server/` into `<repo>/crossref/.build/soap-server/`
-/// so the controlled-server Dockerfile can build it.
+/// Stage the sibling `soap-server` checkout into `<repo>/crossref/.build/soap-server/`
+/// so the controlled-server Dockerfile can build it. The crossref crate's path
+/// dependency is `../../soap-server` (i.e. a SIBLING of the repo root), so the source
+/// is `<repo_root>/../soap-server`, not `<repo_root>/soap-server`.
 fn stage_soap_server(repo_root: &std::path::Path) {
-    let src = repo_root.join("soap-server");
+    let src = repo_root
+        .parent()
+        .expect("repo root has no parent — cannot locate sibling soap-server")
+        .join("soap-server");
     let dest_parent = repo_root.join("crossref").join(".build");
     let dest = dest_parent.join("soap-server");
 

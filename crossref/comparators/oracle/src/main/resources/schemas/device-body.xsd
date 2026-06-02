@@ -40,7 +40,7 @@
 					<xs:element name="Capabilities" minOccurs="0">
 						<xs:complexType>
 							<xs:sequence>
-								<xs:any namespace="##any" processContents="lax">
+								<xs:any namespace="##other" processContents="lax">
 									<xs:annotation>
 										<xs:documentation>The placeholder for the service capabilities. The service capability element shall be returned here. For example for the device service that would be the tds:DeviceServiceCapabilities element (not complextype).</xs:documentation>
 									</xs:annotation>
@@ -53,7 +53,7 @@
 							<xs:documentation>The version of the service (not the ONVIF core spec version).</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
+					<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
 				</xs:sequence>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
@@ -869,7 +869,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="GUID" type="xs:string"/>
-						<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
+						<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -2085,7 +2085,7 @@
 			<xs:element name="GetDot11Capabilities">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
+						<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -2141,7 +2141,7 @@
 						<xs:element name="Extension" minOccurs="0">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
+									<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first Vendor then ONVIF -->
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
@@ -2229,7 +2229,7 @@
 					<xs:element name="Extension" minOccurs="0">	<!-- deprecated -->
 						<xs:complexType>
 							<xs:sequence>
-								<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- Vendor only -->
+								<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- Vendor only -->
 							</xs:sequence>
 						</xs:complexType>
 					</xs:element>
@@ -2238,7 +2238,7 @@
 							<xs:documentation> optional access token, device shall not return the credentials (token) in the reply. </xs:documentation>
 						</xs:annotation>
 					</xs:element>					
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
+					<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			
@@ -2297,7 +2297,7 @@
 					<xs:element name="Extension" minOccurs="0">	<!-- deprecated -->
 						<xs:complexType>
 							<xs:sequence>
-								<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- Vendor only -->
+								<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- Vendor only -->
 							</xs:sequence>
 						</xs:complexType>
 					</xs:element>
@@ -2335,7 +2335,7 @@
 							</xs:sequence>
 						</xs:complexType>
 					</xs:element>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>	   <!-- first ONVIF then Vendor -->
+					<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>	   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="type" type="xs:string" use="required">
 					<xs:annotation>

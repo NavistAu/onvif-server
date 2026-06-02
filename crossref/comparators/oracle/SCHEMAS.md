@@ -39,13 +39,30 @@ For each service WSDL, the script:
 4. Rewrites `schemaLocation` attributes to bare local filenames (offline resolution)
 5. Writes as `<service>-body.xsd`
 
-The script also copies the shared XSDs with schemaLocation rewrites and applies a
-determinism fix to `onvif.xsd`: `namespace="##targetNamespace"` → `namespace="##other"`
-on `xs:any` wildcards. This resolves the non-deterministic content model error that
-strict validators (xmllint/libxml2) report. `##other` is standard XSD and is the stricter
-form (rejects same-namespace extension elements our server never emits). Xerces (Java)
-enforces the same UPA rule, so this workaround is expected to be required there too —
-confirmed when the oracle runs under Xerces in Task 6.
+The script also copies the shared XSDs with schemaLocation rewrites and applies two
+determinism/compatibility fixes:
+
+1. **UPA fixes** (`##targetNamespace` and `##any` → `##other` on `xs:any` wildcards):
+   `xs:any` wildcards with `namespace="##any"` or `namespace="##targetNamespace"` cause
+   Unique Particle Attribution (UPA) violations when they appear alongside explicitly-declared
+   optional elements in the same namespace — both the named element and the wildcard match,
+   creating ambiguity.  Replacing with `##other` restricts the wildcard to foreign-namespace
+   content only, resolving the ambiguity.  This fix applies to both shared XSDs (`onvif.xsd`,
+   `common.xsd`) and all extracted `*-body.xsd` files.  xmllint/libxml2 tolerated this;
+   Xerces (used by the oracle) rejects it.
+
+2. **`common.xsd` deduplication against `onvif.xsd`** (Xerces `sch-props-correct.2`):
+   `onvif.xsd` v25.12 contains `<xs:include schemaLocation="common.xsd"/>`.  When Xerces
+   resolves this include, it passes the schema's `targetNamespace` URI to the LSResourceResolver.
+   The resolver's previous namespace-first lookup incorrectly returned `onvif.xsd` for the
+   include (same namespace → same resource), causing every `onvif.xsd` global to appear twice
+   and triggering `sch-props-correct.2` for `DeviceEntity` and others.
+   The fix: the resolver now checks the `systemId` filename *before* the namespace URI, so
+   `common.xsd` include correctly loads `common.xsd`.  As defence-in-depth, `extract-schemas.py`
+   also strips from the oracle's `common.xsd` any top-level global whose (symbol-space, name)
+   is already defined in `onvif.xsd` — for current versions (common.xsd v25.06, onvif.xsd v25.12)
+   this strips **0 components** (no overlap exists), but the guard prevents future regressions
+   if a newer common.xsd re-introduces a name already in onvif.xsd.
 
 The Dockerfile runs the script during the build stage (after `mvn dependency:go-offline`,
 before `mvn package`) to ensure the jar always bundles freshly-extracted schemas.
@@ -67,7 +84,7 @@ Vendored from `onvif-server/wsdl/` (upstream ONVIF schemas already in the repo).
 | File | Origin / Source URL | targetNamespace | Notes |
 |------|---------------------|-----------------|-------|
 | `onvif.xsd` | ONVIF spec v25.12; from `wsdl/onvif.xsd` | `http://www.onvif.org/ver10/schema` | `schemaLocation` values rewritten to local names; `##targetNamespace` → `##other` for determinism |
-| `common.xsd` | ONVIF spec v25.06; from `wsdl/common.xsd` | `http://www.onvif.org/ver10/schema` | Included by `xs:include` in `onvif.xsd`; defines PTZ, Color, Location types |
+| `common.xsd` | ONVIF spec v25.06; from `wsdl/common.xsd` | `http://www.onvif.org/ver10/schema` | Included by `xs:include` in `onvif.xsd`; defines PTZ, Color, Location types. Deduplicated against `onvif.xsd` at extraction time (0 components stripped for v25.06 vs v25.12 — no overlap exists; guard prevents future regressions). |
 | `ws-addr.xsd` | Minimal stub; from `wsdl/ws-addr.xsd` | `http://www.w3.org/2005/08/addressing` | Satisfies `events-body.xsd` import of WS-Addressing |
 | `soap-envelope.xsd` | Minimal stub; from `wsdl/soap-envelope.xsd` | `http://www.w3.org/2003/05/soap-envelope` | Satisfies `onvif.xsd` import of SOAP envelope |
 | `soap12-envelope.xsd` | W3C SOAP 1.2 schema; from `soap-server/crossref/comparators/oracle/src/main/resources/schemas/soap12-envelope.xsd` | `http://www.w3.org/2003/05/soap-envelope` | Full schema used as `soap12-envelope` schema id; `xml.xsd` import rewritten to local |

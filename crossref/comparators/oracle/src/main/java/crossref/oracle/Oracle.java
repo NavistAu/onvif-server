@@ -99,13 +99,12 @@ public class Oracle {
                                        String systemId, String baseURI) {
             String resource = null;
 
-            // 1. Try namespace URI lookup
-            if (namespaceURI != null) {
-                resource = NS_TO_RESOURCE.get(namespaceURI);
-            }
-
-            // 2. Try systemId filename lookup (bare filename or path ending with filename)
-            if (resource == null && systemId != null) {
+            // 1. Try systemId filename lookup FIRST (bare filename or path ending with filename).
+            //    systemId takes priority because xs:include passes the including schema's
+            //    targetNamespace as namespaceURI — if we checked namespace first we would
+            //    incorrectly return onvif.xsd for the "common.xsd" xs:include inside onvif.xsd,
+            //    causing Xerces to see every onvif.xsd definition twice (sch-props-correct.2).
+            if (systemId != null) {
                 // Try exact match first
                 resource = FILENAME_TO_RESOURCE.get(systemId);
                 if (resource == null) {
@@ -115,6 +114,11 @@ public class Oracle {
                     if (slash >= 0) filename = filename.substring(slash + 1);
                     resource = FILENAME_TO_RESOURCE.get(filename);
                 }
+            }
+
+            // 2. Fall back to namespace URI lookup (handles xs:import with no schemaLocation)
+            if (resource == null && namespaceURI != null) {
+                resource = NS_TO_RESOURCE.get(namespaceURI);
             }
 
             if (resource == null) return null;

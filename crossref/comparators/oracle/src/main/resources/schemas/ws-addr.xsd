@@ -17,7 +17,7 @@
 
   <xs:complexType name="ReferenceParametersType">
     <xs:sequence>
-      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
     </xs:sequence>
   </xs:complexType>
 
