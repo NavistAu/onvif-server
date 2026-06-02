@@ -1,0 +1,14 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetCapabilitiesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
+  <tds:Capabilities>
+    <tt:Device xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/device_service</tt:XAddr></tt:Device>
+    <tt:Events xmlns:tt="http://www.onvif.org/ver10/schema">
+      <tt:XAddr>http://controlled-onvif:8080:8080/onvif/events_service</tt:XAddr>
+      <tt:WSSubscriptionPolicySupport>false</tt:WSSubscriptionPolicySupport>
+      <tt:WSPullPointSupport>true</tt:WSPullPointSupport>
+      <tt:WSPausableSubscriptionManagerInterfaceSupport>false</tt:WSPausableSubscriptionManagerInterfaceSupport>
+    </tt:Events>
+    <tt:Imaging xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/imaging_service</tt:XAddr></tt:Imaging>
+    <tt:Media xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/media_service</tt:XAddr><tt:StreamingCapabilities></tt:StreamingCapabilities></tt:Media>
+    <tt:PTZ xmlns:tt="http://www.onvif.org/ver10/schema"><tt:XAddr>http://controlled-onvif:8080:8080/onvif/ptz_service</tt:XAddr></tt:PTZ>
+  </tds:Capabilities>
+</tds:GetCapabilitiesResponse></env:Body></env:Envelope>

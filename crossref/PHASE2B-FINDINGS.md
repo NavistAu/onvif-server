@@ -1,25 +1,28 @@
 # crossref Phase 2b — conformance findings
 
-Real conformance findings surfaced by the Layer-2 oracle / Docker pipeline. These are
-NOT forced green; affected scenarios report `SutFail` in the Task 6 run and are not
-promoted to `verified` until resolved.
+Real conformance findings surfaced by the Layer-2 oracle / Docker pipeline. Findings are
+NOT forced green; a scenario stays `SutFail` (red) until its finding is resolved.
 
 **Context:** Phase 2a (Layer-1) only byte-diffed responses against self-captured
 baselines — it never schema-validated. The Layer-2 ONVIF schema oracle (Xerces, validating
 against the real `onvif.xsd`/`common.xsd`) is the first time onvif-server responses have been
 checked against the ONVIF XSDs. It revealed **six pre-existing product conformance bugs**
-(schema-invalid responses). The server is mid-publish; these are the kind of gaps a
-conformance suite exists to catch.
+(schema-invalid responses) plus one harness/bundle limitation.
+
+**Status: all six product bugs (F-1..F-6) are now FIXED and pass** (the conformance run is
+27 Pass / 1 red; the 1 red is the non-product harness limitation A-1 below). The six were
+fixed in `6006bef` (onvif-server: F-1,F-2,F-4,F-5,F-6) and `13b907e` (soap-server: F-3).
 
 ## Resolved
 
 - **PTZ `Stop` unreachable over SOAP** — `wsdl/ptz.wsdl` named the Stop request element
   `StopRequest` (vs ONVIF-standard `Stop`). **Fixed** `ba5480a` (this session, authorized).
 
-## Open — real product conformance bugs (schema-invalid responses)
+## Resolved — real product conformance bugs (schema-invalid responses)
 
-All confirmed by the live oracle (Xerces) in the Task 6 run. NOT auto-fixed (only the PTZ
-Stop fix was authorized this session). Each leaves its scenario `SutFail` (red) until fixed.
+All confirmed by the live oracle (Xerces) in the first Task 6 run, then **fixed and verified
+passing** in the re-run (onvif-server `6006bef`; soap-server F-3 `13b907e`). Each scenario is
+now schema-valid and promoted to `verified`. Descriptions retained for the record.
 
 ### F-1: `GetStatus` — `PTZStatus` missing required `UtcTime`
 - Scenario `ptz_get_status`. Oracle: `cvc-complex-type.2.4.b: content of 'tptz:PTZStatus'

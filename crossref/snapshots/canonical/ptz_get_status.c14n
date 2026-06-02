@@ -1,0 +1,9 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tptz:GetStatusResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
+  <tptz:PTZStatus>
+    <tt:MoveStatus xmlns:tt="http://www.onvif.org/ver10/schema">
+      <tt:PanTilt>IDLE</tt:PanTilt>
+      <tt:Zoom>IDLE</tt:Zoom>
+    </tt:MoveStatus>
+    <tt:UtcTime xmlns:tt="http://www.onvif.org/ver10/schema">2026-06-02T18:16:00Z</tt:UtcTime>
+  </tptz:PTZStatus>
+</tptz:GetStatusResponse></env:Body></env:Envelope>

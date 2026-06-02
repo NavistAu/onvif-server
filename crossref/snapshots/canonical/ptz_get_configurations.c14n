@@ -1,0 +1,8 @@
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tptz:GetConfigurationsResponse xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl">
+  <tptz:PTZConfiguration token="ptz_cfg_0">
+    <tt:Name xmlns:tt="http://www.onvif.org/ver10/schema">PTZConfig</tt:Name>
+    <tt:UseCount xmlns:tt="http://www.onvif.org/ver10/schema">1</tt:UseCount>
+    <tt:NodeToken xmlns:tt="http://www.onvif.org/ver10/schema">ptz_node_0</tt:NodeToken>
+    <tt:DefaultContinuousPanTiltVelocitySpace xmlns:tt="http://www.onvif.org/ver10/schema">http://www.onvif.org/ver10/tptz/PanTiltSpaces/TranslationSpaceFov</tt:DefaultContinuousPanTiltVelocitySpace>
+  </tptz:PTZConfiguration>
+</tptz:GetConfigurationsResponse></env:Body></env:Envelope>
