@@ -1,0 +1,20 @@
+[package]
+name = "onvif-crossref"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+onvif-server = { path = ".." }
+soap-server = { path = "../../soap-server" }
+quick-xml = "0.39"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+bytes = "1"
+async-trait = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
+axum-test = "20"
+axum = "0.8"
+similar-asserts = "1"
