@@ -10,4 +10,9 @@ outcome         = "success"
 request_file    = "device_get_capabilities.request.xml"
 invariants      = []
 masks           = ["host_authority"]
-reference_mode  = "srvd_projection"
+# reference_mode downgraded from srvd_projection: legitimate device difference —
+# srvd emits bare-authority XAddrs (no /onvif/... path) and a different capability set
+# (see comparators/onvif-srvd/NOTES.md). NOTE: this scenario is also independently
+# SutFail via finding F-5 (real product bug) — that failure remains red regardless.
+# Our-side oracle + invariants + Layer-1 baseline still apply.
+reference_mode  = "none"

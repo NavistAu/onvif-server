@@ -462,8 +462,6 @@ fn combine_with_reference(
             // POST to srvd.
             let srvd_path = srvd_service_path(service);
             let srvd_url = format!("{}{}", endpoints.srvd, srvd_path);
-            // Re-inject WSSE for srvd (same request structure; use a fixed nonce offset
-            // so the two calls differ — but in practice srvd request is same as our request).
             // NOTE: for SrvdExact, we send the SAME already-injected request body.
             // The request_body param already has WSSE injected for our server.
             // For srvd we also send it — srvd accepts admin/admin too.
@@ -476,16 +474,39 @@ fn combine_with_reference(
                 Err(e) => return Verdict::HarnessError(format!("POST srvd: {e}")),
             };
 
-            // Mask + canonicalize_prefixes both sides, then evaluate.
+            // Extract body children from both sides and apply oracle C14N for comparison.
+            // This avoids false failures from Header presence/absence and pretty-print
+            // whitespace differences — neither is conformance-relevant (spec §6).
             let (text_rules, attr_rules) = resolve_all(masks);
-            let our_canon = mask_only(our_body, &text_rules, &attr_rules)
-                .map_err(|e| format!("mask_only our: {e}"));
-            let srvd_canon = mask_only(&srvd_body_bytes, &text_rules, &attr_rules)
-                .map_err(|e| format!("mask_only srvd: {e}"));
+
+            let our_c14n = extract_body_child(our_body)
+                .ok_or_else(|| "cannot extract our body child".to_string())
+                .and_then(|child| {
+                    // Apply masks on the child bytes before C14N.
+                    mask_only(&child, &text_rules, &attr_rules)
+                        .map_err(|e| format!("mask_only our body child: {e}"))
+                })
+                .and_then(|masked| {
+                    Oracle::new(&endpoints.oracle)
+                        .c14n(&masked)
+                        .map_err(|e| format!("c14n our body child: {e}"))
+                });
+
+            let srvd_c14n = extract_body_child(&srvd_body_bytes)
+                .ok_or_else(|| "cannot extract srvd body child".to_string())
+                .and_then(|child| {
+                    mask_only(&child, &text_rules, &attr_rules)
+                        .map_err(|e| format!("mask_only srvd body child: {e}"))
+                })
+                .and_then(|masked| {
+                    Oracle::new(&endpoints.oracle)
+                        .c14n(&masked)
+                        .map_err(|e| format!("c14n srvd body child: {e}"))
+                });
 
             let eval = Eval {
-                sut: our_canon,
-                reference: srvd_canon,
+                sut: our_c14n,
+                reference: srvd_c14n,
                 known_divergences: vec![],
             };
             verdict::evaluate(&eval)
