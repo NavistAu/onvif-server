@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal stub for http://www.w3.org/2003/05/soap-envelope -->
+<!-- Bundled to satisfy onvif.xsd xs:import without network access. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://www.w3.org/2003/05/soap-envelope"
+           targetNamespace="http://www.w3.org/2003/05/soap-envelope"
+           elementFormDefault="qualified">
+
+  <xs:element name="Envelope" type="tns:Envelope"/>
+  <xs:element name="Header" type="tns:Header"/>
+  <xs:element name="Body" type="tns:Body"/>
+  <xs:element name="Fault" type="tns:Fault"/>
+
+  <xs:complexType name="Envelope">
+    <xs:sequence>
+      <xs:element ref="tns:Header" minOccurs="0"/>
+      <xs:element ref="tns:Body"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other"/>
+  </xs:complexType>
+
+  <xs:complexType name="Header">
+    <xs:sequence>
+      <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other"/>
+  </xs:complexType>
+
+  <xs:complexType name="Body">
+    <xs:sequence>
+      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other"/>
+  </xs:complexType>
+
+  <xs:complexType name="Fault">
+    <xs:sequence>
+      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

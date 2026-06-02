@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.onvif.org/ver20/ptz/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xop="http://www.w3.org/2004/08/xop/include">
+      <xs:import namespace="http://www.onvif.org/ver10/schema" schemaLocation="onvif.xsd"/>
+      <!--  Message Request/Responses elements  -->
+      <!--===============================-->
+      <xs:element name="GetNodes">
+        <xs:complexType/>
+      </xs:element>
+      <xs:element name="GetNodesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZNode" type="tt:PTZNode" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GetNode">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="NodeToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="NodeName" type="tt:Name" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetNodeResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZNode" type="tt:PTZNode" minOccurs="0" maxOccurs="1"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GetConfigurations">
+        <xs:complexType/>
+      </xs:element>
+      <xs:element name="GetConfigurationsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZConfigurations" type="tt:PTZConfiguration" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GetConfiguration">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ConfigurationToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="ConfigurationName" type="tt:Name" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetConfigurationResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZConfiguration" type="tt:PTZConfiguration" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="SetConfiguration">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZConfiguration" type="tt:PTZConfiguration" maxOccurs="1" minOccurs="1"/>
+            <xs:element name="ForcePersistence" type="xs:boolean" maxOccurs="1" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Flag that makes configuration persistent.
+                  Example: User wants the configuration to exist after reboot.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SetConfigurationResponse">
+        <xs:complexType>
+          <xs:sequence minOccurs="0" maxOccurs="1"/>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GetConfigurationOptions">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ConfigurationToken" type="tt:ReferenceToken"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetConfigurationOptionsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZConfigurationOptions" type="tt:PTZConfigurationOptions"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="SendAuxiliaryCommand">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="1"/>
+            <xs:element name="AuxiliaryData" maxOccurs="1" minOccurs="1" type="tt:AuxiliaryData"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SendAuxiliaryCommandResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="AuxiliaryResponse" type="tt:AuxiliaryData"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GetPresets">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="1"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetPresetsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZPreset" type="tt:PTZPreset" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="SetPreset">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="1"/>
+            <xs:element name="PresetName" type="xs:string" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="PresetToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SetPresetResponse">
+        <xs:complexType/>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="RemovePreset">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+            <xs:element name="PresetName" type="xs:string" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="PresetToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RemovePresetResponse">
+        <xs:complexType/>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GotoPreset">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+            <xs:element name="PresetName" type="xs:Name" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="PresetToken" type="tt:ReferenceToken" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="Speed" type="tt:PTZSpeed" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GotoPresetResponse">
+        <xs:complexType/>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GetPreset">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="PresetName" type="xs:string" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="PresetToken" type="tt:ReferenceToken" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetPresetResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Preset" type="tt:PTZPreset" minOccurs="0" maxOccurs="1"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GetStatus">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken" minOccurs="1" maxOccurs="1"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetStatusResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PTZStatus" type="tt:PTZStatus" minOccurs="1" maxOccurs="1"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="GotoHomePosition">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+            <xs:element name="Speed" type="tt:PTZSpeed" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GotoHomePositionResponse">
+        <xs:complexType>
+          <xs:sequence/>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="SetHomePosition">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SetHomePositionResponse"/>
+      <!--===============================-->
+      <xs:element name="ContinuousMove">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+            <xs:element name="Velocity" type="tt:PTZSpeed" minOccurs="0"/>
+            <xs:element name="Timeout" type="xs:duration" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ContinuousMoveResponse">
+        <xs:complexType>
+          <xs:sequence/>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="RelativeMove">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+            <xs:element name="Translation" type="tt:PTZVector"/>
+            <xs:element name="Speed" type="tt:PTZSpeed" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RelativeMoveResponse">
+        <xs:complexType>
+          <xs:sequence/>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="AbsoluteMove">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+            <xs:element name="Destination" type="tt:PTZVector" minOccurs="0"/>
+            <xs:element name="Speed" type="tt:PTZSpeed" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AbsoluteMoveResponse">
+        <xs:complexType>
+          <xs:sequence/>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+      <xs:element name="Stop">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ProfileToken" type="tt:ReferenceToken"/>
+            <xs:element name="PanTilt" type="xs:boolean" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="Zoom" type="xs:boolean" maxOccurs="1" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="StopResponse">
+        <xs:complexType>
+          <xs:sequence/>
+        </xs:complexType>
+      </xs:element>
+      <!--===============================-->
+    </xs:schema>

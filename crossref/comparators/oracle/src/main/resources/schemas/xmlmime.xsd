@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal stub for http://www.w3.org/2005/05/xmlmime -->
+<!-- Bundled to satisfy onvif.xsd xs:import without network access. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:xmime="http://www.w3.org/2005/05/xmlmime"
+           targetNamespace="http://www.w3.org/2005/05/xmlmime"
+           elementFormDefault="qualified">
+
+  <xs:attribute name="contentType" type="xmime:contentTypeType"/>
+  <xs:attribute name="expectedContentTypes" type="xs:string"/>
+
+  <xs:simpleType name="contentTypeType">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

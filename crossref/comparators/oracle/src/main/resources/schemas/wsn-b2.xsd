@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Enhanced stub for http://docs.oasis-open.org/wsn/b-2 -->
+<!-- Oracle copy: extends the minimal wsdl/ stub with elements/types referenced by events.wsdl -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
+           targetNamespace="http://docs.oasis-open.org/wsn/b-2"
+           elementFormDefault="qualified">
+
+  <!-- Types used by events.wsdl -->
+  <xs:complexType name="FilterType">
+    <xs:sequence>
+      <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NotificationMessageHolderType">
+    <xs:sequence>
+      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- AbsoluteOrRelativeTimeType: used as type of InitialTerminationTime -->
+  <xs:simpleType name="AbsoluteOrRelativeTimeType">
+    <xs:union memberTypes="xs:dateTime xs:duration"/>
+  </xs:simpleType>
+
+  <!-- Element declarations referenced by events.wsdl -->
+  <xs:element name="CurrentTime" type="xs:dateTime"/>
+  <xs:element name="TerminationTime" type="xs:dateTime" nillable="true"/>
+  <xs:element name="NotificationMessage" type="wsnt:NotificationMessageHolderType"/>
+  <xs:element name="FixedTopicSet" type="xs:boolean"/>
+  <xs:element name="TopicExpressionDialect" type="xs:anyURI"/>
+
+</xs:schema>
