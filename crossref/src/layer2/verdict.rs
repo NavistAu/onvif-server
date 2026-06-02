@@ -97,6 +97,80 @@ pub struct Resp {
     pub masked_body_canon: Vec<u8>,
 }
 
+// ─── Projection-mode evaluator (spec §6) ─────────────────────────────────────
+
+/// Evaluate a `srvd_projection` comparison (spec §6).
+///
+/// `srvd_exact` reuses the existing `evaluate(&Eval)` function (masked-bytes
+/// equality) — see that function for full semantics.
+///
+/// Decision order (asymmetric rule):
+/// 1. `our != expected_fixture` → `SutFail` — our server advertises something
+///    other than the fixture: extra, missing, or wrong field.
+/// 2. For each entry WE advertise (`our`): `srvd` must contain a matching entry
+///    (same key AND same projected fields).  If any is missing or differs →
+///    `ReferenceDisagreement`.  (srvd's EXTRA entries are ignored.)
+/// 3. Else → `Pass`.
+pub fn evaluate_projection(
+    expected_fixture: &crate::projection::CanonProjection,
+    our: &crate::projection::CanonProjection,
+    srvd: &crate::projection::CanonProjection,
+) -> Verdict {
+    // Gate 1: fixture-equality check — our server must match the fixture exactly.
+    if our != expected_fixture {
+        return Verdict::SutFail(format!(
+            "our projection does not match fixture: our has {} entries, fixture has {}",
+            our.len(),
+            expected_fixture.len(),
+        ));
+    }
+    // Gate 2: for every entry we advertise, srvd must agree.
+    for (key, our_entry) in our {
+        match srvd.get(key) {
+            None => {
+                return Verdict::ReferenceDisagreement(format!(
+                    "reference is missing entry for key {:?} that we advertise",
+                    key,
+                ));
+            }
+            Some(srvd_entry) if srvd_entry != our_entry => {
+                return Verdict::ReferenceDisagreement(format!(
+                    "reference entry for key {:?} differs from ours",
+                    key,
+                ));
+            }
+            _ => {}
+        }
+    }
+    Verdict::Pass
+}
+
+/// Evaluate a `none`-reference-mode scenario (spec §6 / §5).
+///
+/// No reference server is involved.  Verdict depends solely on our server's
+/// schema validity and whether the outcome matches the declared contract.
+///
+/// - `declared_success`: the scenario's declared outcome (`Outcome::Success` → true).
+/// - `our_schema_valid`: our response validated against the oracle schema.
+/// - `our_is_success`: our response was HTTP 200 with no SOAP Fault.
+pub fn evaluate_none(
+    declared_success: bool,
+    our_schema_valid: bool,
+    our_is_success: bool,
+) -> Verdict {
+    if !our_schema_valid {
+        return Verdict::SutFail("our response schema-invalid".into());
+    }
+    if our_is_success != declared_success {
+        return Verdict::SutFail(format!(
+            "our server outcome ({}) does not match the scenario's declared outcome ({})",
+            if our_is_success { "success" } else { "fault" },
+            if declared_success { "success" } else { "fault" },
+        ));
+    }
+    Verdict::Pass
+}
+
 /// Evaluate outcome-equivalence for a scenario (spec §10).
 ///
 /// `declared_success`: the scenario's declared outcome (`Outcome::Success` → true).
