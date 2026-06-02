@@ -56,6 +56,22 @@ const PRESET_TOKEN: &str = "preset_1";
 const PRESET_NAME: &str = "Home";
 
 // ---------------------------------------------------------------------------
+// Shared fixture constants used by both the Layer-1 and Layer-2 harnesses
+// ---------------------------------------------------------------------------
+
+/// The four §7 fixture scopes emitted by `ControlledCamera::get_scopes` and
+/// validated by the `scopes_match_fixture` invariant.  Both `InvariantCtx`
+/// construction sites (`layer1_replay::default_ctx` and
+/// `layer2::validate_response`) must reference this slice so the expected list
+/// never diverges from the fixture definition.
+pub const FIXTURE_SCOPES: &[&str] = &[
+    "onvif://www.onvif.org/Profile/Streaming",
+    "onvif://www.onvif.org/type/video_encoder",
+    "onvif://www.onvif.org/name/Controlled",
+    "onvif://www.onvif.org/location/lab",
+];
+
+// ---------------------------------------------------------------------------
 // ControlledCamera
 // ---------------------------------------------------------------------------
 

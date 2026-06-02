@@ -258,10 +258,14 @@ fn collect_element_texts(xml: &[u8], target_local: &str) -> Result<Vec<String>, 
     Ok(results)
 }
 
-/// Assert every scope in `expected` appears in the response `Scope` elements,
+/// Assert every scope in `expected` appears in the response `ScopeItem` elements,
 /// and the total count matches.
+///
+/// The real ONVIF `GetScopesResponse` wraps each scope as:
+/// `<tt:Scopes><tt:ScopeDef>Fixed</tt:ScopeDef><tt:ScopeItem>onvif://…</tt:ScopeItem></tt:Scopes>`
+/// so we collect `ScopeItem` texts (the actual scope URI values), not `Scope`.
 fn scopes_match(xml: &[u8], expected: &[String]) -> Result<(), String> {
-    let actual = collect_element_texts(xml, "Scope")?;
+    let actual = collect_element_texts(xml, "ScopeItem")?;
     if actual.len() != expected.len() {
         return Err(format!(
             "scope count mismatch: expected {}, got {} (actual: {:?})",
@@ -273,7 +277,7 @@ fn scopes_match(xml: &[u8], expected: &[String]) -> Result<(), String> {
     for scope in expected {
         if !actual.contains(scope) {
             return Err(format!(
-                "expected scope {:?} not found in response scopes: {:?}",
+                "expected scope {:?} not found in response ScopeItem values: {:?}",
                 scope, actual
             ));
         }
@@ -415,9 +419,26 @@ mod tests {
     }
 
     // ── scopes_match_fixture ─────────────────────────────────────────────────
+    //
+    // The real ONVIF GetScopesResponse wraps each scope as:
+    //   <tt:Scopes>
+    //     <tt:ScopeDef>Fixed</tt:ScopeDef>
+    //     <tt:ScopeItem>onvif://…</tt:ScopeItem>
+    //   </tt:Scopes>
+    // scopes_match collects ScopeItem text values (not Scope).
 
-    const SCOPES_MATCH: &[u8] = br#"<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetScopesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"><tds:Scopes><tt:ScopeDef>Fixed</tt:ScopeDef><tt:ScopeItem><tt:ScopeDefinition>Fixed</tt:ScopeDefinition><tds:Scope>onvif://www.onvif.org/type/video_encoder</tds:Scope></tt:ScopeItem><tt:ScopeItem><tt:ScopeDefinition>Fixed</tt:ScopeDefinition><tds:Scope>onvif://www.onvif.org/hardware/Controlled-1</tds:Scope></tt:ScopeItem></tds:Scopes></tds:GetScopesResponse></env:Body></env:Envelope>"#;
-    const SCOPES_MISSING_ONE: &[u8] = br#"<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><tds:GetScopesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"><tds:Scopes><tds:Scope>onvif://www.onvif.org/type/video_encoder</tds:Scope></tds:Scopes></tds:GetScopesResponse></env:Body></env:Envelope>"#;
+    // Two-scope fixture matching ctx() expected_scopes.
+    const SCOPES_MATCH: &[u8] = br#"<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:tt="http://www.onvif.org/ver10/schema"><env:Body><tds:GetScopesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"><tds:Scopes><tt:ScopeDef>Fixed</tt:ScopeDef><tt:ScopeItem>onvif://www.onvif.org/type/video_encoder</tt:ScopeItem></tds:Scopes><tds:Scopes><tt:ScopeDef>Fixed</tt:ScopeDef><tt:ScopeItem>onvif://www.onvif.org/hardware/Controlled-1</tt:ScopeItem></tds:Scopes></tds:GetScopesResponse></env:Body></env:Envelope>"#;
+
+    // Only one ScopeItem — count mismatch when 2 are expected.
+    const SCOPES_MISSING_ONE: &[u8] = br#"<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:tt="http://www.onvif.org/ver10/schema"><env:Body><tds:GetScopesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"><tds:Scopes><tt:ScopeDef>Fixed</tt:ScopeDef><tt:ScopeItem>onvif://www.onvif.org/type/video_encoder</tt:ScopeItem></tds:Scopes></tds:GetScopesResponse></env:Body></env:Envelope>"#;
+
+    // Four-scope fixture matching the §7 controlled-camera fixture (FIXTURE_SCOPES).
+    // Mirrors the structure of crossref/snapshots/device_get_scopes.xml.
+    const SCOPES_FIXTURE_FOUR: &[u8] = br#"<n2:Envelope xmlns:n0="http://www.onvif.org/ver10/device/wsdl" xmlns:n1="http://www.onvif.org/ver10/schema" xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetScopesResponse><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/Profile/Streaming</n1:ScopeItem></n0:Scopes><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/type/video_encoder</n1:ScopeItem></n0:Scopes><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/name/Controlled</n1:ScopeItem></n0:Scopes><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/location/lab</n1:ScopeItem></n0:Scopes></n0:GetScopesResponse></n2:Body></n2:Envelope>"#;
+
+    // Wrong scope value — one URI is replaced with something else.
+    const SCOPES_FIXTURE_WRONG_ITEM: &[u8] = br#"<n2:Envelope xmlns:n0="http://www.onvif.org/ver10/device/wsdl" xmlns:n1="http://www.onvif.org/ver10/schema" xmlns:n2="http://www.w3.org/2003/05/soap-envelope"><n2:Body><n0:GetScopesResponse><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/Profile/Streaming</n1:ScopeItem></n0:Scopes><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/type/video_encoder</n1:ScopeItem></n0:Scopes><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/name/WRONG</n1:ScopeItem></n0:Scopes><n0:Scopes><n1:ScopeDef>Fixed</n1:ScopeDef><n1:ScopeItem>onvif://www.onvif.org/location/lab</n1:ScopeItem></n0:Scopes></n0:GetScopesResponse></n2:Body></n2:Envelope>"#;
 
     #[test]
     fn scopes_match_fixture_pass() {
@@ -430,6 +451,53 @@ mod tests {
         assert!(
             err.contains("count") || err.contains("mismatch") || err.contains("expected 2"),
             "bad err: {err}"
+        );
+    }
+
+    /// Four §7 fixture scopes against the real snapshot structure → Ok.
+    #[test]
+    fn scopes_match_fixture_four_pass() {
+        let expected: Vec<String> = [
+            "onvif://www.onvif.org/Profile/Streaming",
+            "onvif://www.onvif.org/type/video_encoder",
+            "onvif://www.onvif.org/name/Controlled",
+            "onvif://www.onvif.org/location/lab",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        let ctx4 = InvariantCtx {
+            request_message_id: String::new(),
+            expected_endpoint: String::new(),
+            expected_scopes: expected,
+        };
+        assert!(
+            check("scopes_match_fixture", SCOPES_FIXTURE_FOUR, &ctx4).is_ok(),
+            "four-scope fixture should pass"
+        );
+    }
+
+    /// Wrong scope URI in position 3 → Err mentioning missing scope.
+    #[test]
+    fn scopes_match_fixture_four_wrong_item_fails() {
+        let expected: Vec<String> = [
+            "onvif://www.onvif.org/Profile/Streaming",
+            "onvif://www.onvif.org/type/video_encoder",
+            "onvif://www.onvif.org/name/Controlled",
+            "onvif://www.onvif.org/location/lab",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        let ctx4 = InvariantCtx {
+            request_message_id: String::new(),
+            expected_endpoint: String::new(),
+            expected_scopes: expected,
+        };
+        let err = check("scopes_match_fixture", SCOPES_FIXTURE_WRONG_ITEM, &ctx4).unwrap_err();
+        assert!(
+            err.contains("onvif://www.onvif.org/name/Controlled"),
+            "error should name the missing scope, got: {err}"
         );
     }
 

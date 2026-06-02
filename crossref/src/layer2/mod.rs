@@ -14,6 +14,7 @@ pub use verdict::{Eval, Resp};
 
 use crate::{
     body_extract::extract_body_child,
+    fixture::FIXTURE_SCOPES,
     invariants::{check as check_invariant, InvariantCtx},
     masks::resolve_all,
     normalize::{mask_only, strip_ws_text_nodes},
@@ -212,7 +213,6 @@ fn run_single_scenario(
         our_verdict,
         &body,
         &request_body,
-        schema_id,
         &scenario.masks,
         &declared_outcome,
         reference_mode,
@@ -312,7 +312,6 @@ fn run_multistep_scenario(
             step_verdict,
             &body,
             &request_body,
-            &step.schema_id,
             &step.masks,
             &step.outcome,
             effective_reference,
@@ -401,7 +400,7 @@ fn validate_response(
     let ctx = InvariantCtx {
         request_message_id: String::new(),
         expected_endpoint: String::new(),
-        expected_scopes: vec![],
+        expected_scopes: FIXTURE_SCOPES.iter().map(|s| s.to_string()).collect(),
     };
     for inv in invariants {
         if let Err(e) = check_invariant(inv, body, &ctx) {
@@ -431,8 +430,7 @@ fn validate_response(
 fn combine_with_reference(
     our_verdict: Verdict,
     our_body: &[u8],
-    _request_body: &[u8],
-    _schema_id: &str,
+    request_body: &[u8],
     masks: &[String],
     declared_outcome: &Outcome,
     reference_mode: &ReferenceMode,
@@ -467,7 +465,7 @@ fn combine_with_reference(
             // For srvd we also send it — srvd accepts admin/admin too.
             let srvd_body_bytes = match post(
                 &srvd_url,
-                _request_body,
+                request_body,
                 "application/soap+xml; charset=utf-8",
             ) {
                 Ok((_, b)) => b,
@@ -556,7 +554,7 @@ fn combine_with_reference(
             let srvd_url = format!("{}{}", endpoints.srvd, srvd_path);
             let srvd_body_bytes = match post(
                 &srvd_url,
-                _request_body,
+                request_body,
                 "application/soap+xml; charset=utf-8",
             ) {
                 Ok((_, b)) => b,
@@ -595,8 +593,10 @@ fn maybe_promote(
         return;
     }
     if body.is_empty() {
-        // Multi-step: no single body to canonicalize. Skip canonical evidence.
-        // The individual steps were promoted through step_name paths during combine_with_reference.
+        // Multi-step: called with an empty body slice (see run_multistep_scenario).
+        // combine_with_reference does not write canonical evidence; maybe_promote
+        // early-returns here instead. No multistep scenario currently reaches Pass,
+        // so no canonical evidence is written for multi-step paths.
         return;
     }
     match oracle.c14n(body) {

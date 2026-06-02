@@ -8,6 +8,7 @@
 use std::collections::HashMap;
 
 use onvif_crossref::{
+    fixture::FIXTURE_SCOPES,
     invariants::{check as check_invariant, InvariantCtx},
     masks::resolve_all,
     normalize::mask_only,
@@ -159,7 +160,7 @@ fn default_ctx() -> InvariantCtx {
     InvariantCtx {
         request_message_id: String::new(),
         expected_endpoint: String::new(),
-        expected_scopes: vec![],
+        expected_scopes: FIXTURE_SCOPES.iter().map(|s| s.to_string()).collect(),
     }
 }
 
