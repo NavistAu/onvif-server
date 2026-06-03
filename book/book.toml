@@ -1,0 +1,8 @@
+[book]
+title = "onvif-server"
+authors = ["NavistAu"]
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "rust"

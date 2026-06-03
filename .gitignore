@@ -5,3 +5,6 @@ target/
 #   rsync -a --exclude=target/ ../soap-server/ crossref/.build/soap-server/
 crossref/.build/
 __pycache__/
+
+# mdBook build output
+/book/book/

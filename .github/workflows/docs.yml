@@ -12,7 +12,9 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  # Ref-scoped so develop and main doc-builds don't cancel each other; still
+  # serializes deploys per ref.
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
