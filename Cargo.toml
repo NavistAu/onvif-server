@@ -4,7 +4,9 @@ version = "0.1.1"
 edition = "2021"
 rust-version = "1.85.1"
 authors = ["Joshua Hogendorn <jhogendorn@gmail.com>", "NavistAu"]
-license = "MIT OR Apache-2.0"
+# Crate code is MIT OR Apache-2.0; bundled wsdl/** are official ONVIF spec docs
+# redistributed under the ONVIF license (LICENSE-ONVIF), hence the AND clause.
+license = "(MIT OR Apache-2.0) AND LicenseRef-ONVIF"
 description = "An ONVIF Profile S streaming-core device server library for Rust — build a camera/encoder that standard ONVIF clients can discover and stream from"
 readme = "README.md"
 repository = "https://github.com/NavistAu/onvif-server"
