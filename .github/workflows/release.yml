@@ -84,7 +84,11 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-auth.outputs.token }}
         run: |
-          if cargo publish 2>publish.err; then
+          # --allow-dirty: resolving against the cloned sibling soap-server + the
+          # now-published version regenerates Cargo.lock, which would otherwise trip
+          # the dirty-tree check. Published contents are governed by the Cargo.toml
+          # `include` allowlist, not the working-tree state, so this is safe.
+          if cargo publish --allow-dirty 2>publish.err; then
             cat publish.err
             echo "Published v${{ steps.ver.outputs.version }} to crates.io."
           elif grep -qiE "already (exists|uploaded)|is already uploaded|crate version .* is already" publish.err; then
