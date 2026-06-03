@@ -12,7 +12,20 @@ homepage = "https://github.com/NavistAu/onvif-server"
 documentation = "https://docs.rs/onvif-server"
 keywords = ["onvif", "camera", "soap", "ip-camera", "video"]
 categories = ["network-programming", "multimedia::video"]
-exclude = ["/crossref", "/.planning", "/.github"]
+# Allowlist exactly what ships in the published crate (nothing leaks by default).
+# wsdl/** is mandatory — the embedded loader include_bytes!()s every file.
+# cargo also auto-adds Cargo.toml.orig, Cargo.lock, and .cargo_vcs_info.json.
+include = [
+    "src/**/*.rs",
+    "wsdl/**",
+    "examples/**/*.rs",
+    "Cargo.toml",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "LICENSE-ONVIF",
+]
 
 [features]
 default = []
