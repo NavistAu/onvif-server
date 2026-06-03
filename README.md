@@ -159,7 +159,7 @@ client (ONVIF Device Manager, VLC, Frigate, Home Assistant, python-onvif-zeep) t
 ## Documentation
 
 - API reference: <https://docs.rs/onvif-server>
-- User guide (mdBook): published to GitHub Pages at <https://NavistAu.github.io/onvif-server> once the repository is public
+- User guide (mdBook): <https://navistau.github.io/onvif-server/>
 
 ---
 
