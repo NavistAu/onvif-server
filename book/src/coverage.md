@@ -102,12 +102,12 @@ pull-point **subscription lifecycle** only.
 ## WS-Discovery (UDP multicast `239.255.255.250:3702`)
 
 Not an HTTP/SOAP service. **Gated behind the non-default `discovery` Cargo
-feature.** When enabled, the server sends `Hello` on start and answers `Probe`
-with `ProbeMatch`.
+feature.** When enabled, the server answers a `Probe` with `ProbeMatches`. It does
+**not** send an unsolicited `Hello` on start.
 
 | Behaviour | Backing | Notes |
 |-----------|---------|-------|
-| `Hello` / `ProbeMatch` | Framework | Advertises the device-service XAddr and a fixed `Types`/`Scopes` set (`dn:NetworkVideoTransmitter`). These scopes are **hardcoded in discovery and independent of `DeviceService::get_scopes`.** See [WS-Discovery](./discovery.md). |
+| `Probe` → `ProbeMatches` | Framework | Replies to multicast `Probe` with the device-service XAddr and a fixed `Types`/`Scopes` set (`dn:NetworkVideoTransmitter`). These scopes are **hardcoded in discovery and independent of `DeviceService::get_scopes`.** See [WS-Discovery](./discovery.md). |
 
 ## What this is not
 

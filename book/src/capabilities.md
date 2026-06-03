@@ -19,7 +19,7 @@ fully-featured commercial ONVIF device.
 ## What a client gets
 
 - **Discovery** of the device and its services (`GetCapabilities`, `GetServices`,
-  optional WS-Discovery `Hello`/`Probe`).
+  and optional WS-Discovery — the server answers a `Probe` with `ProbeMatches`).
 - **One or more media profiles** with a stream URI and optional snapshot URI
   (you supply the URIs).
 - **PTZ control** (moves, stop, status, presets) when you implement the PTZ trait.
@@ -35,8 +35,10 @@ fully-featured commercial ONVIF device.
   enforced on all non-bypassed operations; without it the server is
   **unauthenticated**. `GetSystemDateAndTime` is always auth-exempt so clients can
   sync clocks before authenticating. See [WS-Security](./ws-security.md).
-- **`advertised_host`** sets the host clients see in XAddrs and stream URIs — it
-  must be an address the client can route to (not `0.0.0.0`).
+- **`advertised_host`** sets the host clients see in XAddrs (`GetCapabilities`/
+  `GetServices`/discovery) — it must be an address the client can route to (not
+  `0.0.0.0`). Stream/snapshot URIs are *not* derived from it; your `MediaService`
+  returns those (and must point them at a routable address too).
 - **WS-Discovery is behind the non-default `discovery` Cargo feature.** Enable it
   to advertise on UDP multicast; see [WS-Discovery](./discovery.md).
 

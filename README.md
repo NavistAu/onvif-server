@@ -1,6 +1,6 @@
 # onvif-server
 
-A spec-compliant ONVIF Profile S device server library for Rust. Implement the service traits for your camera hardware and get a fully functional ONVIF-compatible device accessible by any standard ONVIF client.
+An ONVIF **Profile S streaming-core** device server library for Rust. Implement the service traits for your camera hardware to expose a device that standard ONVIF clients (Frigate, Home Assistant, ONVIF Device Manager, NVRs) can discover and stream from. See the coverage table below for exactly what is supported.
 
 [![crates.io](https://img.shields.io/crates/v/onvif-server.svg)](https://crates.io/crates/onvif-server)
 [![docs.rs](https://docs.rs/onvif-server/badge.svg)](https://docs.rs/onvif-server)

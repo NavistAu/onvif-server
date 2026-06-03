@@ -18,7 +18,7 @@
 //   cargo run --example minimal_device
 //
 // Then point an ONVIF client at http://<host>:8080/onvif/device_service with
-// credentials admin / admin, or query it directly (see book: Quick Start).
+// credentials admin / password, or query it directly (see book: Quick Start).
 
 use async_trait::async_trait;
 use onvif_server::{DeviceInfo, DeviceService, MediaService, OnvifError, OnvifServer};
@@ -70,7 +70,7 @@ async fn main() {
     println!("Minimal ONVIF device on :8080");
     println!("  Device service: http://{host}:8080/onvif/device_service");
     println!("  Media service:  http://{host}:8080/onvif/media_service");
-    println!("  Credentials:    admin / admin");
+    println!("  Credentials:    admin / password");
 
     OnvifServer::builder()
         .port(8080)
