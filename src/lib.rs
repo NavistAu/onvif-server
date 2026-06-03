@@ -1,10 +1,12 @@
 //! # onvif-server
 //!
-//! A spec-compliant ONVIF Profile S device server library for Rust.
+//! An ONVIF **Profile S streaming-core** device server library for Rust.
 //!
-//! Implement the service traits for your camera hardware and get a fully functional
-//! ONVIF-compatible device accessible by any standard ONVIF client (VMS, NVR,
-//! Home Assistant, Frigate, python-onvif-zeep, ONVIF Device Manager, etc.).
+//! Implement the service traits for your camera hardware to expose a device that
+//! standard ONVIF clients (VMS, NVR, Home Assistant, Frigate, python-onvif-zeep,
+//! ONVIF Device Manager) can discover and stream from. It targets the Profile S
+//! streaming core, not every ONVIF operation — see the Operation Coverage matrix
+//! in the user guide for the exact support claims.
 //!
 //! ## ONVIF Profile S coverage
 //!
@@ -18,22 +20,50 @@
 //!
 //! ## Quick start
 //!
+//! An empty `impl DeviceService for MyCamera {}` compiles but faults on the first
+//! real request — `GetDeviceInformation` and `GetStreamUri` have no working
+//! default. This is the smallest *usable* device (see the `minimal_device`
+//! example, and the Operation Coverage matrix in the user guide for what each
+//! operation does by default):
+//!
 //! ```rust,no_run
-//! use onvif_server::{OnvifServer, DeviceService};
+//! use async_trait::async_trait;
+//! use onvif_server::{DeviceInfo, DeviceService, MediaService, OnvifError, OnvifServer};
 //!
-//! struct MyCamera;
+//! #[derive(Clone)]
+//! struct MinimalCamera {
+//!     media_host: String,
+//! }
 //!
-//! #[async_trait::async_trait]
-//! impl DeviceService for MyCamera {
-//!     // Override methods as needed; defaults return NotImplemented.
+//! #[async_trait]
+//! impl DeviceService for MinimalCamera {
+//!     async fn get_device_information(&self) -> Result<DeviceInfo, OnvifError> {
+//!         Ok(DeviceInfo {
+//!             manufacturer: "Example Corp".into(),
+//!             model: "Minimal-1".into(),
+//!             firmware_version: "1.0.0".into(),
+//!             serial_number: "SN-0001".into(),
+//!             hardware_id: "minimal-hw-1".into(),
+//!         })
+//!     }
+//! }
+//!
+//! #[async_trait]
+//! impl MediaService for MinimalCamera {
+//!     async fn get_stream_uri(&self, _profile: &str) -> Result<String, OnvifError> {
+//!         Ok(format!("rtsp://{}:8554/stream", self.media_host))
+//!     }
 //! }
 //!
 //! #[tokio::main]
 //! async fn main() {
+//!     let host = "192.168.1.10";
+//!     let cam = MinimalCamera { media_host: host.into() };
 //!     OnvifServer::builder()
 //!         .port(8080)
-//!         .advertised_host("192.168.1.10")
-//!         .device_service(MyCamera)
+//!         .advertised_host(host)
+//!         .device_service(cam.clone())
+//!         .media_service(cam)
 //!         .auth("admin", "password")
 //!         .build()
 //!         .expect("build failed")

@@ -50,13 +50,17 @@ pub struct OnvifServer {
     pub(crate) event_service: Option<Arc<dyn EventService>>,
     pub(crate) auth_bypass: HashSet<String>,
     pub(crate) advertised_host: String,
-    /// Stable WS-Discovery EndpointReference UUID for this device (F-7).
+    /// WS-Discovery EndpointReference UUID for this device (F-7).
     ///
     /// ONVIF WS-Discovery requires the EndpointReference Address to be a stable
-    /// per-device identity across all discovery cycles.  When explicitly set via
+    /// per-device identity across all discovery cycles.  This UUID is fixed for the
+    /// lifetime of the server, so every ProbeMatch within a single process run
+    /// carries the same identity.  When explicitly set via
     /// [`OnvifServerBuilder::discovery_uuid`], that UUID is used verbatim.  When
-    /// unset, the server derives a stable UUID-v5 from the advertised host so the
-    /// same device always produces the same endpoint identity.
+    /// unset, a random UUID-v4 is generated once when the builder is created — it is
+    /// stable across discovery cycles but **not** across restarts.  Supply a fixed
+    /// UUID (e.g. derived from a hardware ID or stored config) for identity that
+    /// survives restarts.
     pub(crate) discovery_uuid: uuid::Uuid,
 }
 
@@ -71,11 +75,12 @@ impl OnvifServer {
         &self.advertised_host
     }
 
-    /// Returns the stable WS-Discovery EndpointReference UUID for this device.
+    /// Returns the WS-Discovery EndpointReference UUID for this device.
     ///
     /// ONVIF conformance (F-7) requires this to be identical across all discovery
-    /// cycles.  Set it explicitly via [`OnvifServerBuilder::discovery_uuid`], or let
-    /// the builder derive a stable UUID-v5 from the advertised host.
+    /// cycles, which it is for the lifetime of the server.  Set it explicitly via
+    /// [`OnvifServerBuilder::discovery_uuid`] for an identity that also survives
+    /// restarts; otherwise a random UUID-v4 is generated once at builder creation.
     pub fn discovery_uuid(&self) -> uuid::Uuid {
         self.discovery_uuid
     }

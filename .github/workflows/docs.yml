@@ -39,8 +39,10 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: mdbook
-      - name: Build API docs
-        run: cargo doc --workspace --all-features --no-deps
+      - name: Build API docs (broken intra-doc links denied)
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc -p onvif-server --all-features --no-deps
       - name: Build book
         run: mdbook build book/
       - name: Upload Pages artifact

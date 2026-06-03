@@ -6,3 +6,4 @@ src = "src"
 
 [output.html]
 default-theme = "rust"
+git-repository-url = "https://github.com/NavistAu/onvif-server"
