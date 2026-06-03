@@ -23,25 +23,42 @@ LIABILITY DO NOT APPLY TO, INVALIDATE, OR LIMIT REPRESENTATIONS AND WARRANTIES
 MADE BY THE MEMBERS AND THEIR RESPECTIVE AFFILIATES TO THE CORPORATION AND
 OTHER MEMBERS IN CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 
----
+================================================================================
 
-This license applies to the ONVIF WSDL and XSD files included in the wsdl/
-directory of this crate:
+This license applies to the following ONVIF specification documents bundled in
+the wsdl/ directory of this crate:
 
   wsdl/devicemgmt.wsdl
   wsdl/events.wsdl
   wsdl/imaging.wsdl
   wsdl/media.wsdl
   wsdl/ptz.wsdl
-  wsdl/common.xsd
   wsdl/onvif.xsd
-  wsdl/soap-envelope.xsd
-  wsdl/ws-addr.xsd
-  wsdl/wsn-b2.xsd
+  wsdl/common.xsd
 
-These files are verbatim copies of ONVIF specification documents. They are
-included to enable embedded WSDL resolution without network access. No
-modification has been made to these files.
+Each of these files is a verbatim, byte-for-byte copy of the corresponding
+official ONVIF specification document published at www.onvif.org. They are
+bundled to enable embedded WSDL/XSD resolution without network access. They are
+unmodified, and the ONVIF copyright notice, license, and disclaimer are retained
+within each file as required by the terms above.
 
-The remainder of this crate (Rust source code) is licensed under MIT OR
-Apache-2.0 at your option. See LICENSE-MIT and LICENSE-APACHE respectively.
+--------------------------------------------------------------------------------
+
+Other schema files bundled in the wsdl/ directory are NOT ONVIF documents. They
+are W3C or OASIS standards schemas (or minimal stubs thereof) referenced by the
+ONVIF WSDLs, and are governed by their own respective licenses, which permit
+redistribution. See the header of each file for its applicable terms:
+
+  wsdl/soap-envelope.xsd   (W3C  — SOAP 1.2 envelope)
+  wsdl/ws-addr.xsd         (W3C  — WS-Addressing)
+  wsdl/xmlmime.xsd         (W3C  — XML Media Types)
+  wsdl/xop-include.xsd     (W3C  — XOP Include)
+  wsdl/wsn-b2.xsd          (OASIS — WS-BaseNotification; minimal stub)
+  wsdl/wsn-bw2.wsdl        (OASIS — WS-BaseNotification bindings)
+  wsdl/wsn-t1.xsd          (OASIS — WS-Topics; minimal stub)
+  wsdl/wsrf-rw2.wsdl       (OASIS — WS-ResourceFramework ResourceProperties)
+
+--------------------------------------------------------------------------------
+
+The remainder of this crate (the Rust source code) is licensed under MIT OR
+Apache-2.0 at your option. See LICENSE-MIT and LICENSE-APACHE.
