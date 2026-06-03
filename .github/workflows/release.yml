@@ -51,15 +51,12 @@ jobs:
           fetch-depth: 0
 
       # The crossref workspace member has a path-only dep on soap-server, so cargo
-      # must read the sibling soap-server manifest to load the workspace. Mirror ci.yml.
-      - name: Checkout soap-server (path dependency for the crossref workspace member)
-        uses: actions/checkout@v4
-        with:
-          repository: NavistAu/soap-server
-          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
-          path: soap-server-dep
-      - name: Make soap-server available at ../soap-server
-        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
+      # must read the sibling soap-server manifest to load the workspace. Clone it
+      # OUTSIDE the repo working tree (soap-server is public) — checking it out
+      # inside would leave an untracked dir that trips `cargo publish`'s
+      # dirty-tree check.
+      - name: Make soap-server available at ../soap-server (path dep for crossref member)
+        run: git clone --depth 1 https://github.com/NavistAu/soap-server.git "${{ github.workspace }}/../soap-server"
 
       - name: Read crate version
         id: ver
