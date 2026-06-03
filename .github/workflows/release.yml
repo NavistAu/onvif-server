@@ -5,8 +5,11 @@
 # crates.io via Trusted Publishing (OIDC).
 #
 # PUBLISH ORDER: soap-server must already be on crates.io at the depended-on
-# version — `cargo publish` resolves soap-server from the registry (the version
-# dep), not the local path, so no sibling checkout is needed here.
+# version — `cargo publish` resolves onvif-server's own soap-server dep from the
+# registry (the version dep). HOWEVER, the `crossref` workspace member has a
+# path-only dep on soap-server, so cargo must load the sibling soap-server
+# manifest to assemble the workspace — hence the checkout step below (mirrors
+# ci.yml). Without it, `cargo publish` fails to load the workspace.
 #
 # BOOTSTRAP (first 0.1.0): crates.io Trusted Publishing cannot be configured until
 # the crate exists, so the first 0.1.0 is published MANUALLY from the command line
@@ -23,6 +26,10 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  # Manual trigger to (re)run a publish for the version currently on main — e.g.
+  # to complete a release whose tag/GitHub-release exist but whose crates.io
+  # publish failed. Tag creation and "already uploaded" are both idempotent.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -31,16 +38,28 @@ permissions:
 jobs:
   release:
     name: Tag and publish to crates.io
-    # Only when a release/* PR is actually MERGED into main.
+    # When a release/* PR is MERGED into main, or a manual workflow_dispatch.
     if: >-
-      github.event.pull_request.merged == true &&
-      startsWith(github.event.pull_request.head.ref, 'release/')
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       startsWith(github.event.pull_request.head.ref, 'release/'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
+
+      # The crossref workspace member has a path-only dep on soap-server, so cargo
+      # must read the sibling soap-server manifest to load the workspace. Mirror ci.yml.
+      - name: Checkout soap-server (path dependency for the crossref workspace member)
+        uses: actions/checkout@v4
+        with:
+          repository: NavistAu/soap-server
+          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
+          path: soap-server-dep
+      - name: Make soap-server available at ../soap-server
+        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
 
       - name: Read crate version
         id: ver
