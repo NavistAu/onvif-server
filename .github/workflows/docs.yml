@@ -32,7 +32,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Install mdBook
-        run: cargo install mdbook
+        # Prebuilt binary — independent of the crate's pinned rust-toolchain
+        # (onvif pins 1.85.1; recent mdbook needs a newer rustc to compile).
+        uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook
       - name: Build API docs
         run: cargo doc --workspace --all-features --no-deps
       - name: Build book
