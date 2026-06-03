@@ -16,6 +16,12 @@ python-onvif-zeep, and ONVIF Device Manager.
 | Imaging  | Supported |
 | Events   | Supported |
 
+"Supported" means the service is routed and covers the **Profile S streaming
+core** — not every operation. See [Operation Coverage](./coverage.md) for the
+exact per-operation breakdown (trait-backed / static / framework / absent, with
+default behaviour) and [Capabilities & Limitations](./capabilities.md) for the
+crate-level summary.
+
 ## License
 
 `onvif-server` is dual-licensed under **MIT OR Apache-2.0** (your choice).

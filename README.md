@@ -19,6 +19,13 @@ A spec-compliant ONVIF Profile S device server library for Rust. Implement the s
 | Imaging  | Supported |
 | Events   | Supported |
 
+"Supported" means the service is routed and covers the **Profile S streaming
+core** — not every operation in each ONVIF service. For exactly which operations
+are implemented, which are backed by your trait, which return static responses,
+their default behaviour, and which fault, see the
+**[Operation Coverage matrix](https://navistau.github.io/onvif-server/coverage.html)**
+and **[Capabilities & Limitations](https://navistau.github.io/onvif-server/capabilities.html)**.
+
 ---
 
 ## Features
