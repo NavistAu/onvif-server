@@ -12,6 +12,9 @@
 //! `--check-drift`          After the run, compare failing scenarios against the expected-failures
 //!                          baseline in `crossref/expected-failures.toml`.  Exits non-zero if
 //!                          there are regressions or stale entries.
+//! `--release-green`        Strict FULL-SUITE release gate: exits non-zero on any non-Pass
+//!                          verdict, any unverified snapshot, or a non-empty expected-failures
+//!                          baseline. Incompatible with `--scenarios` (refused, exit 2).
 //!
 //! # Staging
 //! Before `Topology::up`, the soap-server source tree is staged into
@@ -23,6 +26,16 @@ use onvif_crossref::layer2::{compose::Topology, run, Endpoints};
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let flags = parse_flags(&args[1..]);
+
+    // The release gate is a FULL-SUITE signal — a filtered run cannot stand in for it
+    // (a single passing scenario, with the global unverified count already 0 from a prior
+    // full run, would otherwise false-green). Refuse the combination outright.
+    if let Some(reason) =
+        reject_release_green_filter(flags.release_green, flags.scenarios.is_some())
+    {
+        eprintln!("[release-green] {reason}");
+        std::process::exit(2);
+    }
 
     // Derive repo root from CARGO_MANIFEST_DIR (the crossref crate root), then go up one.
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| {
@@ -236,6 +249,20 @@ fn parse_flags(args: &[String]) -> Flags {
     }
 }
 
+/// `--release-green` is a full-suite release signal and must NOT be combined with the
+/// `--scenarios` filter. Returns `Some(reason)` if the combination is present.
+fn reject_release_green_filter(release_green: bool, has_filter: bool) -> Option<String> {
+    if release_green && has_filter {
+        Some(
+            "--release-green covers the FULL scenario set; refusing the --scenarios filter \
+             (a partial run cannot signal release readiness)"
+                .to_string(),
+        )
+    } else {
+        None
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Soap-server staging
 // ---------------------------------------------------------------------------
@@ -306,6 +333,21 @@ mod tests {
 
     fn s(x: &str) -> String {
         x.to_string()
+    }
+
+    #[test]
+    fn release_green_rejects_scenarios_filter() {
+        assert!(reject_release_green_filter(true, true).is_some());
+    }
+
+    #[test]
+    fn release_green_alone_is_allowed() {
+        assert!(reject_release_green_filter(true, false).is_none());
+    }
+
+    #[test]
+    fn scenarios_filter_without_release_green_is_allowed() {
+        assert!(reject_release_green_filter(false, true).is_none());
     }
 
     #[test]
