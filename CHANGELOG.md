@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-03
+
+### Changed
+
+- Documentation: point the README "User guide" link at the live mdBook on GitHub Pages
+  (<https://navistau.github.io/onvif-server/>) instead of the "once the repository is public"
+  placeholder; add the repository link to the book.
+
+### Internal
+
+- First release published via crates.io Trusted Publishing (OIDC) — validates the automated
+  `release/* → main` publish pipeline (0.1.0 was a manual bootstrap publish).
+
 ## [0.1.0] - 2026-06-03
 
 ### Added
@@ -44,5 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `virtual_ptz` example: a fully functional in-memory PTZ camera implementing all
   five service traits, demonstrating `Arc<Mutex<_>>` state sharing.
 
-[Unreleased]: https://github.com/NavistAu/onvif-server/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/NavistAu/onvif-server/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/NavistAu/onvif-server/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/NavistAu/onvif-server/releases/tag/v0.1.0
