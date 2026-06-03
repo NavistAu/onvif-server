@@ -9,9 +9,18 @@ against the real `onvif.xsd`/`common.xsd`) is the first time onvif-server respon
 checked against the ONVIF XSDs. It revealed **six pre-existing product conformance bugs**
 (schema-invalid responses) plus one harness/bundle limitation.
 
-**Status: all six product bugs (F-1..F-6) are now FIXED and pass** (the conformance run is
-27 Pass / 1 red; the 1 red is the non-product harness limitation A-1 below). The six were
-fixed in `6006bef` (onvif-server: F-1,F-2,F-4,F-5,F-6) and `13b907e` (soap-server: F-3).
+**Status: ALL findings resolved — the suite is release-green** (`--release-green` exits 0:
+29 scenarios all `verified`, 0 unverified, empty expected-failures baseline).
+- F-1,F-2,F-4,F-5,F-6 (onvif-server) — `6006bef`
+- F-3 (soap-server SOAP 1.2 `env:Detail`) — `13b907e`
+- F-7 (WS-Discovery device endpoint UUID was random per probe; now stable + pinned/asserted) — `c857ee2`
+- A-1 (ws-addr.xsd EPR `ReferenceParameters`) — `5695c33`
+
+Beyond the findings, a release-review hardening pass (`1a6772f`): Layer-2 now verifies
+discovery (was skipped), canonical evidence is masked-then-C14N (deterministic), multistep
+scenarios promote per step, `Step.inject` is enforced, and `--release-green` gates on
+zero-red + zero-unverified + empty-baseline. The previously-vacuous `scopes_match` /
+`stable_endpoint_uuid` invariants now assert real values.
 
 ## Resolved
 

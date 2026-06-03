@@ -123,18 +123,19 @@ srvd, absent in us — a SOAP-optional, non-conformance-relevant difference).
 
 ### Current status
 
-**21 Pass / 7 known findings (not promoted to `verified`).**
+**Release-green: 29 scenarios all `verified`, 0 unverified, empty expected-failures baseline.**
+`cargo run -p onvif-crossref --bin layer2 -- --release-green` exits 0.
 
-The 7 red scenarios are real conformance findings, not harness bugs — they are intentionally
-left red until the product bugs are fixed.  See `crossref/PHASE2B-FINDINGS.md` for the
-detailed triage of each finding (F-1 through F-6 are schema-invalid responses; A-1 is a
-harness/bundle limitation).
+All Phase 2b conformance findings were surfaced by the oracle and then FIXED (F-1..F-7 +
+A-1) — see `crossref/PHASE2B-FINDINGS.md`. The `--release-green` gate fails on any non-Pass
+verdict, any unverified snapshot, or a non-empty `expected-failures.toml`, so the suite is a
+true release conformance gate (not merely a regression/drift gate).
 
 ### Expected-failures drift gate
 
-`crossref/expected-failures.toml` records the 7 known-failing scenarios with their finding ID
-and one-line reason.  When `--check-drift` is passed, the orchestrator compares the actual
-failing set against this baseline:
+`crossref/expected-failures.toml` records any known-failing scenarios with their finding ID
+and one-line reason (currently EMPTY — all findings resolved).  When `--check-drift` is
+passed, the orchestrator compares the actual failing set against this baseline:
 
 - **actual == expected** → exit 0 (suite healthy: only known findings red).
 - **new failure not in expected** → exit 1, prints `REGRESSION/NEW FINDING: <names>`.
