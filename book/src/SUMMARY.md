@@ -10,3 +10,4 @@
 - [WS-Discovery](./discovery.md)
 - [Client Setup](./clients.md)
 - [Example: Virtual PTZ Camera](./example-ptz.md)
+- [Conformance](./conformance.md)
