@@ -54,7 +54,7 @@ pub struct OnvifServer {
     ///
     /// ONVIF WS-Discovery requires the EndpointReference Address to be a stable
     /// per-device identity across all discovery cycles.  This UUID is fixed for the
-    /// lifetime of the server, so every Hello/ProbeMatch within a single process run
+    /// lifetime of the server, so every ProbeMatch within a single process run
     /// carries the same identity.  When explicitly set via
     /// [`OnvifServerBuilder::discovery_uuid`], that UUID is used verbatim.  When
     /// unset, a random UUID-v4 is generated once when the builder is created — it is
