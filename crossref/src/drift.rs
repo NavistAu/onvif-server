@@ -27,6 +27,9 @@ pub struct ExpectedFailure {
 
 #[derive(Debug, Deserialize)]
 struct ExpectedFailuresFile {
+    /// Defaulted so a comments-only (empty) baseline — the release-green state —
+    /// deserializes to an empty list instead of erroring on a missing field.
+    #[serde(default)]
     expected_failure: Vec<ExpectedFailure>,
 }
 
@@ -174,6 +177,13 @@ impl DriftResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn comments_only_baseline_parses_to_empty() {
+        // The release-green state: a baseline with no [[expected_failure]] blocks.
+        let f: ExpectedFailuresFile = toml::from_str("# all findings resolved\n").unwrap();
+        assert!(f.expected_failure.is_empty());
+    }
 
     fn set(items: &[&str]) -> HashSet<String> {
         items.iter().map(|s| s.to_string()).collect()
