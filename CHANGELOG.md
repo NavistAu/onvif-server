@@ -9,13 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.1] - 2026-06-03
 
-A documentation + release-tooling release; no library code changes.
+A documentation + release-tooling release; no runtime behavior changes.
+
+### Documentation
+
+- New **Operation Coverage** matrix classifying every routed operation
+  (framework / trait / static / absent) with its default behaviour — the
+  authoritative answer to "will my client work?"
+- New **Capabilities & Limitations**, **Conformance**, and **Client Setup**
+  (Frigate, Home Assistant, ONVIF Device Manager, python-onvif-zeep, VLC) pages.
+- **Quick Start** replaced the empty-trait `MyCamera` with a minimal *usable*
+  device (`examples/minimal_device.rs`) and a no-credentials `curl` smoke test.
+- **Services** page rewritten as an implementable per-service guide; **WS-Security**
+  page gained the clock-sync handshake plus UsernameToken and fault examples;
+  **WS-Discovery** page gained deployment-hazard guidance.
+- Renamed the stale pre-implementation `docs/DESIGN.md` to
+  `docs/historical-design.md` with a warning banner (it described APIs the crate
+  never shipped).
 
 ### Fixed
 
 - Docs: install docs no longer hardcode versions — installation uses `cargo add`, and the
   crate version + MSRV are surfaced via auto-updating crates.io badges. The "User guide"
   link points at the live mdBook (<https://navistau.github.io/onvif-server/>).
+- Corrected the WS-Discovery EndpointReference UUID documentation (both the
+  `server.rs` rustdoc and the book): it claimed a stable UUID-v5 derived from the
+  advertised host, but the code uses a random `Uuid::new_v4()` — fixed for the
+  process lifetime, not across restarts unless set via `discovery_uuid`.
 
 ### Internal
 
