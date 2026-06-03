@@ -78,6 +78,20 @@ now schema-valid and promoted to `verified`. Descriptions retained for the recor
 - These are `events/wsdl`-namespace elements defined in the events embedded schema
   (authoritative — NOT the wsn-b2 stub). The handler omits required response fields.
 
+### F-8: ONVIF `ter:` subcode silently dropped from SOAP 1.2 faults
+- Found by a unit test (`ptz_unimplemented_ops_return_action_not_supported`) during 0.1.0
+  release prep, not by the oracle. The follow-up F-3 warned about — F-3's fix made SOAP 1.2
+  `env:Detail` element-only by emitting ONLY `detail_xml` and dropping the text `detail`
+  field; but `OnvifError::into_soap_fault()` put the well-formed `<ter:fault><ter:subcode>…`
+  XML in the text `detail` field, so it was silently discarded. Every ONVIF fault
+  (NotImplemented/ActionNotSupported/InvalidArgVal) reached SOAP 1.2 clients with NO `ter:`
+  code — only `env:Receiver`/`env:Sender` + a reason string.
+- Fix: route the (already well-formed) detail XML via `.with_detail_xml(...)` so the SOAP 1.2
+  renderer emits it inside `<env:Detail>`. Verified: the ter: subcode now appears on the wire;
+  full onvif test suite green; crossref Layer-2 `--release-green` still PASSES 29/29 (the
+  `ptz_absolute_move_malformed_coord` fault now carries `<env:Detail>` and still validates,
+  since SOAP 1.2 `Detail` is `xs:any` lax).
+
 ## Open — harness/bundle limitations (NOT confirmed product bugs)
 
 ### A-1: `events_pull_messages` — ws-addressing `ReferenceParameters` rejected

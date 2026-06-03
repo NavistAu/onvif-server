@@ -6,12 +6,23 @@ use onvif_server::{
 #[test]
 fn test_not_implemented_fault_has_ter_namespace() {
     let fault = OnvifError::NotImplemented.into_soap_fault();
+    // The ter: detail must be carried as detail_xml: the SOAP 1.2 renderer only
+    // emits detail_xml inside <env:Detail> (the text `detail` field is dropped as
+    // element-only, per F-3). Carrying it in `detail` would silently lose the
+    // ter: subcode on the wire for every ONVIF fault.
     let detail = fault
-        .detail
-        .expect("detail must be present for ONVIF faults");
+        .detail_xml
+        .clone()
+        .expect("detail_xml must be present for ONVIF faults");
     assert!(
         detail.contains(r#"xmlns:ter="http://www.onvif.org/ver10/error""#),
         "detail must contain ONVIF ter namespace declaration, got: {detail}"
+    );
+    // It must survive SOAP 1.2 serialization onto the wire.
+    let wire = String::from_utf8(fault.to_xml_bytes()).unwrap();
+    assert!(
+        wire.contains("ter:ActionNotSupported") && wire.contains("<env:Detail>"),
+        "SOAP 1.2 fault must carry the ter: subcode inside <env:Detail>, got: {wire}"
     );
 }
 

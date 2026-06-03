@@ -1,4 +1,4 @@
-use soap_server::fault::{FaultCode, SoapFault};
+use soap_server::fault::SoapFault;
 
 /// ONVIF-specific error type that maps to SOAP faults with the ONVIF ter: namespace.
 ///
@@ -29,14 +29,18 @@ impl OnvifError {
                 let detail = format!(
                     r#"<ter:fault xmlns:ter="http://www.onvif.org/ver10/error"><ter:subcode>{subcode}</ter:subcode></ter:fault>"#
                 );
-                SoapFault::new(FaultCode::Receiver, "Action not supported", Some(detail))
+                // The detail is well-formed XML, so route it via detail_xml: the SOAP 1.2
+                // renderer only emits detail_xml inside <env:Detail> (the text `detail`
+                // field is dropped as element-only, per F-3). Using `detail` here would
+                // silently lose the ter: subcode on the wire for every ONVIF fault.
+                SoapFault::receiver("Action not supported").with_detail_xml(detail)
             }
             OnvifError::InvalidArgument(msg) => {
                 let subcode = "ter:InvalidArgVal";
                 let detail = format!(
                     r#"<ter:fault xmlns:ter="http://www.onvif.org/ver10/error"><ter:subcode>{subcode}</ter:subcode></ter:fault>"#
                 );
-                SoapFault::new(FaultCode::Sender, msg, Some(detail))
+                SoapFault::sender(msg).with_detail_xml(detail)
             }
         }
     }

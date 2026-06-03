@@ -255,3 +255,43 @@ async fn ptz_remove_preset() {
         "response must contain RemovePresetResponse: {xml}"
     );
 }
+
+/// The bundled ptz.wsdl is the verbatim official ONVIF ver20 PTZ WSDL, which
+/// advertises operations this server does not implement (preset tours, GeoMove,
+/// MoveAndStartTracking, GetCompatibleConfigurations). The handler's catch-all
+/// must answer each of these with a well-formed `ter:ActionNotSupported` SOAP
+/// fault rather than panicking, hanging, or returning a non-fault body.
+#[tokio::test]
+async fn ptz_unimplemented_ops_return_action_not_supported() {
+    let handler = make_handler();
+    let unimplemented = [
+        "CreatePresetTour",
+        "GeoMove",
+        "GetCompatibleConfigurations",
+        "GetPresetTour",
+        "GetPresetTourOptions",
+        "GetPresetTours",
+        "ModifyPresetTour",
+        "MoveAndStartTracking",
+        "OperatePresetTour",
+        "RemovePresetTour",
+    ];
+    for op in unimplemented {
+        let body = Bytes::from(format!(
+            r#"<tptz:{op} xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"/>"#
+        ));
+        match handler.handle(body).await {
+            Ok(ok) => panic!(
+                "{op}: expected an ActionNotSupported fault, got an Ok response: {}",
+                String::from_utf8_lossy(&ok)
+            ),
+            Err(fault) => {
+                let xml = String::from_utf8(fault.to_xml_bytes()).unwrap();
+                assert!(
+                    xml.contains("ter:ActionNotSupported"),
+                    "{op}: fault must carry the ter:ActionNotSupported subcode: {xml}"
+                );
+            }
+        }
+    }
+}
