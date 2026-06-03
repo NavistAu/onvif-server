@@ -10,9 +10,8 @@ service addresses.
 WS-Discovery support is behind the optional `discovery` Cargo feature. Add it
 to your dependency:
 
-```toml
-[dependencies]
-onvif-server = { version = "0.1.0", features = ["discovery"] }
+```sh
+cargo add onvif-server --features discovery
 ```
 
 This feature pulls in the `socket2` crate, which is required for the low-level

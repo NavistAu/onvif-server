@@ -33,7 +33,9 @@ discovery = ["socket2"]
 
 [dependencies]
 # `version` is REQUIRED for crates.io publish (a path-only dep is rejected); `path`
-# is used for local/workspace builds. Publish order: soap-server 0.1.0 first, then this.
+# is used for local/workspace builds. The version is a caret minimum (>=0.1.0, <0.2.0),
+# so a published onvif-server resolves to the latest 0.1.x of soap-server on crates.io.
+# Publish order: soap-server must be on crates.io before this crate.
 soap-server = { version = "0.1.0", path = "../soap-server" }
 tokio = { version = "1", features = ["rt", "net", "sync"] }
 axum = "0.8"

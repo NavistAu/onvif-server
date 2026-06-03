@@ -4,6 +4,7 @@ A spec-compliant ONVIF Profile S device server library for Rust. Implement the s
 
 [![crates.io](https://img.shields.io/crates/v/onvif-server.svg)](https://crates.io/crates/onvif-server)
 [![docs.rs](https://docs.rs/onvif-server/badge.svg)](https://docs.rs/onvif-server)
+[![MSRV](https://img.shields.io/crates/msrv/onvif-server.svg)](https://crates.io/crates/onvif-server)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
 
 ---
@@ -30,29 +31,22 @@ A spec-compliant ONVIF Profile S device server library for Rust. Implement the s
 
 ## Installation
 
-```toml
-[dependencies]
-onvif-server = "0.1"
-```
-
-Or via cargo-add:
-
-```
+```sh
 cargo add onvif-server
 ```
 
 ### The `discovery` feature
 
-To enable automatic device discovery on the local network:
+To enable WS-Discovery (auto-discovery on the local network):
 
-```toml
-[dependencies]
-onvif-server = { version = "0.1", features = ["discovery"] }
+```sh
+cargo add onvif-server --features discovery
 ```
 
 ### MSRV
 
-Minimum supported Rust version: **1.85.1** (pinned in `rust-toolchain.toml`).
+See the MSRV badge above — the minimum supported Rust version is the `rust-version`
+declared in the crate's `Cargo.toml`.
 
 ---
 

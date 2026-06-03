@@ -24,16 +24,13 @@ git clone https://github.com/NavistAu/soap-server ~/ws/soap-server
 cargo build
 
 # run the test suite
-cargo test
-
-# run tests with the discovery feature enabled
-cargo test --features discovery
+cargo test --workspace --all-features
 
 # lint (must be clean before opening a PR)
-cargo clippy --all-targets --all-features -- -D warnings
+cargo clippy --workspace --all-targets --all-features -- -D warnings
 
 # format check
-cargo fmt -- --check
+cargo fmt --all -- --check
 
 # apply formatting
 cargo fmt
