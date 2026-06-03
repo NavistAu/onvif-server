@@ -1,3 +1,18 @@
+> ⚠️ **Historical design document — not current API documentation.**
+>
+> This is a pre-implementation planning note written before `onvif-server` existed.
+> It describes intended dependencies and APIs (`onvif-rs`/`yaserde` types, typed
+> per-operation trait request/response signatures, a `.device_info(...)` builder)
+> that do **not** match the shipped public API. The crate instead exposes
+> handler traits per service over the `soap-server` transport. This file is kept
+> only as a record of the original design intent.
+>
+> For accurate, current documentation see:
+> - **README.md** (repo root) — overview, install, quick start.
+> - **The mdBook** in [`book/`](../book/src/SUMMARY.md) — Introduction, Installation,
+>   Quick Start, Operation Coverage, Services, WS-Security, WS-Discovery, examples.
+> - **docs.rs/onvif-server** — the rustdoc API reference (the authoritative API).
+
 # onvif-server: Rust ONVIF Device Server Crate
 
 ## Purpose
