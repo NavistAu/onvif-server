@@ -2,9 +2,17 @@
 name = "onvif-server"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.85.1"
+authors = ["Joshua Hogendorn <jhogendorn@gmail.com>", "NavistAu"]
 license = "MIT OR Apache-2.0"
-description = "A spec-compliant ONVIF device server library for Rust"
-exclude = ["/crossref"]
+description = "A spec-compliant ONVIF Profile S device server library for Rust"
+readme = "README.md"
+repository = "https://github.com/NavistAu/onvif-server"
+homepage = "https://github.com/NavistAu/onvif-server"
+documentation = "https://docs.rs/onvif-server"
+keywords = ["onvif", "camera", "soap", "ip-camera", "video"]
+categories = ["network-programming", "multimedia::video"]
+exclude = ["/crossref", "/.planning", "/.github"]
 
 [features]
 default = []

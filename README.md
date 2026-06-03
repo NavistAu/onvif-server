@@ -1,0 +1,186 @@
+# onvif-server
+
+A spec-compliant ONVIF Profile S device server library for Rust. Implement the service traits for your camera hardware and get a fully functional ONVIF-compatible device accessible by any standard ONVIF client.
+
+[![crates.io](https://img.shields.io/crates/v/onvif-server.svg)](https://crates.io/crates/onvif-server)
+[![docs.rs](https://docs.rs/onvif-server/badge.svg)](https://docs.rs/onvif-server)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
+
+---
+
+## ONVIF Profile S coverage
+
+| Service  | Status    |
+|----------|-----------|
+| Device   | Supported |
+| Media    | Supported |
+| PTZ      | Supported |
+| Imaging  | Supported |
+| Events   | Supported |
+
+---
+
+## Features
+
+| Feature     | Default | Description                                                           |
+|-------------|---------|-----------------------------------------------------------------------|
+| `discovery` | no      | WS-Discovery multicast listener on `239.255.255.250:3702` via `socket2` |
+
+---
+
+## Installation
+
+```toml
+[dependencies]
+onvif-server = "0.1"
+```
+
+Or via cargo-add:
+
+```
+cargo add onvif-server
+```
+
+### The `discovery` feature
+
+To enable automatic device discovery on the local network:
+
+```toml
+[dependencies]
+onvif-server = { version = "0.1", features = ["discovery"] }
+```
+
+### MSRV
+
+Minimum supported Rust version: **1.85.1** (pinned in `rust-toolchain.toml`).
+
+---
+
+## Quick start
+
+```rust,no_run
+use onvif_server::{OnvifServer, DeviceService};
+
+struct MyCamera;
+
+#[async_trait::async_trait]
+impl DeviceService for MyCamera {
+    // Override methods as needed; defaults return NotImplemented.
+}
+
+#[tokio::main]
+async fn main() {
+    OnvifServer::builder()
+        .port(8080)
+        .advertised_host("192.168.1.10")
+        .device_service(MyCamera)
+        .auth("admin", "password")
+        .build()
+        .expect("build failed")
+        .run()
+        .await
+        .expect("server error");
+}
+```
+
+`DeviceService` is the only **required** service — `.build()` returns
+`Err(BuildError::MissingRequiredService)` if it is omitted. All other services
+(Media, PTZ, Imaging, Events) are optional; unregistered services are simply not
+advertised and their routes are not mounted.
+
+---
+
+## Implementing service traits
+
+All five traits (`DeviceService`, `MediaService`, `PTZService`, `ImagingService`,
+`EventService`) provide default implementations for every method. Unoverridden
+methods return `Err(OnvifError::NotImplemented)`, which the SOAP layer converts to a
+well-formed SOAP fault with the ONVIF `ter:ActionNotSupported` subcode. Clients see a
+standards-compliant fault rather than a connection error.
+
+You can implement services incrementally: start with the methods your ONVIF client
+actually calls and add more as needed.
+
+---
+
+## WS-Security
+
+Call `.auth(username, password)` on the builder to enable WS-Security UsernameToken
+digest authentication. When enabled, every SOAP request must carry a valid
+`UsernameToken` header; requests without one receive a SOAP authentication fault.
+
+`GetSystemDateAndTime` is automatically exempt from authentication, as required by
+the ONVIF specification (clients must retrieve device time before they can compute a
+valid digest).
+
+When `.auth()` is **not** called the server runs unauthenticated and all operations
+are accessible without credentials.
+
+---
+
+## WS-Discovery
+
+Enable the `discovery` feature and the server spawns a background UDP listener when
+`.run()` is called:
+
+1. Joins IPv4 multicast group `239.255.255.250` on port `3702`.
+2. Parses incoming datagrams; ignores anything that is not a well-formed WS-Discovery
+   `Probe` message.
+3. Responds with a `ProbeMatches` message embedding the device XAddr
+   (`http://<advertised_host>:<port>/onvif/device_service`) and a stable
+   EndpointReference UUID.
+
+Use `.discovery_uuid(uuid::Uuid)` on the builder to supply a fixed UUID so the
+device identity is stable across restarts. When not set, a random UUID-v4 is
+generated at build time.
+
+The probe-parsing and probe-response helpers (`discovery_is_probe`,
+`discovery_build_probe_match`) are always compiled and available without the feature
+flag, which makes them usable in tests.
+
+---
+
+## Example: virtual PTZ camera
+
+The `virtual_ptz` example is a fully functional in-memory PTZ camera implementing all
+five service traits. It demonstrates sharing state across multiple service
+registrations using `Arc<Mutex<_>>`.
+
+```
+cargo run --example virtual_ptz
+```
+
+The server starts on port 8080 with credentials `admin`/`admin`. Connect any ONVIF
+client (ONVIF Device Manager, VLC, Frigate, Home Assistant, python-onvif-zeep) to
+`http://<host>:8080/onvif/device_service`.
+
+---
+
+## Documentation
+
+- API reference: <https://docs.rs/onvif-server>
+- User guide (mdBook): published to GitHub Pages at <https://NavistAu.github.io/onvif-server> once the repository is public
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## License
+
+The Rust source code in this repository is dual-licensed under either:
+
+- MIT License ([LICENSE-MIT](LICENSE-MIT)), or
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+
+at your option.
+
+The bundled WSDL and XSD files under `wsdl/` are verbatim official ONVIF
+specification documents and are **not** covered by the MIT/Apache-2.0 licenses above.
+They are distributed under the ONVIF license; see [LICENSE-ONVIF](LICENSE-ONVIF) for
+the full terms.
+
+Copyright Joshua Hogendorn / NavistAu.
