@@ -2,7 +2,7 @@ name: Docs
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     tags: ['v*']
   workflow_dispatch:
 
@@ -21,6 +21,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout soap-server (path dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: NavistAu/soap-server
+          token: ${{ secrets.NAVISTAU_READ_TOKEN }}
+          path: soap-server-dep
+      - name: Make soap-server available at ../soap-server
+        run: ln -s "${{ github.workspace }}/soap-server-dep" "${{ github.workspace }}/../soap-server"
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Install mdBook
@@ -36,6 +44,12 @@ jobs:
 
   deploy:
     name: Deploy to GitHub Pages
+    # Pages deploy only works on a public repo (free org blocks Pages while private)
+    # and only from main or a tag. The build job above still runs everywhere as a
+    # docs-build CI signal.
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

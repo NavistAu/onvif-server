@@ -1,0 +1,80 @@
+# Release workflow — gitflow model.
+#
+# A release is cut by merging a `release/vX.Y.Z` PR into `main`. That merge fires
+# this workflow, which tags vX.Y.Z, creates a GitHub release, and publishes to
+# crates.io via Trusted Publishing (OIDC).
+#
+# PUBLISH ORDER: soap-server must already be on crates.io at the depended-on
+# version — `cargo publish` resolves soap-server from the registry (the version
+# dep), not the local path, so no sibling checkout is needed here.
+#
+# BOOTSTRAP (first 0.1.0): crates.io Trusted Publishing cannot be configured until
+# the crate exists, so the first 0.1.0 is published MANUALLY from the command line
+# (cargo login + cargo publish). After that, configure Trusted Publishing on
+# crates.io for this repo with workflow filename "release.yml", and every
+# subsequent release publishes automatically via the flow below.
+#
+# The publish step tolerates "version already on crates.io" so a re-run (or the
+# bootstrap release whose crate was hand-published) does not hard-fail.
+
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Tag and publish to crates.io
+    # Only when a release/* PR is actually MERGED into main.
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Read crate version
+        id: ver
+        run: echo "version=$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"(.*)".*/\1/')" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag + GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="v${{ steps.ver.outputs.version }}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists; skipping tag + release creation."
+          else
+            git tag "$tag"
+            git push origin "$tag"
+            gh release create "$tag" --title "$tag" --generate-notes
+          fi
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: crates-auth
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.crates-auth.outputs.token }}
+        run: |
+          if cargo publish 2>publish.err; then
+            cat publish.err
+            echo "Published v${{ steps.ver.outputs.version }} to crates.io."
+          elif grep -qiE "already (exists|uploaded)|is already uploaded|crate version .* is already" publish.err; then
+            cat publish.err
+            echo "Version already on crates.io — treating as success (bootstrap/re-run)."
+          else
+            cat publish.err
+            exit 1
+          fi
