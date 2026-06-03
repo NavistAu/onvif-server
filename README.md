@@ -59,22 +59,56 @@ declared in the crate's `Cargo.toml`.
 
 ## Quick start
 
+An empty `impl DeviceService for MyCamera {}` compiles, but a real client faults
+immediately — `GetDeviceInformation` and `GetStreamUri` have no working default.
+This is the smallest device a client can actually use (the
+[`minimal_device`](examples/minimal_device.rs) example, runnable with
+`cargo run --example minimal_device`):
+
 ```rust,no_run
-use onvif_server::{OnvifServer, DeviceService};
+use async_trait::async_trait;
+use onvif_server::{DeviceInfo, DeviceService, MediaService, OnvifError, OnvifServer};
 
-struct MyCamera;
+#[derive(Clone)]
+struct MinimalCamera {
+    media_host: String, // the camera's routable IP, used in stream/snapshot URIs
+}
 
-#[async_trait::async_trait]
-impl DeviceService for MyCamera {
-    // Override methods as needed; defaults return NotImplemented.
+#[async_trait]
+impl DeviceService for MinimalCamera {
+    async fn get_device_information(&self) -> Result<DeviceInfo, OnvifError> {
+        Ok(DeviceInfo {
+            manufacturer: "Example Corp".into(),
+            model: "Minimal-1".into(),
+            firmware_version: "1.0.0".into(),
+            serial_number: "SN-0001".into(),
+            hardware_id: "minimal-hw-1".into(),
+        })
+    }
+    // get_scopes / get_hostname / get_system_date_and_time use working defaults.
+}
+
+#[async_trait]
+impl MediaService for MinimalCamera {
+    // profiles() defaults to one 1920x1080 H264 "MainProfile".
+    async fn get_stream_uri(&self, _profile: &str) -> Result<String, OnvifError> {
+        Ok(format!("rtsp://{}:8554/stream", self.media_host))
+    }
+    async fn get_snapshot_uri(&self, _profile: &str) -> Result<String, OnvifError> {
+        Ok(format!("http://{}:8080/snapshot.jpg", self.media_host))
+    }
 }
 
 #[tokio::main]
 async fn main() {
+    let host = "192.168.1.10"; // the address clients route to
+    let cam = MinimalCamera { media_host: host.into() };
+
     OnvifServer::builder()
         .port(8080)
-        .advertised_host("192.168.1.10")
-        .device_service(MyCamera)
+        .advertised_host(host)
+        .device_service(cam.clone())
+        .media_service(cam)
         .auth("admin", "password")
         .build()
         .expect("build failed")
@@ -87,7 +121,11 @@ async fn main() {
 `DeviceService` is the only **required** service — `.build()` returns
 `Err(BuildError::MissingRequiredService)` if it is omitted. All other services
 (Media, PTZ, Imaging, Events) are optional; unregistered services are simply not
-advertised and their routes are not mounted.
+advertised and their routes are not mounted. See the
+[user guide](https://navistau.github.io/onvif-server/quickstart.html) for a
+no-credentials `curl` smoke test, and the
+[Operation Coverage matrix](https://navistau.github.io/onvif-server/coverage.html)
+for what each operation does by default.
 
 ---
 
