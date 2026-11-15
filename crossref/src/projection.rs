@@ -324,13 +324,11 @@ pub fn get_profiles(response: &[u8]) -> Result<CanonProjection, String> {
                     depth_in_profile -= 1;
                 }
             }
-            Ok(Event::Text(ref t)) => {
-                if inside_profile_name {
-                    let text_val = String::from_utf8_lossy(t.as_ref()).trim().to_string();
-                    if !text_val.is_empty() {
-                        if let Some(ref mut entry) = current_entry {
-                            entry.fields.insert("Name".to_string(), text_val);
-                        }
+            Ok(Event::Text(ref t)) if inside_profile_name => {
+                let text_val = String::from_utf8_lossy(t.as_ref()).trim().to_string();
+                if !text_val.is_empty() {
+                    if let Some(ref mut entry) = current_entry {
+                        entry.fields.insert("Name".to_string(), text_val);
                     }
                 }
             }

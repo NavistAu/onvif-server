@@ -80,10 +80,10 @@ fn count_elements(xml: &[u8], target_local: &str) -> Result<usize, String> {
     let mut count = 0usize;
     loop {
         match reader.read_event_into(&mut buf) {
-            Ok(Event::Start(e)) | Ok(Event::Empty(e)) => {
-                if local_name(e.name().as_ref()) == target_local.as_bytes() {
-                    count += 1;
-                }
+            Ok(Event::Start(e)) | Ok(Event::Empty(e))
+                if local_name(e.name().as_ref()) == target_local.as_bytes() =>
+            {
+                count += 1;
             }
             Ok(Event::Eof) => break,
             Err(e) => return Err(format!("XML parse error: {e}")),
@@ -132,21 +132,20 @@ fn attr_equals(
     let mut found_attr = false;
     loop {
         match reader.read_event_into(&mut buf) {
-            Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
-                if local_name(e.name().as_ref()) == elem_local.as_bytes() {
-                    found_elem = true;
-                    for attr_res in e.attributes() {
-                        let attr = attr_res.map_err(|err| format!("attr error: {err}"))?;
-                        if local_name(attr.key.as_ref()) == attr_local.as_bytes() {
-                            let val =
-                                std::str::from_utf8(&attr.value).map_err(|e| e.to_string())?;
-                            if val == expected_val {
-                                found_attr = true;
-                            } else {
-                                return Err(format!(
+            Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e))
+                if local_name(e.name().as_ref()) == elem_local.as_bytes() =>
+            {
+                found_elem = true;
+                for attr_res in e.attributes() {
+                    let attr = attr_res.map_err(|err| format!("attr error: {err}"))?;
+                    if local_name(attr.key.as_ref()) == attr_local.as_bytes() {
+                        let val = std::str::from_utf8(&attr.value).map_err(|e| e.to_string())?;
+                        if val == expected_val {
+                            found_attr = true;
+                        } else {
+                            return Err(format!(
                                     "<{elem_local} {attr_local}=\"...\">: expected \"{expected_val}\", got \"{val}\""
                                 ));
-                            }
                         }
                     }
                 }
@@ -177,21 +176,19 @@ fn text_of_element_equals(xml: &[u8], elem_local: &str, expected: &str) -> Resul
     let mut found = false;
     loop {
         match reader.read_event_into(&mut buf) {
-            Ok(Event::Start(ref e)) => {
-                if local_name(e.name().as_ref()) == elem_local.as_bytes() {
-                    inside = true;
-                    collected.clear();
-                    found = true;
-                }
+            Ok(Event::Start(ref e)) if local_name(e.name().as_ref()) == elem_local.as_bytes() => {
+                inside = true;
+                collected.clear();
+                found = true;
             }
             Ok(Event::Text(ref t)) if inside => {
                 let s = String::from_utf8_lossy(t.as_ref()).into_owned();
                 collected.push_str(&s);
             }
-            Ok(Event::End(ref e)) if inside => {
-                if local_name(e.name().as_ref()) == elem_local.as_bytes() {
-                    break;
-                }
+            Ok(Event::End(ref e))
+                if inside && local_name(e.name().as_ref()) == elem_local.as_bytes() =>
+            {
+                break;
             }
             Ok(Event::Eof) => break,
             Err(e) => return Err(format!("XML parse error: {e}")),
@@ -233,21 +230,19 @@ fn collect_element_texts(xml: &[u8], target_local: &str) -> Result<Vec<String>, 
     let mut current = String::new();
     loop {
         match reader.read_event_into(&mut buf) {
-            Ok(Event::Start(ref e)) => {
-                if local_name(e.name().as_ref()) == target_local.as_bytes() {
-                    inside = true;
-                    current.clear();
-                }
+            Ok(Event::Start(ref e)) if local_name(e.name().as_ref()) == target_local.as_bytes() => {
+                inside = true;
+                current.clear();
             }
             Ok(Event::Text(ref t)) if inside => {
                 current.push_str(&String::from_utf8_lossy(t.as_ref()));
             }
-            Ok(Event::End(ref e)) if inside => {
-                if local_name(e.name().as_ref()) == target_local.as_bytes() {
-                    inside = false;
-                    results.push(current.clone());
-                    current.clear();
-                }
+            Ok(Event::End(ref e))
+                if inside && local_name(e.name().as_ref()) == target_local.as_bytes() =>
+            {
+                inside = false;
+                results.push(current.clone());
+                current.clear();
             }
             Ok(Event::Eof) => break,
             Err(e) => return Err(format!("XML parse error: {e}")),

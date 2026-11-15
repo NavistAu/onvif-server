@@ -64,11 +64,9 @@ pub fn extract_text_ns(
                     inside_target = false;
                 }
             }
-            (_, Event::End(_)) => {
-                if inside_target {
-                    // End of the target element — return what we accumulated.
-                    return Ok(accumulated);
-                }
+            (_, Event::End(_)) if inside_target => {
+                // End of the target element — return what we accumulated.
+                return Ok(accumulated);
             }
             (_, Event::Text(t)) if inside_target => {
                 let chunk = t
