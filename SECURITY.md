@@ -10,7 +10,9 @@
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Report vulnerabilities by email to **jhogendorn@gmail.com**. Include:
+Report vulnerabilities privately through
+[GitHub Security Advisories](https://github.com/NavistAu/onvif-server/security/advisories/new).
+Include:
 
 - A description of the vulnerability and its potential impact.
 - Steps to reproduce or a minimal proof of concept.

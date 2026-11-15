@@ -2,9 +2,9 @@
 
 ## Maintainers
 
-| Name              | Email                    | Organisation |
-|-------------------|--------------------------|--------------|
-| Joshua Hogendorn  | jhogendorn@gmail.com     | NavistAu     |
+| Name              | Organisation |
+|-------------------|--------------|
+| Joshua Hogendorn  | NavistAu     |
 
 ## Contributors
 
