@@ -3,7 +3,7 @@ name = "onvif-server"
 version = "0.1.1"
 edition = "2021"
 rust-version = "1.85.1"
-authors = ["Joshua Hogendorn <jhogendorn@gmail.com>", "NavistAu"]
+authors = ["Joshua Hogendorn", "NavistAu"]
 # Crate code is MIT OR Apache-2.0; bundled wsdl/** are official ONVIF spec docs
 # redistributed under the ONVIF license (LICENSE-ONVIF), hence the AND clause.
 license = "(MIT OR Apache-2.0) AND LicenseRef-ONVIF"
